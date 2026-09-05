@@ -1,0 +1,19 @@
+/* ChemLab V22 — layered liquid, still fluid */
+.tube-inner.v21>.fluid-v21{opacity:0!important;pointer-events:none!important}
+.tube-inner.v21{overflow:hidden!important;position:relative!important}
+.layer-stack-v22{position:absolute;inset:4px 3px 5px;overflow:hidden;border-radius:4px 4px 18px 18px;pointer-events:none;z-index:4}
+.layer-v22{position:absolute;left:4px;right:4px;height:23.6%;bottom:var(--layer-bottom);background:linear-gradient(90deg,var(--c2),var(--c1) 44%,var(--c2));box-shadow:inset 5px 0 8px rgba(255,255,255,.15),inset -6px 0 10px rgba(0,0,0,.14),0 0 8px color-mix(in srgb,var(--c1) 35%,transparent);transform-origin:50% 100%;transition:opacity .08s linear,transform .08s linear;overflow:visible}
+.layer-v22:first-child{border-radius:0 0 17px 17px}
+.layer-v22::before{content:"";position:absolute;left:-1px;right:-1px;top:-5px;height:11px;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.30),rgba(255,255,255,.06) 42%,rgba(0,0,0,.10) 72%,transparent);border-top:1px solid rgba(255,255,255,.34);transform-origin:50% 50%;animation:layerSurfaceV22 2.7s ease-in-out infinite}
+.layer-v22:not(:last-child)::before{opacity:.44;height:8px;top:-4px;animation-duration:3.3s}
+.layer-v22:last-child::before{opacity:.92;box-shadow:0 -1px 3px rgba(255,255,255,.17)}
+.layer-v22 .layer-label-v22{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:800 12px/1 system-ui,-apple-system,sans-serif;color:rgba(3,17,25,.72);text-shadow:0 1px rgba(255,255,255,.18);z-index:3}
+.layer-v22 .bubble-v22{position:absolute;border-radius:50%;background:rgba(255,255,255,.34);border:1px solid rgba(255,255,255,.20);animation:bubbleV22 var(--dur,3s) ease-in-out var(--delay,0s) infinite}
+.layer-glass-v22{position:absolute;inset:0;z-index:8;pointer-events:none;background:linear-gradient(90deg,rgba(255,255,255,.16),transparent 16%,transparent 72%,rgba(255,255,255,.04) 86%,transparent);mix-blend-mode:screen}
+@keyframes layerSurfaceV22{0%,100%{transform:translateY(0) rotate(-.35deg) scaleX(1.015)}35%{transform:translateY(.7px) rotate(.65deg) scaleX(.985)}70%{transform:translateY(-.4px) rotate(-.15deg) scaleX(1.005)}}
+@keyframes bubbleV22{0%{transform:translateY(10px) scale(.7);opacity:0}22%{opacity:.45}78%{opacity:.3}100%{transform:translateY(-25px) translateX(3px) scale(1.08);opacity:0}}
+.tube.selected .layer-v22:last-child::before{animation-duration:1.7s}
+.tube.receiving .layer-v22:last-child::before{animation:layerImpactV22 .95s cubic-bezier(.16,.78,.2,1)!important}
+@keyframes layerImpactV22{0%{transform:scaleX(1) translateY(0)}20%{transform:scaleX(1.13) translateY(3px) rotate(1.5deg)}44%{transform:scaleX(.91) translateY(-2px) rotate(-1.2deg)}70%{transform:scaleX(1.05) translateY(1px)}100%{transform:scaleX(1) translateY(0)}}
+.pour-ghost.v21-ghost .layer-stack-v22{overflow:hidden}
+.pour-ghost.v21-ghost .layer-v22::before{animation-duration:.42s}
