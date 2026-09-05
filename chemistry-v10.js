@@ -12,13 +12,18 @@
   const $=id=>document.getElementById(id);
   const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
   const toast=t=>{const el=$('toast');if(!el)return;el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),1700)};
-  function current(){return REACTIONS[state.reaction%REACTIONS.length]}
+  const current=()=>REACTIONS[state.reaction%REACTIONS.length];
+  let observer=null,painting=false,queued=false;
+
   function render(){
-    const title=document.querySelector('.station-title');
-    const recipe=$('recipe'),text=$('stationText');
-    if(title)title.textContent='СТАНЦІЯ СИНТЕЗУ';
+    if(painting)return;
+    const title=document.querySelector('.station-title'),recipe=$('recipe'),text=$('stationText');
     if(!recipe||!text)return;
-    const r=current();recipe.innerHTML='';
+    painting=true;
+    observer?.disconnect();
+    const r=current();
+    if(title)title.textContent='СТАНЦІЯ СИНТЕЗУ';
+    recipe.innerHTML='';
     r.need.forEach((sym,i)=>{
       if(i){const a=document.createElement('span');a.className='arrow';a.textContent='+';recipe.appendChild(a)}
       const s=document.createElement('div');s.className='slot '+(i<state.step?'done':i===state.step?'next':'');s.textContent=sym;recipe.appendChild(s)
@@ -26,7 +31,17 @@
     const arrow=document.createElement('span');arrow.className='arrow';arrow.textContent='→';recipe.appendChild(arrow);
     const product=document.createElement('div');product.className='slot product';product.textContent=r.formula;recipe.appendChild(product);
     text.innerHTML=`${r.equation}<br><span style="opacity:.72">Продукт: ${r.name}</span>`;
+    painting=false;
+    const station=$('station');
+    if(station&&observer)observer.observe(station,{childList:true,subtree:true});
   }
+
+  function scheduleRender(){
+    if(queued||painting)return;
+    queued=true;
+    requestAnimationFrame(()=>{queued=false;render()});
+  }
+
   function selectedSymbol(){
     const tube=document.querySelector('.tube.selected');
     if(!tube)return null;
@@ -45,11 +60,12 @@
       if(!state.products.includes(r.id))state.products.push(r.id);
       toast(`Синтезовано ${r.formula} · ${r.name}`);
       state.step=0;state.reaction=(state.reaction+1)%REACTIONS.length;
-    } else toast(`${sym} додано до реакції`);
+    }else toast(`${sym} додано до реакції`);
     save();deselect();setTimeout(render,30);
   }
+
   document.addEventListener('click',handleStation,true);
-  const obs=new MutationObserver(render);
-  const start=()=>{render();const s=$('station');if(s)obs.observe(s,{childList:true,subtree:true})};
+  observer=new MutationObserver(scheduleRender);
+  const start=()=>{render();const s=$('station');if(s)observer.observe(s,{childList:true,subtree:true})};
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start):start();
 })();
