@@ -1,30 +1,32 @@
-# Crystal Cave: Sort & Merge
+# Crystal Cave 2.0
 
-Mobile-first puzzle game prototype.
+Mobile-first puzzle prototype built around a **Sort → Merge → Collect → Descend** loop.
 
-## Current MVP
-- Sort-and-merge tube puzzle mechanic
-- 4-crystal merge rule
-- Level progression
-- Move limit
-- Undo / reset
-- Rewarded-ad demo (+3 moves)
-- Gold economy
-- Cosmetic skin shop demo
-- Sound effects via WebAudio
-- LocalStorage persistence
+## v2.0
 
-## Run locally
-Open `index.html` in a modern browser.
+- reverse-generated levels with a guaranteed solution path
+- five cave zones with progressive visual themes
+- persistent player level, currency, sound settings and collection
+- collection meta-loop for mined crystals
+- redesigned mobile UI and game feel
+- undo, restart and +3 move recovery flow
+- level rewards and merge rewards
 
-## Product direction
-Next iterations will focus on:
-- solvable level generation / solver validation
-- stronger meta progression
-- cave/world map progression
-- advanced crystal mechanics
-- polished mobile UI and game feel
-- real analytics / monetization integrations
+## Zones
 
-## Status
-MVP baseline imported from the original prototype and intentionally kept functionally unchanged for the first repository version.
+1. Amethyst Mine — levels 1–5
+2. Emerald Depths — levels 6–10
+3. Frozen Vault — levels 11–15
+4. Lava Core — levels 16–20
+5. Royal Abyss — levels 21+
+
+## Next
+
+- validate difficulty with automated solver metrics
+- blockers: frozen, locked, hidden and wildcard crystals
+- crystal rarity / tier merge progression
+- cave map and unlock screen
+- daily challenges, streaks and missions
+- production analytics and monetization adapters
+
+Open `index.html` in a browser to play.
