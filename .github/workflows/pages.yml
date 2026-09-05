@@ -1,4 +1,4 @@
-name: Deploy Crystal Cave to GitHub Pages
+name: Deploy ChemLab to GitHub Pages
 
 on:
   push:
@@ -23,27 +23,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Apply ChemLab V8 visual system
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('game.html')
-          if p.exists():
-              s = p.read_text(encoding='utf-8')
-              links = [
-                  '<link rel="stylesheet" href="polish-v6.css">',
-                  '<link rel="stylesheet" href="liquid-v7.css">',
-                  '<link rel="stylesheet" href="reference-v8.css">'
-              ]
-              for link in links:
-                  if link not in s:
-                      s = s.replace('</head>', link + '</head>')
-              script = '<script src="liquid-v7.js"></script>'
-              if script not in s:
-                  s = s.replace('</body>', script + '</body>')
-              p.write_text(s, encoding='utf-8')
-          PY
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
