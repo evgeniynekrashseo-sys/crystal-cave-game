@@ -24,6 +24,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Apply ChemLab visual polish
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for name in ("index.html", "game.html"):
+              p = Path(name)
+              if not p.exists():
+                  continue
+              s = p.read_text(encoding="utf-8")
+              link = '<link rel="stylesheet" href="polish-v6.css">'
+              if link not in s:
+                  s = s.replace('</head>', link + '</head>')
+                  p.write_text(s, encoding="utf-8")
+          PY
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
