@@ -33,10 +33,17 @@ jobs:
               if not p.exists():
                   continue
               s = p.read_text(encoding="utf-8")
-              link = '<link rel="stylesheet" href="polish-v6.css">'
-              if link not in s:
-                  s = s.replace('</head>', link + '</head>')
-                  p.write_text(s, encoding="utf-8")
+              links = [
+                  '<link rel="stylesheet" href="polish-v6.css">',
+                  '<link rel="stylesheet" href="liquid-v7.css">'
+              ]
+              for link in links:
+                  if link not in s:
+                      s = s.replace('</head>', link + '</head>')
+              script = '<script src="liquid-v7.js"></script>'
+              if script not in s:
+                  s = s.replace('</body>', script + '</body>')
+              p.write_text(s, encoding="utf-8")
           PY
 
       - name: Setup Pages
