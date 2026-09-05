@@ -1,6 +1,290 @@
-<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>ChemLab — Neon Reaction Laboratory</title><style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
-:root{--bg:#030508;--panel:#091018e8;--line:#5aa3c42c;--ink:#edf8ff;--dim:#74879b;--cyan:#26dcff;--violet:#994cff;--orange:#ff9837;--green:#5cff92;--gold:#ffd45a;--red:#ff533e}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;background:#030508;color:var(--ink);font-family:Inter,sans-serif}body{display:flex;justify-content:center;overflow-x:hidden;background:radial-gradient(circle at 17% 15%,#19d4ff1e,transparent 25%),radial-gradient(circle at 82% 10%,#ff93351c,transparent 23%),radial-gradient(circle at 52% 64%,#8746ff17,transparent 36%),linear-gradient(#05080d,#070b11 54%,#020304)}body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(#65cfff08 1px,transparent 1px),linear-gradient(90deg,#65cfff08 1px,transparent 1px);background-size:38px 38px;mask-image:linear-gradient(transparent,#000 22%,#000 90%,transparent)}body:after{content:"";position:fixed;left:0;right:0;bottom:-9vh;height:40vh;pointer-events:none;background:linear-gradient(#4b637b1c 1px,transparent 1px),linear-gradient(90deg,#4b637b1c 1px,transparent 1px);background-size:78px 52px;transform:perspective(500px) rotateX(67deg);transform-origin:center bottom}.app{width:100%;max-width:680px;min-height:100vh;padding:18px;position:relative;z-index:2}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #8fd6ff12;padding-bottom:11px}.brand b{font:700 20px Space Grotesk;letter-spacing:.15em}.brand small{display:block;color:#64788e;font-size:9px;letter-spacing:.2em;margin-top:4px}.tools{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.pill,.icon{height:36px;border:1px solid var(--line);background:linear-gradient(#121a25,#070b11);color:var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px #fff08,0 8px 16px #0005}.pill{padding:0 10px;gap:6px;font-weight:800;font-size:12px}.icon{width:36px;cursor:pointer}.dot{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff4b4,var(--gold) 55%,#a86e0c);box-shadow:0 0 12px #ffd45a55}.nug{background:radial-gradient(circle at 30% 30%,#fff4ca,#ffb338 55%,#914e05)}.status{display:flex;justify-content:space-between;align-items:end;margin:13px 2px 7px}.status h1{font:700 20px Space Grotesk;margin:0}.status p{margin:4px 0 0;color:var(--dim);font-size:11px}.moves{text-align:right}.moves b{font:800 25px Space Grotesk}.moves span{display:block;color:#64788e;font-size:9px;letter-spacing:.14em}.rank{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #6a9bc01c;background:#07101999;border-radius:10px;color:var(--dim);font-size:10px}.rank strong{color:var(--ink)}.xp{flex:1;height:4px;border-radius:9px;background:#0d1620;overflow:hidden}.xp i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));box-shadow:0 0 10px #25dcff77}.hint{text-align:center;color:#70859b;font-size:11px;min-height:18px;margin:8px 0}.hint.active{color:#52efff;text-shadow:0 0 12px #52efff55}.board{position:relative;min-height:350px;display:flex;flex-wrap:wrap;align-content:flex-start;justify-content:center;gap:24px 18px;padding:31px 14px 24px;border:1px solid #60a5c529;border-radius:20px;background:radial-gradient(circle at 50% -8%,#1addff1b,transparent 40%),radial-gradient(circle at 82% 70%,#a34dff14,transparent 30%),linear-gradient(#0b1119e8,#04080deF);box-shadow:inset 0 1px #fff07,0 24px 60px #0008}.board:before{content:"REACTION BENCH";position:absolute;top:10px;left:13px;color:#58b9dd35;font-size:8px;font-weight:800;letter-spacing:.19em}.tubeWrap{position:relative;display:flex;flex-direction:column;align-items:center}.rim{width:56px;height:9px;border-radius:50%;margin-bottom:-4px;z-index:3;background:linear-gradient(#defaff,#6394b7 48%,#172630);box-shadow:0 0 13px #4ee8ff44,inset 0 -2px 4px #0008}.tube{width:60px;height:192px;position:relative;overflow:hidden;border-radius:9px 9px 48% 48%;border:1.5px solid #79cfff70;background:linear-gradient(90deg,#fff1,#fff0 24%,#0003 75%,#49caff0c);box-shadow:0 0 18px #18d8ff17,inset 7px 0 12px #fff09,inset -5px 0 12px #0005;cursor:pointer;transition:.18s cubic-bezier(.2,.8,.3,1.3);transform-origin:80% 100%}.tube:before{content:"";position:absolute;inset:3px;border:1px solid #fff0e;border-radius:7px 7px 46% 46%;z-index:5;pointer-events:none}.tube:after{content:"";position:absolute;left:6px;top:10px;bottom:18px;width:3px;border-radius:4px;background:linear-gradient(#fffc,#fff2 45%,transparent 72%);z-index:5}.tube canvas{position:absolute;inset:4px;width:calc(100% - 8px);height:calc(100% - 8px);border-radius:6px 6px 45% 45%}.tube.sel{transform:translateY(-12px) scale(1.055);border-color:#5bf3ff;box-shadow:0 0 0 2px #5bf3ff20,0 0 28px #27d9ff55,0 18px 28px #0008}.tube.valid{border-color:#65ff9b;box-shadow:0 0 0 2px #65ff9b24,0 0 26px #53ff9b44}.tube.react{border-color:#ff6a38;box-shadow:0 0 0 2px #ff6a3825,0 0 28px #ff522e55}.tube.dim{opacity:.32}.tube.shake{animation:shake .3s}.tube.pour{transform:rotate(-28deg) translateY(-6px)}@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}.station{display:flex;align-items:center;gap:16px;margin-top:15px;padding:15px 16px;border-radius:18px;border:1px solid #63a1c22b;background:linear-gradient(#0d151eeF,#05090eF2);box-shadow:0 16px 35px #0006;cursor:pointer;position:relative;overflow:hidden}.station:before{content:"DISTILLATION ARRAY";position:absolute;right:12px;top:8px;color:#65b4dc38;font-size:8px;font-weight:800;letter-spacing:.18em}.rig{width:92px;height:72px;position:relative;flex:none;filter:drop-shadow(0 0 13px #29dcff22)}.stand{position:absolute;left:3px;bottom:2px;width:4px;height:46px;background:#42596c}.clamp{position:absolute;left:3px;bottom:42px;width:29px;height:4px;background:#42596c}.flask{position:absolute;left:9px;bottom:8px;width:35px;height:33px;border:2px solid #5f7c92;border-radius:7px 7px 50% 50%;overflow:hidden;background:#fff08}.flask:before{content:"";position:absolute;bottom:0;left:0;right:0;height:36%;background:linear-gradient(#ffd981,#ff8f32);box-shadow:0 0 16px #ff8f3255}.neck{position:absolute;left:22px;bottom:39px;width:7px;height:13px;background:#526d80}.pipe{position:absolute;left:31px;bottom:47px;width:46px;height:3px;background:#526d80;transform:rotate(-14deg);transform-origin:left}.collector{position:absolute;right:4px;bottom:2px;width:19px;height:28px;border:2px solid #5f7c92;border-radius:5px 5px 40% 40%;overflow:hidden}.collector i{position:absolute;left:0;right:0;bottom:0;height:0;transition:.5s}.flame{position:absolute;left:10px;bottom:-9px;font-size:17px;filter:drop-shadow(0 0 8px #ff782eaa)}.station.ready{border-color:#55ff96;box-shadow:0 0 0 2px #55ff9622,0 0 25px #55ff9638}.stationInfo{flex:1}.stationInfo b{font-size:10px;letter-spacing:.12em;color:#8da1b4}.recipe{display:flex;align-items:center;gap:5px;margin:7px 0 5px;flex-wrap:wrap}.slot{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:1px solid #34495b;background:#08101a;color:#75899d;font-size:9px;font-weight:800}.slot.next{border-color:#ffb64b;box-shadow:0 0 13px #ffb64b55}.slot.done{background:#4cff8d;color:#032511;border-color:#4cff8d}.stationInfo small{color:#6f8497;font-size:10px}.tray{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px;padding:8px;border:1px solid #5e8eab21;border-radius:13px;background:#060b11d9}.el{display:flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid #293c4e;border-radius:8px;background:#0b121a;color:#dcecff;font-size:10px;font-weight:800}.el i{width:10px;height:10px;border-radius:3px}.el.lock{opacity:.45}.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:11px}.btn{min-height:49px;border:1px solid #6898b321;background:linear-gradient(#111923,#070c12);color:#e6f3ff;border-radius:12px;font:700 11px Inter;cursor:pointer}.btn small{display:block;color:#718599;font-size:9px;margin-top:3px}.btn.cat{background:linear-gradient(#ffd46f,#e89225);color:#261504}.btn.ad{background:linear-gradient(#54f59c,#22b667);color:#031a0e}.overlay{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:20px;background:#010306db;backdrop-filter:blur(8px)}.overlay.show{display:flex}.modal{width:min(390px,100%);padding:25px;border:1px solid #67a8c52c;border-radius:22px;background:linear-gradient(#111b26,#070b10);box-shadow:0 30px 90px #000b;text-align:center}.modal h2{font:700 23px Space Grotesk;margin:4px 0 7px}.modal p{color:#8293a6;font-size:12px;line-height:1.5}.reward{color:var(--gold);font:700 30px Space Grotesk;margin:12px}.primary{width:100%;padding:13px;border:0;border-radius:12px;background:linear-gradient(#48e9ff,#159ad5);color:#031721;font-weight:800}.secondary{width:100%;margin-top:8px;padding:12px;border:1px solid #638aa526;border-radius:12px;background:#0b121b;color:white;font-weight:700}.toast{position:fixed;z-index:100;left:50%;bottom:20px;transform:translate(-50%,12px);opacity:0;transition:.2s;background:#0b121a;border:1px solid #51bfe34a;border-radius:999px;padding:10px 15px;font-size:11px;font-weight:700;box-shadow:0 14px 30px #0008}.toast.show{opacity:1;transform:translate(-50%,0)}.drop{position:fixed;z-index:120;width:11px;height:11px;border-radius:50% 50% 50% 4px;pointer-events:none;transition:left .34s,top .34s}.stream{position:fixed;z-index:115;width:4px;transform-origin:top center;border-radius:4px;pointer-events:none;opacity:.8}.fx{position:fixed;z-index:130;pointer-events:none;font-size:22px;animation:fx .65s forwards}@keyframes fx{to{opacity:0;transform:translate(var(--x),var(--y)) scale(1.3)}}@media(max-width:480px){.app{padding:13px}.brand b{font-size:17px}.board{gap:20px 12px;padding-left:8px;padding-right:8px}.tube{width:54px;height:178px}.rim{width:51px}.controls{grid-template-columns:1fr 1fr}.station{gap:11px}.rig{width:82px}}
-</style></head><body><main class="app"><header class="top"><div class="brand"><b>CHEMLAB</b><small>NEON REACTION LABORATORY</small></div><div class="tools"><div class="pill"><i class="dot"></i><span id="gold">0</span></div><div class="pill"><i class="dot nug"></i><span id="nugget">0</span></div><button class="icon" id="sound">🔊</button><button class="icon" id="quests">◎</button><button class="icon" id="shop">⚗</button></div></header><section class="status"><div><h1 id="levelTitle">Дослід 1</h1><p id="levelSub">Сортуй реагенти та запускай реакції</p></div><div class="moves"><b id="moves">0</b><span>ХОДІВ</span></div></section><section class="rank"><span>🧪 <strong id="rankName">Учень алхімік</strong></span><div class="xp"><i id="xpFill"></i></div><span id="xpText">0 XP</span></section><div class="hint" id="hint">Обери колбу</div><section class="board" id="board"></section><section class="station" id="station"><div class="rig"><i class="stand"></i><i class="clamp"></i><i class="neck"></i><i class="pipe"></i><i class="flask"></i><i class="collector"><i id="collectorFill"></i></i><span class="flame">🔥</span></div><div class="stationInfo"><b>ДИСТИЛЯЦІЙНА СТАНЦІЯ</b><div class="recipe" id="recipe"></div><small id="stationText"></small></div></section><section class="tray" id="tray"></section><section class="controls"><button class="btn" id="undo">↩<small>СКАСУВАТИ</small></button><button class="btn" id="reset">⟳<small>ЗАНОВО</small></button><button class="btn cat" id="catalyst">🧪<small id="catText">КАТАЛІЗАТОР 0</small></button><button class="btn ad" id="boost">+3<small>ДОДАТИ ХОДИ</small></button></section></main><div class="overlay" id="win"><div class="modal"><h2>Дослід завершено</h2><p>Усі реагенти стабілізовано. Забирай винагороду і переходь до наступного експерименту.</p><div class="reward" id="winReward"></div><div id="winXp"></div><button class="primary" id="next">Наступний дослід</button></div></div><div class="overlay" id="lose"><div class="modal"><h2>Ходи закінчились</h2><p>Додай ще три ходи або перезапусти експеримент.</p><button class="primary" id="more">+3 ходи</button><button class="secondary" id="retry">Заново</button></div></div><div class="overlay" id="panel"><div class="modal"><h2 id="panelTitle">Лабораторія</h2><div id="panelBody"></div><button class="secondary" id="panelClose">Закрити</button></div></div><div class="toast" id="toast"></div><script>
-(()=>{const CAP=4,E={ruby:{s:'Na',n:'Натрій',h:'#ff593d',g:['#ffb0a5','#ff593d','#a92228']},emerald:{s:'Cl',n:'Хлор',h:'#54f58d',g:['#a6ffd0','#54f58d','#17834b']},citrine:{s:'Fe',n:'Ферум',h:'#ff9b39',g:['#ffd49a','#ff9b39','#a85f15']},sapphire:{s:'O',n:'Оксиген',h:'#21d4ff',g:['#c2f4ff','#21d4ff','#1767a6']},amethyst:{s:'C',n:'Карбон',h:'#a952ff',g:['#ddb5ff','#a952ff','#6125af']},frost:{s:'H',n:'Гідроген',h:'#62fff0',g:['#e6fffd','#62fff0','#209c92']},rose:{s:'Au',n:'Аурум',h:'#ffd45a',g:['#fff2ac','#ffd45a','#a87908']}},starter=['ruby','emerald','citrine','sapphire'],reactions={'emerald_ruby':{type:'boom',name:'Натрій + Хлор'},'citrine_sapphire':{type:'fire',name:'Ферум + Оксиген'},'amethyst_frost':{type:'crystal',name:'Карбон + Гідроген'}},quests=[{key:'amethyst',r:['ruby','citrine']},{key:'frost',r:['emerald','sapphire']},{key:'rose',r:['ruby','sapphire','citrine']}],ranks=[{x:0,n:'Учень алхімік'},{x:120,n:'Лаборант'},{x:350,n:'Хімік'},{x:800,n:'Магістр реакцій'},{x:1600,n:'Архіалхімік'}];let S={level:+localStorage.cl2_level||1,gold:+localStorage.cl2_gold||0,nug:+localStorage.cl2_nug||0,xp:+localStorage.cl2_xp||0,cat:+localStorage.cl2_cat||1,unlocked:JSON.parse(localStorage.cl2_unlock||JSON.stringify(starter)),progress:+localStorage.cl2_prog||0,t:[],initial:[],sel:-1,moves:0,hist:[],busy:false,muted:localStorage.cl2_muted==='1'},phys=[],$=id=>document.getElementById(id);function save(){localStorage.cl2_level=S.level;localStorage.cl2_gold=S.gold;localStorage.cl2_nug=S.nug;localStorage.cl2_xp=S.xp;localStorage.cl2_cat=S.cat;localStorage.cl2_unlock=JSON.stringify(S.unlocked);localStorage.cl2_prog=S.progress;$('gold').textContent=S.gold;$('nugget').textContent=S.nug}function rnd(n){return Math.floor(Math.random()*n)}function sh(a){for(let i=a.length-1;i;i--){let j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}function clone(x){return JSON.parse(JSON.stringify(x))}function rank(){let r=ranks[0];ranks.forEach(x=>{if(S.xp>=x.x)r=x});let i=ranks.indexOf(r),nx=ranks[i+1];$('rankName').textContent=r.n;$('xpText').textContent=nx?`${S.xp} / ${nx.x} XP`:`${S.xp} XP · MAX`;$('xpFill').style.width=nx?Math.max(0,Math.min(100,(S.xp-r.x)/(nx.x-r.x)*100))+'%':'100%'}function tone(f,d=.08,t='sine'){if(S.muted)return;try{tone.c=tone.c||new(AudioContext||webkitAudioContext);let o=tone.c.createOscillator(),g=tone.c.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(.07,tone.c.currentTime);g.gain.exponentialRampToValueAtTime(.001,tone.c.currentTime+d);o.connect(g).connect(tone.c.destination);o.start();o.stop(tone.c.currentTime+d)}catch(e){}}function toast(x){$('toast').textContent=x;$('toast').classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.remove('show'),1500)}function surface(){return{h:Array(7).fill(0),v:Array(7).fill(0)}}function rebuild(){phys=S.t.map(()=>Array.from({length:CAP},surface))}function splash(si,li,p=3){let s=phys[si]?.[li];if(!s)return;for(let i=0;i<s.v.length;i++)s.v[i]+=(Math.random()-.5)*p}function tick(){phys.forEach((arr,ti)=>arr.forEach((s,li)=>{for(let i=0;i<7;i++){s.v[i]+=-.016*s.h[i]-.06*s.v[i];s.h[i]+=s.v[i]}for(let k=0;k<2;k++)for(let i=1;i<6;i++){let d=(s.h[i]-s.h[i-1])*.12;s.v[i-1]+=d;s.v[i]-=d}}));document.querySelectorAll('.tube canvas').forEach((c,ti)=>draw(c,ti));requestAnimationFrame(tick)}function draw(c,ti){let ctx=c.getContext('2d'),t=S.t[ti];if(!ctx||!t)return;let W=c.width,H=c.height,sh=H/CAP;ctx.clearRect(0,0,W,H);t.forEach((key,li)=>{let y1=H-(li+1)*sh,y2=H-li*sh,s=phys[ti]?.[li];ctx.beginPath();ctx.moveTo(0,y2);ctx.lineTo(W,y2);for(let i=6;i>=0;i--){let x=i/6*W,y=y1-(s?.h[i]||0);ctx.lineTo(x,y)}ctx.closePath();let g=ctx.createLinearGradient(0,y1,0,y2),gg=E[key].g;g.addColorStop(0,gg[0]);g.addColorStop(.55,gg[1]);g.addColorStop(1,gg[2]);ctx.save();ctx.shadowColor=E[key].h;ctx.shadowBlur=12;ctx.fillStyle=g;ctx.fill();ctx.restore();ctx.font=`800 ${Math.min(18,sh*.47)}px Inter`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';ctx.shadowColor=E[key].h;ctx.shadowBlur=7;ctx.fillText(E[key].s,W/2,(y1+y2)/2)})}function gen(){let n=Math.min(3+Math.floor((S.level-1)/2),S.unlocked.length),cols=sh(S.unlocked.slice()).slice(0,n),u=[];cols.forEach(c=>{for(let i=0;i<CAP;i++)u.push(c)});sh(u);S.t=[];for(let i=0;i<n;i++)S.t.push(u.slice(i*CAP,(i+1)*CAP));S.t.push([],[]);S.moves=n*CAP+7;S.initial=clone(S.t);S.hist=[];S.sel=-1;rebuild()}function quest(){return quests.find(q=>!S.unlocked.includes(q.key))||null}function renderStation(){let q=quest(),r=$('recipe');r.innerHTML='';if(!q){$('stationText').textContent='Усі реагенти цієї серії відкрито';$('station').classList.remove('ready');return}q.r.forEach((k,i)=>{if(i){let a=document.createElement('span');a.textContent='→';a.style.color='#65798d';r.appendChild(a)}let d=document.createElement('i');d.className='slot '+(i<S.progress?'done':i===S.progress?'next':'');d.textContent=E[k].s;r.appendChild(d)});$('stationText').textContent=`Відкриє: ${E[q.key].n} (${E[q.key].s})`;let top=S.sel>=0?S.t[S.sel].at(-1):null;$('station').classList.toggle('ready',top===q.r[S.progress])}function calc(a,b){let A=S.t[a],B=S.t[b];if(a===b||!A.length)return null;let x=A.at(-1);if(!B.length){let n=1;for(let i=A.length-2;i>=0&&A[i]===x;i--)n++;return{k:'pour',n:Math.min(n,CAP),x}}let y=B.at(-1);if(x===y&&B.length<CAP){let n=1;for(let i=A.length-2;i>=0&&A[i]===x;i--)n++;return{k:'pour',n:Math.min(n,CAP-B.length),x}}let rr=reactions[[x,y].sort().join('_')];if(rr){let na=1,nb=1;for(let i=A.length-2;i>=0&&A[i]===x;i--)na++;for(let i=B.length-2;i>=0&&B[i]===y;i--)nb++;return{k:'react',n:Math.min(na,nb),a:x,b:y,...rr}}return null}function render(){let b=$('board');b.innerHTML='';S.t.forEach((t,i)=>{let w=document.createElement('div');w.className='tubeWrap';let r=document.createElement('div');r.className='rim';let d=document.createElement('div'),c=document.createElement('canvas');d.className='tube'+(i===S.sel?' sel':'');if(S.sel>=0&&i!==S.sel){let m=calc(S.sel,i);d.className+=m?(m.k==='react'?' react':' valid'):' dim'}c.width=52;c.height=180;d.appendChild(c);d.onclick=()=>tap(i);w.append(r,d);b.appendChild(w)});$('moves').textContent=S.moves;$('catText').textContent=`КАТАЛІЗАТОР ${S.cat}`;$('levelTitle').textContent=`Дослід ${S.level}`;$('levelSub').textContent=`Реагенти: ${[...new Set(S.t.flat())].map(k=>E[k].s).join(', ')}`;rank();renderStation();renderTray();save()}function renderTray(){let tr=$('tray');tr.innerHTML='';Object.keys(E).forEach(k=>{let d=document.createElement('div'),ok=S.unlocked.includes(k);d.className='el'+(ok?'':' lock');d.innerHTML=`<i style="background:${ok?E[k].h:'#253544'}"></i>${ok?E[k].s:'?'}`;tr.appendChild(d)})}function tap(i){if(S.busy)return;if(S.sel<0){if(!S.t[i].length)return;S.sel=i;tone(530);$('hint').textContent='Обери зелену або помаранчеву колбу';$('hint').classList.add('active');render();return}if(S.sel===i){S.sel=-1;render();return}let m=calc(S.sel,i);if(!m){let e=document.querySelectorAll('.tube')[i];e.classList.add('shake');setTimeout(()=>e.classList.remove('shake'),300);tone(140,.12,'sawtooth');S.sel=-1;render();return}m.k==='pour'?pour(S.sel,i,m):react(S.sel,i,m)}function fly(a,b,color,n,done){let A=document.querySelectorAll('.tube')[a].getBoundingClientRect(),B=document.querySelectorAll('.tube')[b].getBoundingClientRect(),p1={x:A.left+A.width/2,y:A.top+5},p2={x:B.left+B.width/2,y:B.top+5},dx=p2.x-p1.x,dy=p2.y-p1.y,L=Math.hypot(dx,dy),line=document.createElement('i');line.className='stream';line.style.cssText+=`;height:${L}px;left:${p1.x}px;top:${p1.y}px;background:${color};transform:rotate(${Math.atan2(dy,dx)*180/Math.PI+90}deg)`;document.body.appendChild(line);for(let k=0;k<n;k++){let q=document.createElement('i');q.className='drop';q.style.background=color;q.style.left=p1.x-5+'px';q.style.top=p1.y-5+'px';document.body.appendChild(q);setTimeout(()=>{q.style.left=p2.x-5+'px';q.style.top=p2.y-5+'px'},20+k*60);setTimeout(()=>q.remove(),400+k*60)}setTimeout(()=>{line.remove();done()},430+n*55)}function pour(a,b,m){S.busy=true;S.hist.push(clone(S.t));document.querySelectorAll('.tube')[a].classList.add('pour');fly(a,b,E[m.x].h,m.n,()=>{for(let k=0;k<m.n;k++)S.t[b].push(S.t[a].pop());S.moves--;S.sel=-1;S.busy=false;splash(b,S.t[b].length-1,5);tone(430);render();check()})}function burst(i,type){let R=document.querySelectorAll('.tube')[i].getBoundingClientRect(),chars=type==='fire'?['🔥','✦']:type==='boom'?['✦','✹','•']:['◆','✧'];for(let k=0;k<9;k++){let f=document.createElement('span');f.className='fx';f.textContent=chars[rnd(chars.length)];f.style.left=R.left+R.width/2+'px';f.style.top=R.top+R.height*.42+'px';f.style.setProperty('--x',(Math.random()-.5)*90+'px');f.style.setProperty('--y',(-25-Math.random()*65)+'px');f.style.color=type==='fire'?varColor('--orange'):type==='boom'?'#eaff9a':'#d287ff';document.body.appendChild(f);setTimeout(()=>f.remove(),700)}}function varColor(x){return getComputedStyle(document.documentElement).getPropertyValue(x)||'#ff9b3a'}function react(a,b,m){S.busy=true;S.hist.push(clone(S.t));setTimeout(()=>{for(let k=0;k<m.n;k++){S.t[a].pop();S.t[b].pop()}S.gold+=m.n*10;if(Math.random()<.38)S.nug++;S.moves--;S.sel=-1;S.busy=false;burst(b,m.type);tone(m.type==='boom'?80:700,.18,m.type==='boom'?'sawtooth':'triangle');render();check()},260)}function check(){S.t.forEach((t,i)=>{if(t.length===CAP&&t.every(x=>x===t[0])){S.gold+=12;burst(i,t[0]==='ruby'||t[0]==='citrine'?'fire':'crystal');t.length=0}});save();setTimeout(render,180);if(S.t.every(t=>!t.length)){let rw=35+S.level*5,xp=18+S.level*3;S.gold+=rw;S.xp+=xp;save();$('winReward').textContent=`+${rw} ◆`;$('winXp').textContent=`+${xp} XP`;setTimeout(()=>$('win').classList.add('show'),300)}else if(S.moves<=0)setTimeout(()=>$('lose').classList.add('show'),300)}$('station').onclick=()=>{let q=quest();if(!q)return toast('Усі реагенти відкрито');if(S.sel<0)return toast(`Обери колбу з ${E[q.r[S.progress]].s}`);let t=S.t[S.sel],x=t.at(-1),need=q.r[S.progress];if(x!==need)return toast(`Потрібен ${E[need].s}`);S.busy=true;let f=$('collectorFill');f.style.background=E[q.key].h;setTimeout(()=>{t.pop();S.progress++;S.sel=-1;S.busy=false;f.style.height=Math.round(S.progress/q.r.length*100)+'%';tone(820,.12,'triangle');render();if(S.progress>=q.r.length){setTimeout(()=>{S.unlocked.push(q.key);S.progress=0;f.style.height='0';save();toast(`Відкрито ${E[q.key].n} (${E[q.key].s})`);render()},700)}},380)};$('undo').onclick=()=>{if(!S.hist.length)return toast('Немає ходу для скасування');S.t=S.hist.pop();S.moves++;S.sel=-1;rebuild();render()};$('reset').onclick=()=>{S.t=clone(S.initial);S.moves=Math.max(12,S.initial.length*CAP+4);S.hist=[];S.sel=-1;rebuild();render()};$('boost').onclick=()=>{S.moves+=3;render();toast('+3 ходи')};$('catalyst').onclick=()=>{if(S.cat<=0)return toast('Каталізатори закінчились');outer:for(let a=0;a<S.t.length;a++)for(let b=0;b<S.t.length;b++){if(calc(a,b)){S.cat--;S.sel=a;render();toast('Підсвічено можливий хід');break outer}}};$('more').onclick=()=>{$('lose').classList.remove('show');S.moves+=3;render()};$('retry').onclick=()=>{$('lose').classList.remove('show');start(S.level)};$('next').onclick=()=>{$('win').classList.remove('show');start(S.level+1)};$('sound').onclick=()=>{S.muted=!S.muted;localStorage.cl2_muted=S.muted?'1':'0';$('sound').textContent=S.muted?'🔇':'🔊'};function panel(title,body){$('panelTitle').textContent=title;$('panelBody').innerHTML=body;$('panel').classList.add('show')}$('quests').onclick=()=>panel('Дорожня карта відкриттів',quests.map(q=>`<p style="text-align:left;border-bottom:1px solid #ffffff10;padding:8px 0"><b>${S.unlocked.includes(q.key)?'✓ ':''}${E[q.key].n} (${E[q.key].s})</b><br><small style="color:#788ca0">${q.r.map(x=>E[x].s).join(' → ')}</small></p>`).join(''));$('shop').onclick=()=>panel('Лабораторне обладнання',`<p>Каталізатори: <b>${S.cat}</b></p><button class="primary" id="buyCat">Купити каталізатор · 80 ◆</button>`);$('panelBody').onclick=e=>{if(e.target.id==='buyCat'){if(S.gold<80)return toast('Недостатньо ◆');S.gold-=80;S.cat++;save();panel('Лабораторне обладнання',`<p>Каталізатори: <b>${S.cat}</b></p><button class="primary" id="buyCat">Купити каталізатор · 80 ◆</button>`)}};$('panelClose').onclick=()=>$('panel').classList.remove('show');function start(l){S.level=l;gen();render();save()}start(S.level);tick()})();
-</script></body></html>
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>ChemLab — Sort & React</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap');
+:root{
+  --bg:#03101d;--panel:#071725;--panel2:#0a1b2b;--line:#1b5d86;--line2:#244d69;
+  --txt:#f3f8ff;--muted:#9db7d3;--cyan:#22d7ff;--violet:#a64dff;--gold:#ffcf3d;
+  --red:#ff4c4c;--green:#31e783;--orange:#ffb13b;--blue:#20b6ff;--purple:#9d55f6;--aqua:#54e5eb;--yellow:#ffd84b
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif;background:#020914;color:var(--txt)}
+body{
+  display:flex;justify-content:center;overflow-x:hidden;
+  background:
+   radial-gradient(circle at 0% 36%,rgba(0,229,255,.18),transparent 17%),
+   radial-gradient(circle at 100% 20%,rgba(198,56,255,.18),transparent 18%),
+   radial-gradient(circle at 100% 73%,rgba(0,255,166,.12),transparent 14%),
+   linear-gradient(180deg,#04111e 0%,#03101b 58%,#04101b 100%);
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.9;
+  background-image:linear-gradient(rgba(60,160,220,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(60,160,220,.08) 1px,transparent 1px);
+  background-size:38px 38px;
+}
+.lab-edge{position:fixed;top:0;bottom:0;width:38px;pointer-events:none;z-index:0;opacity:.8;filter:drop-shadow(0 0 14px currentColor)}
+.lab-edge.left{left:0;background:linear-gradient(90deg,rgba(0,220,255,.16),transparent)}
+.lab-edge.right{right:0;background:linear-gradient(270deg,rgba(176,53,255,.16),transparent)}
+.app{position:relative;z-index:2;width:100%;max-width:760px;min-height:100vh;padding:28px 28px 34px}
+.top{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:start}
+.brand{font-size:42px;line-height:.95;font-weight:800;letter-spacing:-2px;background:linear-gradient(90deg,#26d9ff 0%,#53c5ff 42%,#b059ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand small{display:block;color:#a6c6e3;-webkit-text-fill-color:#a6c6e3;font-size:20px;letter-spacing:0;font-weight:600;margin-top:12px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.pill,.icon-btn{
+  height:54px;border:1px solid #1f628a;border-radius:17px;background:linear-gradient(180deg,rgba(11,31,49,.96),rgba(4,16,28,.96));
+  color:#fff;box-shadow:inset 0 1px rgba(255,255,255,.08),0 10px 25px rgba(0,0,0,.24);font-weight:800
+}
+.pill{min-width:112px;padding:0 16px;display:flex;align-items:center;gap:11px;font-size:20px}
+.icon-btn{width:58px;font-size:24px;display:grid;place-items:center;cursor:pointer}
+.coin{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#fff7ba 0 15%,#ffd84d 35%,#f0a900 72%,#a66d00 100%);box-shadow:0 0 14px rgba(255,215,62,.38)}
+.coin.silver{background:radial-gradient(circle at 35% 28%,#fff 0 15%,#d7e5f2 35%,#7f93a4 72%,#40515e 100%);box-shadow:0 0 14px rgba(180,220,255,.28)}
+.status{display:grid;grid-template-columns:1fr auto;align-items:end;margin-top:40px}
+.status h1{font-size:46px;line-height:1;margin:0 0 12px;font-weight:800;letter-spacing:-1px}
+.status p{margin:0;color:#a2bfdc;font-size:22px}
+.moves{text-align:right}.moves b{font-size:48px;line-height:1}.moves span{display:block;color:#9fb8d0;font-size:18px;margin-top:8px}
+.rank{display:flex;align-items:center;gap:15px;margin-top:24px;padding:13px 15px;border:1px solid rgba(41,104,145,.65);background:rgba(5,22,36,.78);border-radius:16px;font-size:17px}
+.rank strong{white-space:nowrap}.xp{height:8px;flex:1;background:#061522;border-radius:10px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(39,99,137,.4)}
+.xp i{display:block;height:100%;background:linear-gradient(90deg,#31ddff,#327bff,#b13cff);box-shadow:0 0 12px rgba(44,197,255,.5);border-radius:10px}
+.xplabel{color:#aac3dd;white-space:nowrap}
+.hint{text-align:center;margin:22px 0 14px;color:#9fc4e4;font-size:19px}.hint.active{color:#37dfff;text-shadow:0 0 14px rgba(55,223,255,.5)}
+.tray{display:flex;flex-wrap:wrap;gap:10px 12px;justify-content:center;margin-bottom:18px}
+.el{display:flex;align-items:center;gap:9px;border:1px solid #1d5d84;background:rgba(6,22,36,.82);border-radius:15px;padding:8px 14px;color:#b8d0e8;font-size:16px}
+.sw{width:23px;height:23px;border-radius:6px;box-shadow:inset 0 1px rgba(255,255,255,.36),0 0 12px rgba(255,255,255,.08)}
+.board{
+  min-height:510px;padding:48px 26px 36px;border-radius:28px;border:1px solid #1b6790;
+  background:radial-gradient(circle at 50% 15%,rgba(0,194,255,.08),transparent 45%),linear-gradient(180deg,rgba(8,28,44,.95),rgba(4,15,26,.96));
+  box-shadow:inset 0 1px rgba(255,255,255,.06),0 24px 54px rgba(0,0,0,.35);
+  display:flex;justify-content:center;align-items:flex-start;gap:26px;flex-wrap:wrap;position:relative;overflow:hidden
+}
+.board:after{content:"";position:absolute;inset:auto 0 0;height:130px;background:radial-gradient(ellipse at 50% 100%,rgba(0,180,255,.08),transparent 70%);pointer-events:none}
+.tube-wrap{position:relative;display:flex;justify-content:center}
+.tube{
+  width:92px;height:350px;position:relative;border-radius:17px 17px 47px 47px;cursor:pointer;overflow:hidden;
+  border:2px solid rgba(164,217,255,.78);
+  background:linear-gradient(90deg,rgba(255,255,255,.14),rgba(255,255,255,.02) 25%,rgba(5,18,31,.35) 68%,rgba(0,7,14,.62));
+  box-shadow:0 0 20px rgba(28,194,255,.16),inset 12px 0 18px rgba(255,255,255,.06),inset -9px 0 18px rgba(0,0,0,.46),inset 0 -14px 22px rgba(35,108,155,.10);
+  transition:transform .2s cubic-bezier(.2,.8,.3,1.15),box-shadow .2s,border-color .2s,opacity .2s
+}
+.tube:before{
+  content:"";position:absolute;z-index:7;left:-4px;right:-4px;top:-8px;height:25px;border-radius:50%;
+  border:2px solid rgba(192,231,255,.92);
+  background:radial-gradient(ellipse at 50% 42%,rgba(231,249,255,.95) 0 19%,rgba(142,201,238,.9) 23%,rgba(49,94,127,.82) 49%,rgba(4,18,31,.98) 67%,rgba(1,7,13,.98) 100%);
+  box-shadow:0 0 17px rgba(81,200,255,.45),inset 0 2px 3px rgba(255,255,255,.65),inset 0 -3px 5px rgba(0,0,0,.75)
+}
+.tube:after{content:"";position:absolute;z-index:6;left:8px;top:19px;bottom:31px;width:8px;border-radius:7px;background:linear-gradient(rgba(255,255,255,.78),rgba(255,255,255,.17) 45%,transparent 80%)}
+.tube-inner{position:absolute;left:7px;right:7px;top:11px;bottom:7px;border-radius:11px 11px 39px 39px;overflow:hidden}
+.layer{
+  position:absolute;left:4px;right:4px;height:calc((100% - 20px)/4);display:flex;align-items:center;justify-content:center;
+  font-size:25px;font-weight:700;color:rgba(4,20,30,.76);text-shadow:0 1px rgba(255,255,255,.25);
+  border-radius:9px;box-shadow:inset 0 2px 8px rgba(255,255,255,.35),inset 0 -8px 12px rgba(0,0,0,.14),0 0 16px var(--glow);
+  transition:bottom .25s ease
+}
+.layer:before{content:"";position:absolute;left:8px;right:8px;top:3px;height:4px;border-radius:50%;background:rgba(255,255,255,.4);filter:blur(1px)}
+.tube.selected{transform:translateY(-12px);border-color:#40ddff;box-shadow:0 0 0 2px rgba(41,218,255,.16),0 0 34px rgba(31,204,255,.48),inset 12px 0 18px rgba(255,255,255,.08)}
+.tube.valid{border-color:#4cff99;box-shadow:0 0 0 2px rgba(76,255,153,.15),0 0 30px rgba(58,255,147,.38)}
+.tube.dim{opacity:.34}
+.tube.shake{animation:shake .32s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:24px}
+.control{
+  min-height:112px;border:1px solid #1f628a;border-radius:20px;background:linear-gradient(180deg,rgba(8,29,47,.96),rgba(5,18,31,.96));
+  color:#c2dcf4;font-size:16px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;cursor:pointer;position:relative;
+  box-shadow:inset 0 1px rgba(255,255,255,.06),0 12px 28px rgba(0,0,0,.22)
+}
+.control .ico{font-size:42px;color:#80d9ff;line-height:1}
+.badge{position:absolute;right:13px;top:10px;background:#d8edff;color:#092138;border-radius:50px;min-width:30px;height:30px;padding:0 7px;display:grid;place-items:center;font-weight:800}
+.station{
+  margin-top:26px;border:1px solid #1f628a;border-radius:22px;background:linear-gradient(180deg,rgba(7,27,44,.96),rgba(4,17,29,.97));
+  display:grid;grid-template-columns:150px 1fr;padding:20px 24px;gap:16px;align-items:center;position:relative;overflow:hidden
+}
+.station:after{content:"DISTILLATION ARRAY";position:absolute;right:24px;top:16px;color:#356e96;font-size:12px;letter-spacing:.18em;font-weight:700}
+.rig{height:105px;position:relative}
+.stand{position:absolute;left:12px;bottom:8px;width:7px;height:72px;background:#7196b3}.bar{position:absolute;left:15px;bottom:76px;width:76px;height:6px;background:#7196b3;transform:rotate(-12deg);transform-origin:left}
+.flask{position:absolute;left:25px;bottom:13px;width:48px;height:54px;border:3px solid #8bb7d6;border-radius:10px 10px 18px 18px;overflow:hidden;background:rgba(255,255,255,.03)}
+.flask:before{content:"";position:absolute;left:0;right:0;bottom:0;height:38%;background:linear-gradient(#ffd76d,#ff9a34);box-shadow:0 0 18px rgba(255,141,38,.48)}
+.fire{position:absolute;left:34px;bottom:-2px;font-size:30px;filter:drop-shadow(0 0 10px #ff812d)}
+.receiver{position:absolute;right:12px;bottom:5px;width:32px;height:57px;border:3px solid #74a8cb;border-radius:8px 8px 16px 16px}
+.station-title{font-size:20px;font-weight:800;letter-spacing:.08em;margin-bottom:10px}.recipe{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.slot{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:2px solid #ffcc31;background:#071522;font-weight:800}.slot.done{background:#2de884;border-color:#2de884;color:#041d11}.slot.next{border-color:#31e783;box-shadow:0 0 14px rgba(49,231,131,.32)}.arrow{color:#4b7798}.station small{display:block;color:#a4bdd4;font-size:16px;margin-top:10px}
+.footer{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:center;margin-top:22px;padding:0 4px;color:#9fc3e2;font-size:14px}.footer .center{text-align:center;letter-spacing:.12em;font-size:11px;color:#5d91b6}.footer .right{text-align:right}
+.overlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(1,6,12,.82);backdrop-filter:blur(9px);padding:20px}.overlay.show{display:flex}.modal{width:min(420px,100%);border:1px solid #235f84;border-radius:24px;background:linear-gradient(#0b2032,#06131f);padding:26px;text-align:center;box-shadow:0 25px 80px rgba(0,0,0,.55)}.modal h2{font-size:28px;margin:0 0 8px}.modal p{color:#a8bfd5;line-height:1.55}.modal button{width:100%;padding:14px;border-radius:14px;border:0;background:linear-gradient(180deg,#3de5ff,#159dda);font-weight:800;color:#062033;font-size:16px;margin-top:10px}.modal button.secondary{background:#0c2132;color:#d9edff;border:1px solid #245a7c}.toast{position:fixed;z-index:80;left:50%;bottom:24px;transform:translate(-50%,15px);opacity:0;transition:.2s;padding:11px 18px;border-radius:999px;background:#0a2032;border:1px solid #2a698f;color:#e9f7ff;font-size:14px;box-shadow:0 14px 34px #0007}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:640px){
+ .app{padding:20px 16px 28px}.brand{font-size:34px}.brand small{font-size:17px}.pill{min-width:92px;height:48px;font-size:17px}.icon-btn{width:50px;height:48px}.status{margin-top:30px}.status h1{font-size:38px}.status p{font-size:18px}.moves b{font-size:40px}.rank{font-size:14px}.xplabel{font-size:14px}.hint{font-size:16px}.el{font-size:14px;padding:7px 10px}.sw{width:19px;height:19px}
+ .board{min-height:430px;padding:42px 12px 30px;gap:15px}.tube{width:66px;height:292px;border-radius:13px 13px 38px 38px}.tube:before{height:20px;top:-7px}.tube:after{left:6px;top:17px;bottom:24px;width:6px}.tube-inner{left:5px;right:5px;top:9px;bottom:5px}.layer{font-size:19px;left:3px;right:3px;border-radius:7px}.controls{gap:10px}.control{min-height:98px;font-size:13px}.control .ico{font-size:34px}.badge{right:8px;top:8px;min-width:27px;height:27px}.station{grid-template-columns:100px 1fr;padding:16px}.station:after{font-size:9px;right:13px;top:10px}.rig{transform:scale(.8);transform-origin:left center}.station-title{font-size:16px}.station small{font-size:13px}.footer{font-size:12px}.footer .center{font-size:9px}
+}
+@media(max-width:390px){
+ .app{padding-left:10px;padding-right:10px}.brand{font-size:30px}.tools{gap:6px}.pill{min-width:77px;padding:0 10px}.icon-btn{width:45px}
+ .board{gap:10px;padding-left:8px;padding-right:8px}.tube{width:60px;height:274px}.controls{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="lab-edge left"></div><div class="lab-edge right"></div>
+<main class="app">
+  <header class="top">
+    <div class="brand">ChemLab<small>Sort & React</small></div>
+    <div class="tools">
+      <div class="pill"><span class="coin"></span><span id="gold">0</span></div>
+      <div class="pill"><span class="coin silver"></span><span id="nugget">0</span></div>
+      <button class="icon-btn" id="sound">🔊</button>
+      <button class="icon-btn" id="settings">⚙️</button>
+    </div>
+  </header>
+  <section class="status">
+    <div><h1 id="levelTitle">Дослід 1</h1><p id="levelSub">Реагенти: Na, Fe, Cl</p></div>
+    <div class="moves"><b id="moves">18</b><span>ХОДІВ</span></div>
+  </section>
+  <section class="rank"><span>🧪 <strong id="rankName">Учень алхімік</strong></span><div class="xp"><i id="xpFill"></i></div><span class="xplabel" id="xpText">0 / 120 XP</span></section>
+  <div class="hint" id="hint">Торкнись колби, щоб обрати реагент</div>
+  <div class="tray" id="tray"></div>
+  <section class="board" id="board"></section>
+  <section class="controls">
+    <button class="control" id="undo"><span class="badge" id="undoBadge">3</span><span class="ico">↶</span><span>Скасувати</span></button>
+    <button class="control" id="shuffle"><span class="badge" id="shuffleBadge">3</span><span class="ico">⟳</span><span>Перемішати</span></button>
+    <button class="control" id="addTube"><span class="badge">+1</span><span class="ico">🧪+</span><span>Додати колбу</span></button>
+    <button class="control" id="hintBtn"><span class="badge" id="hintBadge">3</span><span class="ico">💡</span><span>Підказка</span></button>
+  </section>
+  <section class="station" id="station">
+    <div class="rig"><i class="stand"></i><i class="bar"></i><i class="flask"></i><span class="fire">🔥</span><i class="receiver"></i></div>
+    <div><div class="station-title">ДИСТИЛЯЦІЙНА СТАНЦІЯ</div><div class="recipe" id="recipe"></div><small id="stationText"></small></div>
+  </section>
+  <footer class="footer"><div>⚗ Лабораторні нотатки</div><div class="center">КОЖНА РЕАКЦІЯ МАЄ ЗНАЧЕННЯ</div><div class="right" id="footerLevel">Рівень 1 з 50 ›</div></footer>
+</main>
+<div class="overlay" id="win"><div class="modal"><h2>Дослід завершено 🧪</h2><p>Усі реагенти правильно розсортовано</p><div id="winReward" style="font-size:32px;color:#ffd84b;font-weight:800"></div><div id="winXp" style="color:#79dfff;margin-top:6px"></div><button id="next">Наступний дослід</button></div></div>
+<div class="overlay" id="lose"><div class="modal"><h2>Ходи закінчились</h2><p>Додай ще три ходи або перегенеруй гарантовано прохідний рівень</p><button id="more">+3 ходи</button><button class="secondary" id="retry">Новий варіант рівня</button></div></div>
+<div class="overlay" id="settingsPanel"><div class="modal"><h2>Налаштування</h2><p>Прогрес зберігається на цьому пристрої</p><button class="secondary" id="closeSettings">Закрити</button></div></div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const CAP=4;
+const ELEMENTS={
+ ruby:{s:'Na',n:'Натрій',c:'#ff4b4b',c2:'#ff7373'},
+ emerald:{s:'Cl',n:'Хлор',c:'#2ce77d',c2:'#61f3a0'},
+ citrine:{s:'Fe',n:'Ферум',c:'#ffb13b',c2:'#ffd16b'},
+ sapphire:{s:'O',n:'Кисень',c:'#1faeff',c2:'#52cfff'},
+ amethyst:{s:'C',n:'Карбон',c:'#9b54f5',c2:'#bd7cff'},
+ frost:{s:'H',n:'Гідроген',c:'#45dfe7',c2:'#7df3f5'},
+ rose:{s:'Au',n:'Аурум',c:'#ffd449',c2:'#ffe77d'}
+};
+const START=['ruby','emerald','citrine'];
+const RECIPES=[
+ {key:'sapphire',r:['ruby','emerald']},
+ {key:'frost',r:['emerald','sapphire']},
+ {key:'amethyst',r:['ruby','citrine']},
+ {key:'rose',r:['ruby','sapphire','citrine']}
+];
+const RANKS=[{x:0,n:'Учень алхімік'},{x:120,n:'Лаборант'},{x:350,n:'Хімік'},{x:800,n:'Магістр реакцій'},{x:1600,n:'Архіалхімік'}];
+const $=id=>document.getElementById(id), clone=x=>JSON.parse(JSON.stringify(x));
+let S={
+ level:+localStorage.cl3_level||1,gold:+localStorage.cl3_gold||0,nug:+localStorage.cl3_nug||0,xp:+localStorage.cl3_xp||0,
+ unlocked:JSON.parse(localStorage.cl3_unlock||JSON.stringify(START)),stationProgress:+localStorage.cl3_station||0,
+ tubes:[],initial:[],selected:-1,moves:0,history:[],busy:false,muted:localStorage.cl3_muted==='1',
+ undoUses:3,shuffleUses:3,hintUses:3,extraTube:false,completed:new Set()
+};
+function save(){localStorage.cl3_level=S.level;localStorage.cl3_gold=S.gold;localStorage.cl3_nug=S.nug;localStorage.cl3_xp=S.xp;localStorage.cl3_unlock=JSON.stringify(S.unlocked);localStorage.cl3_station=S.stationProgress;$('gold').textContent=S.gold;$('nugget').textContent=S.nug}
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.remove('show'),1600)}
+function rankUI(){let r=RANKS[0];RANKS.forEach(v=>{if(S.xp>=v.x)r=v});let i=RANKS.indexOf(r),nx=RANKS[i+1];$('rankName').textContent=r.n;$('xpFill').style.width=nx?Math.min(100,(S.xp-r.x)/(nx.x-r.x)*100)+'%':'100%';$('xpText').textContent=nx?`${S.xp} / ${nx.x} XP`:`${S.xp} XP · MAX`}
+function shuffle(a){for(let i=a.length-1;i;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function stateKey(tubes){return tubes.map(t=>t.join(',')).sort().join('|')}
+function isSolved(tubes){return tubes.every(t=>!t.length||(t.length===CAP&&t.every(x=>x===t[0])))}
+function topRun(t){if(!t.length)return 0;let x=t[t.length-1],n=1;for(let i=t.length-2;i>=0&&t[i]===x;i--)n++;return n}
+function legalMove(tubes,a,b){
+ let A=tubes[a],B=tubes[b];if(a===b||!A.length||B.length>=CAP)return 0;
+ let x=A[A.length-1];if(B.length&&B[B.length-1]!==x)return 0;
+ return Math.min(topRun(A),CAP-B.length)
+}
+function solveable(tubes,limit=90000){
+ const seen=new Set();let nodes=0;
+ function dfs(T,last){
+  if(isSolved(T))return true;if(++nodes>limit)return false;
+  let key=stateKey(T);if(seen.has(key))return false;seen.add(key);
+  let moves=[];
+  for(let a=0;a<T.length;a++)for(let b=0;b<T.length;b++){let n=legalMove(T,a,b);if(!n)continue;if(last&&last[0]===b&&last[1]===a)continue;
+   if(!T[b].length&&topRun(T[a])===T[a].length)continue;
+   moves.push([a,b,n,T[b].length?0:1])
+  }
+  moves.sort((m1,m2)=>m1[3]-m2[3]);
+  for(let [a,b,n] of moves){let N=clone(T);for(let k=0;k<n;k++)N[b].push(N[a].pop());if(dfs(N,[a,b]))return true}
+  return false
+ }
+ return dfs(clone(tubes),null)
+}
+function desiredColors(){return Math.min(3+Math.floor((S.level-1)/2),S.unlocked.length,5)}
+function buildSolvable(){
+ let n=desiredColors(),colors=shuffle(S.unlocked.slice()).slice(0,n),attempt=0;
+ while(attempt++<120){
+  let units=[];colors.forEach(c=>{for(let i=0;i<CAP;i++)units.push(c)});shuffle(units);
+  let tubes=[];for(let i=0;i<n;i++)tubes.push(units.slice(i*CAP,(i+1)*CAP));tubes.push([],[]);
+  if(!isSolved(tubes)&&solveable(tubes,55000))return tubes
+ }
+ let tubes=colors.map(c=>Array(CAP).fill(c));tubes.push([],[]);
+ if(colors.length>=2){tubes[colors.length].push(tubes[0].pop());tubes[colors.length+1].push(tubes[1].pop())}
+ return tubes
+}
+function activeQuest(){return RECIPES.find(q=>!S.unlocked.includes(q.key))||null}
+function renderTray(){let tr=$('tray');tr.innerHTML='';Object.keys(ELEMENTS).forEach(k=>{let e=ELEMENTS[k],d=document.createElement('div');d.className='el';d.innerHTML=`<i class="sw" style="background:${e.c};box-shadow:0 0 11px ${e.c}66"></i>${e.s} — ${e.n}`;tr.appendChild(d)})}
+function renderStation(){
+ let q=activeQuest(),r=$('recipe');r.innerHTML='';
+ if(!q){$('stationText').textContent='Усі реагенти відкрито';return}
+ q.r.forEach((k,i)=>{if(i){let a=document.createElement('span');a.className='arrow';a.textContent='→';r.appendChild(a)}
+  let s=document.createElement('div');s.className='slot '+(i<S.stationProgress?'done':i===S.stationProgress?'next':'');s.textContent=ELEMENTS[k].s;r.appendChild(s)
+ });
+ $('stationText').textContent=`Відкриє: ${ELEMENTS[q.key].n} (${ELEMENTS[q.key].s})`
+}
+function render(){
+ $('board').innerHTML='';
+ S.tubes.forEach((tube,i)=>{
+  let wrap=document.createElement('div');wrap.className='tube-wrap';
+  let el=document.createElement('div');el.className='tube'+(i===S.selected?' selected':'');
+  if(S.selected>=0&&i!==S.selected)el.className+=legalMove(S.tubes,S.selected,i)?' valid':' dim';
+  let inn=document.createElement('div');inn.className='tube-inner';
+  tube.forEach((k,li)=>{let e=ELEMENTS[k],d=document.createElement('div');d.className='layer';d.style.bottom=`calc(5px + ${li} * ((100% - 20px)/4))`;d.style.background=`linear-gradient(180deg,${e.c2},${e.c})`;d.style.setProperty('--glow',e.c+'66');d.textContent=e.s;inn.appendChild(d)});
+  el.appendChild(inn);el.onclick=()=>tap(i);wrap.appendChild(el);$('board').appendChild(wrap)
+ });
+ $('moves').textContent=S.moves;$('levelTitle').textContent=`Дослід ${S.level}`;
+ let present=[...new Set(S.tubes.flat())].map(k=>ELEMENTS[k].s).join(', ');$('levelSub').textContent=`Реагенти: ${present}`;
+ $('footerLevel').textContent=`Рівень ${S.level} з 50 ›`;rankUI();renderTray();renderStation();save();
+ $('undoBadge').textContent=S.undoUses;$('shuffleBadge').textContent=S.shuffleUses;$('hintBadge').textContent=S.hintUses
+}
+function start(level){
+ S.level=level;S.tubes=buildSolvable();S.initial=clone(S.tubes);S.selected=-1;S.history=[];S.completed=new Set();
+ S.moves=Math.max(18,desiredColors()*CAP+6);S.undoUses=3;S.shuffleUses=3;S.hintUses=3;S.extraTube=false;render()
+}
+function tap(i){
+ if(S.busy)return;
+ if(S.selected<0){if(!S.tubes[i].length)return;S.selected=i;$('hint').textContent='Обери підсвічену колбу';$('hint').classList.add('active');render();return}
+ if(S.selected===i){S.selected=-1;$('hint').textContent='Торкнись колби, щоб обрати реагент';$('hint').classList.remove('active');render();return}
+ let n=legalMove(S.tubes,S.selected,i);if(!n){let el=document.querySelectorAll('.tube')[i];el.classList.add('shake');setTimeout(()=>el.classList.remove('shake'),320);S.selected=-1;render();return}
+ S.history.push(clone(S.tubes));let a=S.selected;for(let k=0;k<n;k++)S.tubes[i].push(S.tubes[a].pop());S.moves--;S.selected=-1;rewardCompleted();render();checkEnd()
+}
+function rewardCompleted(){
+ S.tubes.forEach((t,i)=>{if(t.length===CAP&&t.every(x=>x===t[0])&&!S.completed.has(i)){S.completed.add(i);S.gold+=10;toast(`Реакція стабілізована · +10 ◆`)}})
+}
+function checkEnd(){
+ if(isSolved(S.tubes)){
+  let rw=35+S.level*5,xp=18+S.level*3;S.gold+=rw;S.xp+=xp;save();$('winReward').textContent=`+${rw} ◆`;$('winXp').textContent=`+${xp} XP`;$('win').classList.add('show')
+ } else if(S.moves<=0) $('lose').classList.add('show')
+}
+$('undo').onclick=()=>{if(S.undoUses<=0)return toast('Скасування закінчились');if(!S.history.length)return toast('Немає ходу для скасування');S.tubes=S.history.pop();S.undoUses--;S.moves++;S.selected=-1;render()}
+$('shuffle').onclick=()=>{if(S.shuffleUses<=0)return toast('Перемішування закінчились');S.shuffleUses--;S.tubes=buildSolvable();S.initial=clone(S.tubes);S.history=[];S.selected=-1;render();toast('Новий гарантовано прохідний розклад')}
+$('addTube').onclick=()=>{if(S.extraTube)return toast('Додаткова колба вже встановлена');S.tubes.push([]);S.extraTube=true;render();toast('Додано порожню колбу')}
+$('hintBtn').onclick=()=>{if(S.hintUses<=0)return toast('Підказки закінчились');for(let a=0;a<S.tubes.length;a++)for(let b=0;b<S.tubes.length;b++){if(legalMove(S.tubes,a,b)){S.hintUses--;S.selected=a;render();toast(`Спробуй ${a+1} → ${b+1}`);return}}toast('Доступних ходів немає — перемішай рівень')}
+$('station').onclick=()=>{
+ let q=activeQuest();if(!q)return toast('Усі реагенти вже відкрито');if(S.selected<0)return toast(`Обери колбу з ${ELEMENTS[q.r[S.stationProgress]].s}`);
+ let t=S.tubes[S.selected],top=t[t.length-1],need=q.r[S.stationProgress];if(top!==need)return toast(`Потрібен ${ELEMENTS[need].s}`);
+ S.stationProgress++;S.selected=-1;
+ if(S.stationProgress>=q.r.length){S.unlocked.push(q.key);S.stationProgress=0;save();toast(`Відкрито ${ELEMENTS[q.key].n} (${ELEMENTS[q.key].s})`)}
+ render()
+}
+$('next').onclick=()=>{$('win').classList.remove('show');start(S.level+1)}
+$('more').onclick=()=>{$('lose').classList.remove('show');S.moves+=3;render()}
+$('retry').onclick=()=>{$('lose').classList.remove('show');start(S.level)}
+$('sound').onclick=()=>{S.muted=!S.muted;localStorage.cl3_muted=S.muted?'1':'0';$('sound').textContent=S.muted?'🔇':'🔊'}
+$('settings').onclick=()=>$('settingsPanel').classList.add('show');$('closeSettings').onclick=()=>$('settingsPanel').classList.remove('show');
+start(S.level);
+})();
+</script>
+</body></html>
