@@ -1,0 +1,45 @@
+type ChemLabDiagnostics = {
+  build: string;
+  startedAt: number;
+  loadMs?: number;
+  domContentLoadedMs?: number;
+  firstPaintMs?: number;
+  firstContentfulPaintMs?: number;
+  longTasks: number;
+  errors: string[];
+  frameSample?: { fps:number; avgFrameMs:number; worstFrameMs:number; frames:number };
+};
+
+declare global { interface Window { __CHEMLAB_DIAGNOSTICS__?: ChemLabDiagnostics } }
+
+const diag:ChemLabDiagnostics={build:'V53',startedAt:performance.now(),longTasks:0,errors:[]};
+window.__CHEMLAB_DIAGNOSTICS__=diag;
+
+window.addEventListener('error',e=>diag.errors.push(String(e.message||e.error||'runtime error')));
+window.addEventListener('unhandledrejection',e=>diag.errors.push(`unhandledrejection: ${String(e.reason)}`));
+
+window.addEventListener('load',()=>{
+  const nav=performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming|undefined;
+  if(nav){diag.loadMs=Math.round(nav.loadEventEnd-nav.startTime);diag.domContentLoadedMs=Math.round(nav.domContentLoadedEventEnd-nav.startTime);}
+  for(const p of performance.getEntriesByType('paint')){
+    if(p.name==='first-paint')diag.firstPaintMs=Math.round(p.startTime);
+    if(p.name==='first-contentful-paint')diag.firstContentfulPaintMs=Math.round(p.startTime);
+  }
+});
+
+try{
+  const obs=new PerformanceObserver(list=>{diag.longTasks+=list.getEntries().length;});
+  obs.observe({entryTypes:['longtask']});
+}catch{}
+
+let frames=0,start=performance.now(),last=start,worst=0,total=0;
+function sample(now:number){
+  const dt=now-last;last=now;frames++;total+=dt;worst=Math.max(worst,dt);
+  if(now-start<5000){requestAnimationFrame(sample);return;}
+  const elapsed=now-start;
+  diag.frameSample={fps:Math.round((frames/elapsed)*1000),avgFrameMs:+(total/frames).toFixed(2),worstFrameMs:+worst.toFixed(2),frames};
+  console.info('[ChemLab Diagnostics]',diag);
+}
+requestAnimationFrame(sample);
+
+export {};
