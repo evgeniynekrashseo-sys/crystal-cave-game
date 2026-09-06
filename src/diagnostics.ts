@@ -12,7 +12,7 @@ type ChemLabDiagnostics = {
 
 declare global { interface Window { __CHEMLAB_DIAGNOSTICS__?: ChemLabDiagnostics } }
 
-const diag:ChemLabDiagnostics={build:'V54',startedAt:performance.now(),longTasks:0,errors:[]};
+const diag:ChemLabDiagnostics={build:'V57',startedAt:performance.now(),longTasks:0,errors:[]};
 window.__CHEMLAB_DIAGNOSTICS__=diag;
 window.addEventListener('error',e=>diag.errors.push(String(e.message||e.error||'runtime error')));
 window.addEventListener('unhandledrejection',e=>diag.errors.push(`unhandledrejection: ${String(e.reason)}`));
