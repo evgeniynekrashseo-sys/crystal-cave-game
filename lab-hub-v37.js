@@ -5,6 +5,7 @@ function boot(){
   const host=document.createElement('div');host.className='lab-hub-v37';
   const btn=document.createElement('button');btn.type='button';btn.className='lab-hub-v37-btn';btn.title='Lab Hub';btn.setAttribute('aria-label','Відкрити Lab Hub');btn.textContent='⌘';
   const menu=document.createElement('div');menu.className='lab-hub-v37-menu';menu.innerHTML=`<div class="lab-hub-v37-title">LAB HUB</div><div class="lab-hub-v37-grid">
+    <button class="lab-hub-v37-item" data-target=".periodic-launch"><i>▦</i><b>Періодична система</b><span>118 елементів та прогрес відкриттів</span></button>
     <button class="lab-hub-v37-item" data-target=".journal-launch"><i>◇</i><b>Колекція</b><span>Елементи, рецепти та артефакти</span></button>
     <button class="lab-hub-v37-item" data-target=".v30-launch"><i>◎</i><b>Щоденна лабораторія</b><span>Daily challenge та досягнення</span></button>
     <button class="lab-hub-v37-item" data-target=".v32-launch"><i>⌁</i><b>Тижнева експедиція</b><span>Weekly missions та prestige</span></button>
@@ -17,7 +18,7 @@ function boot(){
   menu.addEventListener('click',e=>{const item=e.target.closest('.lab-hub-v37-item');if(!item)return;const target=document.querySelector(item.dataset.target);close();if(target)target.click()});
   document.addEventListener('click',e=>{if(!menu.contains(e.target)&&!host.contains(e.target))close()});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
-  const h=document.querySelector('#settingsPanel h2');if(h)h.textContent='Лабораторія V37';
+  const h=document.querySelector('#settingsPanel h2');if(h)h.textContent='Лабораторія V38';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
