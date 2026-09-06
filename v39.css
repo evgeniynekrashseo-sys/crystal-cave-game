@@ -1,0 +1,52 @@
+/* V39 — responsive tube field containment. Visual-only; solver/state/progress untouched. */
+/* Tubes share the available board width instead of using fixed-width wrappers that can overflow. */
+.board{
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+.board>.tube-wrap{
+  flex:1 1 0!important;
+  min-width:0!important;
+  max-width:45px!important;
+}
+.board>.tube-wrap>.tube{
+  width:100%!important;
+  max-width:45px!important;
+  min-width:0!important;
+}
+
+/* Dense levels: reduce spacing before reducing the glass itself. */
+.board:has(> .tube-wrap:nth-child(7)){
+  gap:6px!important;
+  padding-left:10px!important;
+  padding-right:10px!important;
+}
+.board:has(> .tube-wrap:nth-child(8)){
+  gap:4px!important;
+  padding-left:8px!important;
+  padding-right:8px!important;
+}
+.board:has(> .tube-wrap:nth-child(9)){
+  gap:3px!important;
+  padding-left:6px!important;
+  padding-right:6px!important;
+}
+
+/* Keep rims and contents proportional when a tube becomes narrower. */
+.board:has(> .tube-wrap:nth-child(8)) .tube:before{left:-3px!important;right:-3px!important}
+.board:has(> .tube-wrap:nth-child(8)) .tube-inner{left:4px!important;right:4px!important}
+.board:has(> .tube-wrap:nth-child(8)) .fluid-symbol{font-size:clamp(11px,3vw,14px)!important}
+
+@media(max-width:520px){
+  .board{padding-left:8px!important;padding-right:8px!important}
+  .board>.tube-wrap{max-width:44px!important}
+  .board>.tube-wrap>.tube{max-width:44px!important}
+  .board:has(> .tube-wrap:nth-child(7)){gap:5px!important;padding-left:7px!important;padding-right:7px!important}
+  .board:has(> .tube-wrap:nth-child(8)){gap:3px!important;padding-left:6px!important;padding-right:6px!important}
+  .board:has(> .tube-wrap:nth-child(9)){gap:2px!important;padding-left:5px!important;padding-right:5px!important}
+}
+
+@media(max-width:390px){
+  .board{gap:4px!important;padding-left:6px!important;padding-right:6px!important}
+  .board:has(> .tube-wrap:nth-child(8)){gap:2px!important;padding-left:4px!important;padding-right:4px!important}
+}
