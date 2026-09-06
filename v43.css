@@ -1,0 +1,180 @@
+/* V43 — approved premium glassware visual pass. Visual-only; gameplay untouched. */
+.board{
+  position:relative!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:flex-start!important;
+  align-content:flex-start!important;
+  flex-wrap:nowrap!important;
+  gap:14px!important;
+  min-height:370px!important;
+  padding:42px 18px 34px!important;
+  overflow:hidden!important;
+  border:1px solid rgba(31,151,207,.9)!important;
+  border-radius:24px!important;
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(40,204,255,.10),transparent 42%),
+    linear-gradient(180deg,rgba(4,25,42,.98),rgba(2,13,23,.99))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.08),0 24px 58px rgba(0,0,0,.42)!important;
+}
+.board:after{
+  content:""!important;
+  position:absolute!important;
+  left:7%!important;right:7%!important;bottom:14px!important;height:22px!important;
+  border-radius:50%!important;
+  background:radial-gradient(ellipse,rgba(37,177,255,.18),transparent 72%)!important;
+  filter:blur(8px)!important;
+  pointer-events:none!important;
+}
+.board>.tube-wrap{
+  flex:0 0 54px!important;
+  width:54px!important;
+  min-width:54px!important;
+  max-width:54px!important;
+  display:flex!important;
+  justify-content:center!important;
+}
+.board>.tube-wrap>.tube{
+  position:relative!important;
+  width:54px!important;
+  min-width:54px!important;
+  max-width:54px!important;
+  height:230px!important;
+  border:2px solid rgba(216,243,255,.94)!important;
+  border-top-color:rgba(246,252,255,.99)!important;
+  border-radius:12px 12px 28px 28px!important;
+  overflow:visible!important;
+  background:
+    linear-gradient(90deg,
+      rgba(255,255,255,.28) 0%,
+      rgba(255,255,255,.08) 15%,
+      rgba(11,35,50,.04) 38%,
+      rgba(255,255,255,.04) 66%,
+      rgba(0,5,11,.46) 100%)!important;
+  box-shadow:
+    inset 5px 0 9px rgba(255,255,255,.17),
+    inset -6px 0 11px rgba(0,0,0,.40),
+    inset 0 -16px 24px rgba(38,178,255,.12),
+    0 14px 24px rgba(0,0,0,.44),
+    0 0 14px rgba(89,210,255,.17)!important;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease!important;
+}
+.board>.tube-wrap>.tube:before{
+  content:""!important;
+  position:absolute!important;
+  z-index:30!important;
+  left:-7px!important;right:-7px!important;top:-8px!important;height:18px!important;
+  border-radius:50%!important;
+  border:2px solid rgba(231,248,255,.99)!important;
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      rgba(0,7,13,.99) 0 47%,
+      rgba(78,153,193,.58) 51%,
+      rgba(243,251,255,.99) 65%,
+      rgba(117,207,249,.42) 76%,
+      transparent 80%)!important;
+  box-shadow:
+    0 3px 7px rgba(0,0,0,.52),
+    0 0 10px rgba(111,222,255,.30),
+    inset 0 1px 2px rgba(255,255,255,.82)!important;
+}
+.board>.tube-wrap>.tube:after{
+  content:""!important;
+  position:absolute!important;
+  z-index:20!important;
+  left:8px!important;top:20px!important;bottom:31px!important;width:4px!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.25) 58%,transparent 94%)!important;
+  opacity:.9!important;
+}
+.board .tube-inner{
+  position:absolute!important;
+  left:6px!important;right:6px!important;top:13px!important;bottom:7px!important;
+  border-radius:8px 8px 22px 22px!important;
+  overflow:hidden!important;
+  background:linear-gradient(180deg,rgba(4,18,29,.08),rgba(0,7,13,.25))!important;
+}
+.board .layer{
+  left:2px!important;right:2px!important;
+  height:calc((100% - 14px)/4)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:9px!important;
+  font-size:16px!important;
+  font-weight:800!important;
+  letter-spacing:-.25px!important;
+  color:#06111a!important;
+  text-shadow:0 1px rgba(255,255,255,.35)!important;
+  box-shadow:
+    inset 0 4px 9px rgba(255,255,255,.36),
+    inset 0 -10px 14px rgba(0,0,0,.12),
+    0 0 13px var(--glow)!important;
+  filter:saturate(1.18) brightness(1.08)!important;
+}
+.board .layer:before{
+  content:""!important;
+  left:-5%!important;right:-5%!important;top:-5px!important;height:13px!important;
+  border-radius:50%!important;
+  background:radial-gradient(ellipse at 50% 60%,rgba(255,255,255,.58),rgba(255,255,255,.18) 44%,rgba(0,0,0,.1) 68%,transparent 73%)!important;
+}
+.board .fluid-symbol{font-size:16px!important;font-weight:800!important}
+.board .tube.selected{
+  transform:translateY(-11px) scale(1.035)!important;
+  border-color:#8ceeff!important;
+  box-shadow:0 0 0 1px rgba(122,237,255,.28),0 0 26px rgba(73,214,255,.40),0 15px 25px rgba(0,0,0,.45)!important;
+}
+.board .tube.valid{
+  border-color:#82f2b4!important;
+  box-shadow:0 0 0 1px rgba(130,242,180,.22),0 0 22px rgba(77,235,157,.34)!important;
+}
+
+/* 7 tubes stay readable with only a small reduction; never needle-thin. */
+.board:has(> .tube-wrap:nth-child(7)){
+  gap:8px!important;
+  padding-left:10px!important;
+  padding-right:10px!important;
+}
+.board:has(> .tube-wrap:nth-child(7))>.tube-wrap{
+  flex-basis:48px!important;width:48px!important;min-width:48px!important;max-width:48px!important;
+}
+.board:has(> .tube-wrap:nth-child(7))>.tube-wrap>.tube{
+  width:48px!important;min-width:48px!important;max-width:48px!important;height:222px!important;
+}
+
+/* 8+ use two rows instead of compressing the glass. */
+.board:has(> .tube-wrap:nth-child(8)){
+  flex-wrap:wrap!important;
+  min-height:520px!important;
+  gap:24px 18px!important;
+  padding:40px 24px 34px!important;
+}
+.board:has(> .tube-wrap:nth-child(8))>.tube-wrap{
+  flex-basis:54px!important;width:54px!important;min-width:54px!important;max-width:54px!important;
+}
+.board:has(> .tube-wrap:nth-child(8))>.tube-wrap>.tube{
+  width:54px!important;min-width:54px!important;max-width:54px!important;height:230px!important;
+}
+
+@media(max-width:520px){
+  .board{gap:9px!important;padding:38px 10px 30px!important;min-height:350px!important}
+  .board>.tube-wrap{flex-basis:47px!important;width:47px!important;min-width:47px!important;max-width:47px!important}
+  .board>.tube-wrap>.tube{width:47px!important;min-width:47px!important;max-width:47px!important;height:218px!important}
+  .board>.tube-wrap>.tube:before{left:-6px!important;right:-6px!important;height:17px!important}
+  .board .layer,.board .fluid-symbol{font-size:14px!important}
+  .board:has(> .tube-wrap:nth-child(7)){gap:5px!important;padding-left:6px!important;padding-right:6px!important}
+  .board:has(> .tube-wrap:nth-child(7))>.tube-wrap{flex-basis:43px!important;width:43px!important;min-width:43px!important;max-width:43px!important}
+  .board:has(> .tube-wrap:nth-child(7))>.tube-wrap>.tube{width:43px!important;min-width:43px!important;max-width:43px!important;height:212px!important}
+  .board:has(> .tube-wrap:nth-child(8)){min-height:500px!important;gap:20px 15px!important;padding:34px 18px 30px!important}
+  .board:has(> .tube-wrap:nth-child(8))>.tube-wrap{flex-basis:49px!important;width:49px!important;min-width:49px!important;max-width:49px!important}
+  .board:has(> .tube-wrap:nth-child(8))>.tube-wrap>.tube{width:49px!important;min-width:49px!important;max-width:49px!important;height:220px!important}
+}
+
+@media(max-width:390px){
+  .board{gap:7px!important;padding-left:7px!important;padding-right:7px!important}
+  .board>.tube-wrap{flex-basis:44px!important;width:44px!important;min-width:44px!important;max-width:44px!important}
+  .board>.tube-wrap>.tube{width:44px!important;min-width:44px!important;max-width:44px!important;height:212px!important}
+  .board .layer,.board .fluid-symbol{font-size:13px!important}
+  .board:has(> .tube-wrap:nth-child(7))>.tube-wrap{flex-basis:40px!important;width:40px!important;min-width:40px!important;max-width:40px!important}
+  .board:has(> .tube-wrap:nth-child(7))>.tube-wrap>.tube{width:40px!important;min-width:40px!important;max-width:40px!important;height:208px!important}
+}
