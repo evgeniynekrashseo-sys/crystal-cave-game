@@ -11,57 +11,21 @@
 <body>
   <main class="app">
     <header class="top">
-      <div>
-        <div class="brand">ChemLab<small>Sort & React</small></div>
-        <div class="labtag">NEON REACTION LABORATORY</div>
-      </div>
-      <div class="tools">
-        <div class="pill"><span class="coin"></span><span id="gold">0</span></div>
-        <div class="pill"><span class="coin silver"></span><span id="nugget">0</span></div>
-        <button class="icon-btn" id="settings" aria-label="Налаштування">⚙</button>
-      </div>
+      <div><div class="brand">ChemLab<small>SORT & REACT</small></div><div class="labtag">NEON REACTION LABORATORY</div></div>
+      <div class="tools"><div class="pill"><span class="coin"></span><span id="gold">0</span></div><div class="pill"><span class="coin silver"></span><span id="nugget">0</span></div><button class="icon-btn" id="sound" aria-label="Звук">🔊</button><button class="icon-btn" id="hub" aria-label="Lab Hub">⌘</button><button class="icon-btn" id="settings" aria-label="Налаштування">⚙</button></div>
     </header>
-
-    <section class="status">
-      <div><h1 id="levelTitle">Дослід 1</h1><p id="levelSub">3/118 · Na · Cl · Fe</p></div>
-      <div class="moves"><b id="moves">14</b><span>ХОДІВ</span></div>
-    </section>
-
-    <section class="goal"><strong id="goalText">Збери 4 однакові елементи в одній пробірці</strong><span class="tag">🧪 V52 GPU</span></section>
-
-    <section class="rank">
-      <span>🧪 <strong id="rankName">Учень лабораторії</strong></span>
-      <div class="xp"><i id="xpFill"></i></div>
-      <span class="xplabel" id="xpText">0 / 180 XP</span>
-    </section>
-
+    <section class="status"><div><h1 id="levelTitle">Дослід 1</h1><p id="levelSub">3/118 · Na · Cl · Fe</p></div><div class="moves"><b id="moves">14</b><span>ХОДІВ</span></div></section>
+    <section class="goal"><strong id="goalText">Збери 4 однакові елементи в одній пробірці</strong><span class="tag">🧪 <span id="discoverTag">3/118</span></span></section>
+    <section class="rank"><span>🧪 <strong id="rankName">Учень лабораторії</strong></span><div class="xp"><i id="xpFill"></i></div><span class="xplabel" id="xpText">0 / 180 XP</span></section>
     <div class="hint">Переливай рідини, щоб об’єднати однакові елементи</div>
     <section class="board-shell"><div id="gameCanvas" class="game-canvas"></div></section>
-
-    <section class="station" id="station">
-      <div class="station-icon">⚗️</div>
-      <div>
-        <h3>ПОБІЧНИЙ СИНТЕЗ</h3>
-        <div class="recipe"><span class="slot">Fe</span><span>+</span><span class="slot">O</span><span class="arrow">→</span><span class="slot">Fe₂O₃</span></div>
-        <p>Ігрова абстракція реакції · рецепт у журналі</p>
-      </div>
-    </section>
-
-    <section class="controls">
-      <button class="control" id="undo"><span class="ico">↶</span><span>Скасувати хід</span></button>
-      <button class="control" id="shuffle"><span class="ico">⟳</span><span>Перезапустити</span></button>
-      <button class="control" id="addTube"><span class="ico">🧪+</span><span>Додати пробірку</span></button>
-      <button class="control" id="hintBtn"><span class="ico">💡</span><span>Підказка</span></button>
-    </section>
-
-    <footer class="footer">CHEMLAB V52 · PIXIJS 8 · EVENT-DRIVEN WEBGL · VITE</footer>
+    <section class="station" id="station"><div class="station-icon">⚗️</div><div><h3>ПОБІЧНИЙ СИНТЕЗ</h3><div class="recipe"><span class="slot">Fe</span><span>+</span><span class="slot">O</span><span class="arrow">→</span><span class="slot">Fe₂O₃</span></div><p>Fe + O → Fe₂O₃<br>Оксид феруму · рецепт у журналі</p></div></section>
+    <section class="controls"><button class="control" id="undo"><span class="badge">3</span><span class="ico">↶</span><span>Скасувати хід</span></button><button class="control" id="shuffle"><span class="badge">3</span><span class="ico">⟳</span><span>Перезапустити</span></button><button class="control" id="addTube"><span class="badge">1</span><span class="ico">🧪 +1</span><span>Додати пробірку</span></button><button class="control" id="hintBtn"><span class="badge">3</span><span class="ico">💡</span><span>Підказка</span></button></section>
   </main>
-
   <div class="overlay" id="win"><div class="modal"><h2>Дослід завершено 🧪</h2><p>Усі елементи правильно розділено</p><div id="winReward"></div><button id="next">Наступний дослід</button></div></div>
   <div class="overlay" id="lose"><div class="modal"><h2>Ви програли</h2><p>Ходи закінчились. Пройди цей етап ще раз.</p><button id="retrySame">Повторити цю комбінацію</button><button class="secondary" id="retryNew">Інша комбінація</button></div></div>
-  <div class="overlay" id="settingsPanel"><div class="modal"><h2>ChemLab V52</h2><p>PixiJS 8 працює в event-driven режимі: GPU рендерить поле лише коли воно реально змінюється. Прогрес зберігається автоматично.</p><button class="secondary" id="closeSettings">Закрити</button></div></div>
+  <div class="overlay" id="settingsPanel"><div class="modal"><h2>ChemLab V52</h2><p>PixiJS 8 · GPU glass/liquid renderer · progress-safe</p><button class="secondary" id="closeSettings">Закрити</button></div></div>
   <div class="toast" id="toast"></div>
-
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
