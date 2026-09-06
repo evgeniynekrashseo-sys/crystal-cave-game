@@ -1,0 +1,11 @@
+/* V25 campaign + collection UI */
+.campaign-launch,.journal-launch{font-size:16px!important}
+.collection-overlay{position:fixed;inset:0;background:rgba(1,7,13,.84);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:9998;display:none;align-items:flex-end;justify-content:center;padding:18px}
+.collection-overlay.show{display:flex}
+.collection-sheet{width:min(430px,100%);max-height:86vh;overflow:auto;border:1px solid rgba(120,220,255,.2);background:linear-gradient(180deg,rgba(8,20,34,.98),rgba(2,9,17,.99));border-radius:24px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.collection-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:14px}.collection-head h2{margin:0;font-size:22px}.collection-head p{margin:5px 0 0;opacity:.6;font-size:12px}.collection-close{border:0;background:rgba(255,255,255,.08);color:#fff;width:36px;height:36px;border-radius:12px;font-size:24px}
+.collection-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.collection-stat{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:10px}.collection-stat b{display:block;font-size:18px;color:#8feaff}.collection-stat span{font-size:10px;opacity:.55;text-transform:uppercase;letter-spacing:.6px}
+.artifact-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.artifact-card,.journal-row{border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.035);border-radius:14px;padding:10px}.artifact-card b{display:block;font-size:12px}.artifact-card small,.journal-row small{opacity:.55}.artifact-empty{opacity:.5;font-size:12px;padding:12px 0}
+.journal-list{display:grid;gap:8px}.journal-row{display:flex;gap:10px;align-items:center}.journal-icon{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:rgba(70,210,255,.09);font-weight:900}.journal-row b{font-size:12px;display:block}.journal-row span{font-size:11px;opacity:.7}
+.progress-118{height:8px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin:8px 0 14px}.progress-118 i{display:block;height:100%;background:linear-gradient(90deg,#23c7ff,#8b5cff);border-radius:inherit}
+.frontier-ready{border-color:rgba(213,255,86,.5)!important;box-shadow:0 0 30px rgba(213,255,86,.08)}
