@@ -118,6 +118,7 @@ function solved(){return tubes.every(t=>t.length===0||(t.length===CAP&&t.every(x
 let app:Application;
 let root:Container;
 let boardW=360, boardH=360;
+let resizeRaf=0;
 
 async function initPixi(){
   app=new Application();
@@ -127,13 +128,17 @@ async function initPixi(){
     resolution:Math.min(window.devicePixelRatio||1,2),
     autoDensity:true,
     preference:'webgl',
-    powerPreference:'high-performance'
+    powerPreference:'high-performance',
+    autoStart:false
   });
   els.board.appendChild(app.canvas);
   app.canvas.setAttribute('aria-label','Ігрове поле ChemLab');
   root=new Container(); app.stage.addChild(root);
   resizeBoard();
-  new ResizeObserver(resizeBoard).observe(els.board);
+  new ResizeObserver(()=>{
+    cancelAnimationFrame(resizeRaf);
+    resizeRaf=requestAnimationFrame(resizeBoard);
+  }).observe(els.board);
 }
 
 function resizeBoard(){
@@ -206,9 +211,11 @@ function drawTube(tube:Tube,index:number,g:ReturnType<typeof tubeGeometry>){
 
 function renderBoard(){
   if(!root)return;
-  root.removeChildren();
+  const old=root.removeChildren();
+  old.forEach(child=>child.destroy({children:true}));
   const g=tubeGeometry(tubes.length);
   tubes.forEach((t,i)=>drawTube(t,i,g));
+  app.renderer.render(app.stage);
 }
 
 function renderHud(){
