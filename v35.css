@@ -1,0 +1,57 @@
+/* V35 — hard reagent visibility recovery.
+   Purpose: guarantee that gameplay reagent layers are visible on desktop and mobile.
+   We intentionally disable the optional SVG liquid skin and render the canonical
+   .layer nodes produced by game-v27.js. This is visual-only and does not touch
+   solver/state/progress/level generation. */
+.tube-inner{
+  position:absolute!important;
+  left:5px!important;
+  right:5px!important;
+  top:10px!important;
+  bottom:5px!important;
+  overflow:hidden!important;
+  z-index:3!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+.tube-inner > .fluid-svg{
+  display:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+}
+.tube-inner > .layer,
+.tube-inner.fluid-ready > .layer{
+  display:flex!important;
+  opacity:1!important;
+  visibility:visible!important;
+  position:absolute!important;
+  left:1px!important;
+  right:1px!important;
+  height:calc((100% - 12px)/4)!important;
+  min-height:30px!important;
+  z-index:4!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  border-radius:5px!important;
+  transform:none!important;
+  -webkit-transform:none!important;
+  mix-blend-mode:normal!important;
+}
+.tube-inner > .layer .fluid-symbol{
+  display:block!important;
+  opacity:1!important;
+  visibility:visible!important;
+  position:relative!important;
+  z-index:6!important;
+  color:#06131d!important;
+  font-weight:900!important;
+  font-size:14px!important;
+  text-shadow:0 1px rgba(255,255,255,.35)!important;
+}
+/* Make the liquid readable even if an older stylesheet changes filters. */
+.tube .layer{
+  filter:saturate(1.12) brightness(1.04)!important;
+}
+.tube .layer.rarity-epic{filter:saturate(1.2) brightness(1.06)!important}
+.tube .layer.rarity-legendary{filter:saturate(1.28) brightness(1.08)!important}
