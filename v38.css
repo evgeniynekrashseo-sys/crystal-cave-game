@@ -1,0 +1,39 @@
+/* V38 — mobile top bar refinement. Visual-only; gameplay/state untouched. */
+/* All secondary launchers are consolidated into Lab Hub, including periodic table. */
+.tools .periodic-launch,.tools .journal-launch,.tools .v30-launch,.tools .v32-launch,.tools #shop31{display:none!important}
+
+@media(max-width:520px){
+  .top{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;padding-bottom:10px!important}
+  .top>div:first-child{min-width:0!important}
+  .brand{font-size:25px!important;line-height:1!important;letter-spacing:-1.1px!important;white-space:nowrap!important}
+  .brand small{font-size:10px!important;margin-top:4px!important}
+  .labtag{display:none!important}
+
+  /* One clean horizontal control row — no vertical tower. */
+  .tools{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:flex-end!important;gap:5px!important;width:auto!important;max-width:none!important}
+  .tools .pill{display:flex!important;grid-column:auto!important;width:44px!important;min-width:44px!important;height:36px!important;padding:0 5px!important;border-radius:11px!important;justify-content:center!important;gap:3px!important}
+  .tools .pill .coin{width:14px!important;height:14px!important;flex:0 0 14px!important}
+  .tools .pill span:last-child{font-size:10px!important;line-height:1!important}
+  .tools #sound{display:none!important}
+  .lab-hub-v37{display:flex!important;grid-row:auto!important}
+  .tools #settings,.tools .lab-hub-v37-btn{width:38px!important;min-width:38px!important;height:36px!important;border-radius:11px!important;font-size:15px!important}
+
+  /* Keep level summary visually separate from navigation. */
+  .status{margin-top:10px!important}
+}
+
+@media(max-width:390px){
+  .app{padding-left:12px!important;padding-right:12px!important}
+  .top{gap:7px!important}
+  .brand{font-size:23px!important}
+  .brand small{font-size:9px!important}
+  .tools{gap:4px!important}
+  .tools .pill{width:40px!important;min-width:40px!important;height:34px!important}
+  .tools #settings,.tools .lab-hub-v37-btn{width:35px!important;min-width:35px!important;height:34px!important}
+}
+
+@media(max-width:350px){
+  .brand{font-size:21px!important}
+  .tools .pill{width:37px!important;min-width:37px!important;padding:0 3px!important}
+  .tools #settings,.tools .lab-hub-v37-btn{width:33px!important;min-width:33px!important}
+}
