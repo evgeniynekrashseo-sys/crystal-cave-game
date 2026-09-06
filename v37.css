@@ -1,0 +1,29 @@
+/* V37 — compact top navigation / Lab Hub. Visual-only; gameplay/state untouched. */
+/* Legacy feature launchers remain in DOM for compatibility, but are consolidated into one Hub. */
+.tools .journal-launch,.tools .v30-launch,.tools .v32-launch,.tools #shop31{display:none!important}
+.tools{align-items:center!important}
+.lab-hub-v37{position:relative;display:flex;align-items:center;justify-content:center}
+.lab-hub-v37-btn{width:42px;height:42px;border:1px solid rgba(36,112,157,.78);border-radius:12px;background:linear-gradient(180deg,rgba(8,29,46,.96),rgba(3,14,24,.98));color:#dff8ff;box-shadow:inset 0 1px rgba(255,255,255,.07),0 9px 22px rgba(0,0,0,.24);font-weight:800;font-size:20px;cursor:pointer}
+.lab-hub-v37-btn:active{transform:scale(.97)}
+.lab-hub-v37-menu{position:fixed;z-index:9000;right:max(14px,env(safe-area-inset-right));top:max(72px,calc(env(safe-area-inset-top) + 58px));width:min(310px,calc(100vw - 28px));padding:10px;border-radius:18px;background:linear-gradient(180deg,rgba(8,25,39,.985),rgba(3,12,21,.99));border:1px solid rgba(98,204,255,.2);box-shadow:0 28px 80px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.05);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);display:none}
+.lab-hub-v37-menu.show{display:block;animation:v37HubIn .16s ease-out}
+@keyframes v37HubIn{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+.lab-hub-v37-title{padding:5px 7px 9px;font-size:9px;font-weight:800;letter-spacing:.16em;color:#77dfff;opacity:.78}
+.lab-hub-v37-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.lab-hub-v37-item{min-height:68px;text-align:left;padding:10px 11px;border-radius:13px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.035);color:#ecfaff;cursor:pointer}
+.lab-hub-v37-item:active{transform:scale(.985);background:rgba(90,218,255,.08)}
+.lab-hub-v37-item b{display:block;font-size:12px;margin-bottom:4px}.lab-hub-v37-item span{display:block;font-size:9px;line-height:1.25;color:#9ebbd0}.lab-hub-v37-item i{font-style:normal;font-size:17px;display:block;margin-bottom:6px;color:#7fe7ff}
+@media(max-width:520px){
+  .app{padding-top:max(12px,env(safe-area-inset-top))!important}
+  .top{grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important;align-items:center!important;padding-bottom:9px!important}
+  .top>div:first-child{min-width:0}
+  .brand{font-size:26px!important;white-space:nowrap!important}.brand small{font-size:10px!important;margin-top:3px!important}
+  .tools{width:auto!important;max-width:none!important;display:grid!important;grid-template-columns:repeat(2,42px)!important;grid-auto-rows:38px!important;gap:5px!important;justify-content:end!important}
+  .tools .pill{grid-column:auto!important;width:42px!important;min-width:42px!important;height:38px!important;padding:0 5px!important;justify-content:center!important;gap:3px!important;border-radius:11px!important;font-size:11px!important}
+  .tools .pill .coin{width:14px!important;height:14px!important;flex:0 0 14px!important}.tools .pill span:last-child{font-size:10px!important}
+  .tools #sound{display:none!important}.tools #settings,.tools .lab-hub-v37-btn{width:42px!important;height:38px!important;border-radius:11px!important;font-size:16px!important}
+  .lab-hub-v37{grid-row:2}.tools #settings{grid-row:2}
+  .lab-hub-v37-menu{top:max(66px,calc(env(safe-area-inset-top) + 54px));right:10px;width:min(300px,calc(100vw - 20px))}
+}
+@media(max-width:380px){.brand{font-size:23px!important}.tools{grid-template-columns:repeat(2,39px)!important}.tools .pill,.tools #settings,.tools .lab-hub-v37-btn{width:39px!important;min-width:39px!important}.tools .pill .coin{width:13px!important;height:13px!important;flex-basis:13px!important}}
+@media(prefers-reduced-motion:reduce){.lab-hub-v37-menu.show{animation:none}}
