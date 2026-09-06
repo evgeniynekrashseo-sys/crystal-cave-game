@@ -1,0 +1,25 @@
+/* V33 — render fail-safe: never allow populated tubes to appear empty */
+/* The SVG liquid renderer stays on top when it works. Base reagent layers remain
+   rendered underneath as a Safari/iOS-safe fallback instead of being forced to
+   opacity:0 by fluid-v20.css. This does not touch game state or puzzle logic. */
+.tube-inner.fluid-ready > .layer{
+  opacity:1!important;
+  visibility:visible!important;
+  display:flex!important;
+}
+.tube-inner > .layer{
+  min-height:1px;
+  will-change:transform;
+}
+/* Keep the enhanced SVG above the fallback layers when supported. */
+.tube-inner > .fluid-svg{
+  z-index:6!important;
+}
+/* If an SVG node exists but its drawing fails in a mobile browser, the fallback
+   remains visible beneath the transparent SVG canvas. */
+@supports (-webkit-touch-callout:none){
+  .tube-inner.fluid-ready > .layer{
+    -webkit-transform:translateZ(0);
+    transform:translateZ(0);
+  }
+}
