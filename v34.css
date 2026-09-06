@@ -1,0 +1,68 @@
+/* V34 — compact mobile HUD pass. Visual-only: no solver/state/progress changes. */
+@media (max-width: 520px){
+  .app{padding:14px 14px 24px!important}
+
+  /* Header: brand + compact resources, quick tools on a clean second row */
+  .top{grid-template-columns:1fr auto!important;gap:10px!important;padding-bottom:10px!important;align-items:start!important}
+  .brand{font-size:27px!important;letter-spacing:-1.3px!important;line-height:1!important}
+  .brand small{font-size:11px!important;margin-top:4px!important;opacity:.86}
+  .labtag{display:none!important}
+  .tools{width:205px!important;max-width:205px!important;display:grid!important;grid-template-columns:repeat(4,44px)!important;grid-auto-rows:42px!important;gap:6px!important;justify-content:end!important}
+  .tools .pill{min-width:0!important;width:94px!important;height:38px!important;padding:0 8px!important;font-size:13px!important;grid-column:span 2!important}
+  .tools .coin{width:18px!important;height:18px!important}
+  .tools .icon-btn{width:44px!important;height:42px!important;border-radius:12px!important;font-size:16px!important}
+  .tools #sound{display:none!important}
+  .tools .v30-launch,.tools .v32-launch,.tools #shop31,.tools #settings{order:5!important}
+
+  /* Remove redundant lab/type strip and tighten core level summary */
+  #missionStrip{display:none!important}
+  .status{margin-top:12px!important;align-items:center!important;padding:0 2px!important}
+  .status h1{font-size:29px!important;margin:0 0 4px!important;letter-spacing:-.6px!important}
+  .status p{font-size:12px!important;line-height:1.2!important;color:#9dbbd3!important}
+  .moves b{font-size:31px!important}
+  .moves span{font-size:10px!important;margin-top:1px!important;letter-spacing:.05em!important}
+
+  /* Objective is the main instruction: single concise row */
+  .v28-objective{margin:9px 0 7px!important;padding:9px 10px!important;border-radius:13px!important;gap:8px!important}
+  .v28-objective small{display:none!important}
+  .v28-objective b{font-size:12px!important;line-height:1.2!important;max-width:210px!important}
+  .v28-meta{gap:5px!important;flex-wrap:nowrap!important}
+  .v28-meta span{font-size:9px!important;padding:4px 6px!important}
+
+  /* Rank stays visible but no longer dominates the screen */
+  .rank{margin-top:7px!important;padding:8px 9px!important;border-radius:12px!important;gap:7px!important;font-size:10px!important}
+  .rank strong{font-size:10px!important}
+  .rank>span:first-child{max-width:135px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+  .xp{height:5px!important}
+  .xplabel{font-size:9px!important}
+
+  /* Instruction becomes subtle helper text directly above gameplay */
+  .hint{margin:8px 0 7px!important;font-size:11px!important;opacity:.8!important}
+  .tray{margin-bottom:8px!important;gap:4px!important}
+  .tray .el{padding:4px 6px!important;font-size:9px!important;border-radius:9px!important}
+  .tray .sw{width:12px!important;height:12px!important;border-radius:4px!important}
+
+  /* Pull gameplay higher and reduce dead space */
+  .board{min-height:305px!important;padding:32px 8px 22px!important;border-radius:19px!important;gap:6px!important}
+
+  /* Bottom controls read as icons first, labels second */
+  .controls{gap:6px!important;margin-top:9px!important}
+  .control{min-height:62px!important;border-radius:14px!important;font-size:8px!important;gap:2px!important}
+  .control .ico{font-size:22px!important}
+  .badge{right:5px!important;top:5px!important;min-width:19px!important;height:19px!important;font-size:9px!important}
+
+  /* Footer is secondary information, not another navigation bar */
+  .footer{margin-top:8px!important;padding-top:7px!important;font-size:7px!important;opacity:.65!important}
+  .footer .center{display:none!important}
+  .footer{grid-template-columns:1fr 1fr!important}
+}
+
+/* Very narrow iPhones */
+@media (max-width: 380px){
+  .brand{font-size:24px!important}
+  .tools{width:188px!important;max-width:188px!important;grid-template-columns:repeat(4,40px)!important;gap:5px!important}
+  .tools .pill{width:85px!important}
+  .tools .icon-btn{width:40px!important}
+  .v28-objective b{max-width:180px!important}
+  .rank>span:first-child{max-width:115px!important}
+}
