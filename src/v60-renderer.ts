@@ -11,8 +11,6 @@ export function drawPremiumTube(parent:Container,tube:PremiumTube,colorOf:(s:Pre
   const bottomColor=tube.length?colorOf(tube[0]):0x1d8fbd;
   const topColor=tube.length?colorOf(tube[tube.length-1]):0x1d8fbd;
 
-  // V67: restrained material lighting. The liquid now appears to illuminate the glass and bench
-  // without changing gameplay state or introducing expensive filters/shaders on mobile.
   const materialLight=new Graphics();
   if(tube.length){
     materialLight.ellipse(w/2,h+8,w*.42,7.2).fill({color:bottomColor,alpha:selected?.16:.075});
@@ -67,8 +65,18 @@ export function drawPremiumTube(parent:Container,tube:PremiumTube,colorOf:(s:Pre
       if(i===0)liquid.ellipse(w/2,liquidBottom,innerW*.49,3.5).fill({color,alpha:.91});
       wrap.addChild(liquid);
 
-      const label=new Text({text:sym,style:new TextStyle({fontFamily:'Inter,system-ui,sans-serif',fontSize:Math.max(11,w*.148),fontWeight:'800',fill:0x061018,align:'center'})});
-      label.alpha=.90;label.anchor.set(.5);label.x=w/2;label.y=y+bh/2+.5;wrap.addChild(label);
+      // V71: element identity is readable independently of liquid hue.
+      // This improves accessibility and QA robustness without changing puzzle rules.
+      const badgeW=Math.max(25,w*.34),badgeH=Math.max(17,w*.20);
+      const badge=new Graphics();
+      badge.roundRect(w/2-badgeW/2,y+bh/2-badgeH/2,badgeW,badgeH,badgeH*.42)
+        .fill({color:0x031019,alpha:.72})
+        .stroke({color:0xffffff,width:.55,alpha:.28});
+      badge.rect(w/2-badgeW*.34,y+bh/2-badgeH*.27,1,badgeH*.54).fill({color:0xffffff,alpha:.18});
+      wrap.addChild(badge);
+
+      const label=new Text({text:sym,style:new TextStyle({fontFamily:'Inter,system-ui,sans-serif',fontSize:Math.max(11,w*.145),fontWeight:'800',fill:0xf6fbff,stroke:{color:0x02070b,width:1},align:'center'})});
+      label.alpha=.98;label.anchor.set(.5);label.x=w/2;label.y=y+bh/2+.5;wrap.addChild(label);
     }
   }
 
