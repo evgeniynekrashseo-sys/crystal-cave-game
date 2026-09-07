@@ -6,12 +6,14 @@ export type PremiumTube=PremiumSymbol[];
 export type PremiumGeometry={w:number;h:number};
 
 const approvedTubeTexture=Texture.from(APPROVED_TUBE);
+const APPROVED_ASPECT=267/108;
 
 export function drawPremiumTube(parent:Container,tube:PremiumTube,colorOf:(s:PremiumSymbol)=>number,g:PremiumGeometry,selected:boolean){
   const wrap=new Container();
-  const w=g.w,h=g.h,cx=w/2;
+  const w=g.w;
+  const h=w*APPROVED_ASPECT;
+  const cx=w/2;
 
-  // Selection lives behind the approved asset: the vessel itself is never redrawn.
   if(selected){
     const halo=new Graphics();
     halo.ellipse(cx,h*.52,w*.58,h*.43).fill({color:0x3fe4ff,alpha:.08});
@@ -19,11 +21,12 @@ export function drawPremiumTube(parent:Container,tube:PremiumTube,colorOf:(s:Pre
     wrap.addChild(halo);
   }
 
+  // Exact 108×267 lossless crop from the approved asset sheet.
+  // It is only uniformly scaled; the vessel geometry/material is never redrawn.
   const tubeSprite=new Sprite(approvedTubeTexture);
   tubeSprite.x=0; tubeSprite.y=0; tubeSprite.width=w; tubeSprite.height=h;
   wrap.addChild(tubeSprite);
 
-  // Dynamic contents are the only procedural layer. The approved glass pixels stay untouched.
   if(tube.length){
     const innerL=w*.225,innerR=w*.775,innerW=innerR-innerL;
     const liquidTop=h*.145,liquidBottom=h*.865;
@@ -34,17 +37,14 @@ export function drawPremiumTube(parent:Container,tube:PremiumTube,colorOf:(s:Pre
       const bh=slot+.8;
       const isBottom=i===0,isTop=i===tube.length-1;
       const liquid=new Graphics();
-
       if(isBottom){
         liquid.moveTo(innerL,y).lineTo(innerR,y).lineTo(innerR,liquidBottom-w*.10)
           .bezierCurveTo(innerR,liquidBottom-w*.025,w*.66,liquidBottom+1,cx,liquidBottom+2)
           .bezierCurveTo(w*.34,liquidBottom+1,innerL,liquidBottom-w*.025,innerL,liquidBottom-w*.10)
           .closePath().fill({color,alpha:.96});
       }else liquid.rect(innerL,y,innerW,bh+1).fill({color,alpha:.96});
-
       liquid.rect(innerL,y+bh*.60,innerW,bh*.40).fill({color:0x001018,alpha:.09});
       liquid.rect(innerL+innerW*.06,y+3,innerW*.06,Math.max(5,bh-6)).fill({color:0xffffff,alpha:.17});
-
       if(isTop){
         liquid.moveTo(innerL,y+3.6)
           .bezierCurveTo(innerL+innerW*.15,y+.7,innerL+innerW*.29,y+5.7,innerL+innerW*.45,y+2.8)
@@ -60,17 +60,14 @@ export function drawPremiumTube(parent:Container,tube:PremiumTube,colorOf:(s:Pre
         liquid.circle(innerL+innerW*.70,y+bh*.22,Math.max(.8,w*.007)).fill({color:0xffffff,alpha:.22});
       }
       wrap.addChild(liquid);
-
       const label=new Text({text:sym,style:new TextStyle({fontFamily:'Inter,system-ui,sans-serif',fontSize:Math.max(11,w*.18),fontWeight:'900',fill:0x050a0e,align:'center'})});
       label.anchor.set(.5);label.x=cx;label.y=y+bh/2+1;wrap.addChild(label);
     }
   }
 
-  // Tiny reflection is outside the asset and does not modify its pixels.
   const floor=new Graphics();
   floor.ellipse(cx,h+3,w*.28,3).fill({color:tube.length?colorOf(tube[0]):0x55dfff,alpha:tube.length?.15:.06});
   wrap.addChildAt(floor,0);
-
   parent.addChild(wrap);
   return wrap;
 }
