@@ -1,107 +1,145 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js';
 
-export type PremiumSymbol = string;
-export type PremiumTube = PremiumSymbol[];
+export type PremiumSymbol=string;
+export type PremiumTube=PremiumSymbol[];
 export type PremiumGeometry={w:number;h:number};
 
 export function drawPremiumTube(parent:Container,tube:PremiumTube,colorOf:(s:PremiumSymbol)=>number,g:PremiumGeometry,selected:boolean){
   const wrap=new Container();
-  const w=g.w,h=g.h;
-  const left=w*.16,right=w*.84,top=8,bottom=h-11,neckY=17,roundStart=h-45;
-  const innerX=w*.205,innerW=w*.59;
-  const bottomColor=tube.length?colorOf(tube[0]):0x58dfff;
-  const topColor=tube.length?colorOf(tube[tube.length-1]):0x58dfff;
+  const w=g.w,h=g.h,cx=w/2;
+  const rimY=12;
+  const outerL=w*.105,outerR=w*.895;
+  const neckY=20;
+  const roundY=h-w*.44;
+  const bottomY=h-12;
+  const innerL=w*.17,innerR=w*.83,innerW=innerR-innerL;
+  const liquidBottom=bottomY-6;
+  const liquidTop=neckY+12;
+  const usableH=liquidBottom-liquidTop;
+  const slot=usableH/4;
+  const topColor=tube.length?colorOf(tube[tube.length-1]):0x6fdfff;
+  const bottomColor=tube.length?colorOf(tube[0]):0x6fdfff;
 
+  // soft laboratory reflection below vessel
   const floor=new Graphics();
-  floor.ellipse(w/2,h+7,w*.31,4.6).fill({color:0x00040a,alpha:.58});
-  floor.ellipse(w/2,h+5,w*.22,2.8).fill({color:tube.length?bottomColor:0x4865ff,alpha:tube.length?.20:.08});
+  floor.ellipse(cx,h+7,w*.39,5.8).fill({color:0x00050a,alpha:.52});
+  floor.ellipse(cx,h+5,w*.29,3.7).fill({color:tube.length?bottomColor:0x6c5cff,alpha:tube.length?.24:.11});
+  if(tube.length) floor.ellipse(cx,h+2,w*.18,2.3).fill({color:bottomColor,alpha:.22});
   wrap.addChild(floor);
 
   if(selected){
-    const halo=new Graphics();
-    halo.ellipse(w/2,h*.52,w*.52,h*.43).fill({color:0x52e7ff,alpha:.035});
-    halo.moveTo(left-3,neckY).lineTo(left-3,roundStart).bezierCurveTo(left-3,h-25,w*.29,bottom+3,w/2,bottom+4).bezierCurveTo(w*.71,bottom+3,right+3,h-25,right+3,roundStart).lineTo(right+3,neckY)
-      .stroke({color:0x77edff,width:2.0,alpha:.34});
-    wrap.addChild(halo);
+    const glow=new Graphics();
+    glow.ellipse(cx,h*.52,w*.62,h*.42).fill({color:0x4fe5ff,alpha:.035});
+    glow.moveTo(outerL-3,neckY).lineTo(outerL-3,roundY)
+      .bezierCurveTo(outerL-3,h-24,w*.29,bottomY+5,cx,bottomY+6)
+      .bezierCurveTo(w*.71,bottomY+5,outerR+3,h-24,outerR+3,roundY).lineTo(outerR+3,neckY)
+      .stroke({color:0x67eaff,width:2.3,alpha:.42});
+    wrap.addChild(glow);
   }
 
-  const glassBack=new Graphics();
-  glassBack.moveTo(left,neckY).lineTo(left,roundStart).bezierCurveTo(left,h-24,w*.31,bottom,w/2,bottom+1).bezierCurveTo(w*.69,bottom,right,h-24,right,roundStart).lineTo(right,neckY)
-    .fill({color:0x061520,alpha:.31})
-    .stroke({color:selected?0xf3fdff:0xc8f2ff,width:selected?1.45:1.0,alpha:selected?.97:.68});
-  glassBack.moveTo(left+4,25).bezierCurveTo(left+1,h*.37,left+4,h*.72,left+9,h-36).stroke({color:0xffffff,width:1.35,alpha:.44});
-  glassBack.moveTo(right-4,28).bezierCurveTo(right-1,h*.42,right-4,h*.72,right-9,h-38).stroke({color:0x8eeaff,width:.75,alpha:.17});
-  glassBack.moveTo(w*.30,bottom-3).bezierCurveTo(w*.40,bottom+1,w*.60,bottom+1,w*.70,bottom-3).stroke({color:0xffffff,width:.9,alpha:.20});
-  wrap.addChild(glassBack);
+  // glass mass: broad transparent wall with strong edge refraction
+  const body=new Graphics();
+  body.moveTo(outerL,neckY).lineTo(outerL,roundY)
+    .bezierCurveTo(outerL,h-25,w*.27,bottomY,cx,bottomY+2)
+    .bezierCurveTo(w*.73,bottomY,outerR,h-25,outerR,roundY).lineTo(outerR,neckY)
+    .fill({color:0x071725,alpha:.30})
+    .stroke({color:selected?0xf5feff:0xd8f7ff,width:selected?1.85:1.35,alpha:selected?.98:.86});
+  body.moveTo(outerL+4,25).bezierCurveTo(outerL+1,h*.34,outerL+4,h*.70,outerL+10,h-36)
+    .stroke({color:0xffffff,width:2.0,alpha:.58});
+  body.moveTo(outerL+8,30).bezierCurveTo(outerL+6,h*.43,outerL+9,h*.63,outerL+12,h*.74)
+    .stroke({color:0x8eeaff,width:.85,alpha:.30});
+  body.moveTo(outerR-5,28).bezierCurveTo(outerR-1,h*.43,outerR-4,h*.69,outerR-10,h-39)
+    .stroke({color:0xbaf4ff,width:1.05,alpha:.27});
+  body.moveTo(w*.27,bottomY-4).bezierCurveTo(w*.39,bottomY+3,w*.61,bottomY+3,w*.73,bottomY-4)
+    .stroke({color:0xffffff,width:1.15,alpha:.38});
+  wrap.addChild(body);
 
   if(tube.length){
-    const liquidBottom=h-17;
-    const usableH=h-43;
-    const slot=usableH/4;
-
     for(let i=0;i<tube.length;i++){
-      const sym=tube[i],color=colorOf(sym);
+      const sym=tube[i], color=colorOf(sym);
       const y=liquidBottom-(i+1)*slot;
-      const bh=slot+1.1;
+      const bh=slot+1.2;
+      const isBottom=i===0;
+      const isTop=i===tube.length-1;
       const liquid=new Graphics();
 
-      liquid.rect(innerX,y+2,innerW,bh-2).fill({color,alpha:.96});
-      liquid.rect(innerX,y+bh*.57,innerW,bh*.43).fill({color:0x00111b,alpha:.09});
-      liquid.rect(innerX+innerW*.055,y+5,Math.max(1.2,innerW*.045),Math.max(4,bh-9)).fill({color:0xffffff,alpha:.15});
-      liquid.rect(innerX+innerW*.86,y+5,Math.max(1,innerW*.035),Math.max(4,bh-9)).fill({color:0x001018,alpha:.10});
+      // continuous liquid volume: no card-like rounded rectangles
+      if(isBottom){
+        liquid.moveTo(innerL,y).lineTo(innerR,y).lineTo(innerR,liquidBottom-w*.16)
+          .bezierCurveTo(innerR,liquidBottom-w*.045,w*.69,liquidBottom+1,cx,liquidBottom+2)
+          .bezierCurveTo(w*.31,liquidBottom+1,innerL,liquidBottom-w*.045,innerL,liquidBottom-w*.16)
+          .closePath().fill({color,alpha:.97});
+      }else{
+        liquid.rect(innerL,y,innerW,bh+1).fill({color,alpha:.97});
+      }
 
-      liquid.moveTo(innerX,y+3.2)
-        .bezierCurveTo(innerX+innerW*.16,y+.4,innerX+innerW*.29,y+6.0,innerX+innerW*.44,y+3.0)
-        .bezierCurveTo(innerX+innerW*.59,y+.3,innerX+innerW*.73,y+5.5,innerX+innerW,y+2.2)
-        .lineTo(innerX+innerW,y+7.6)
-        .bezierCurveTo(innerX+innerW*.72,y+10.4,innerX+innerW*.28,y+9.4,innerX,y+10.8)
-        .closePath().fill({color,alpha:.995});
-      liquid.moveTo(innerX+1,y+3.2)
-        .bezierCurveTo(innerX+innerW*.18,y+.9,innerX+innerW*.31,y+5.6,innerX+innerW*.45,y+2.8)
-        .bezierCurveTo(innerX+innerW*.61,y+.6,innerX+innerW*.77,y+5.1,innerX+innerW-1,y+2.1)
-        .stroke({color:0xffffff,width:.75,alpha:.36});
+      // depth/refraction inside the liquid
+      liquid.rect(innerL,y+bh*.54,innerW,bh*.46).fill({color:0x001018,alpha:.09});
+      liquid.rect(innerL+innerW*.055,y+3,innerW*.075,Math.max(5,bh-6)).fill({color:0xffffff,alpha:.16});
+      liquid.rect(innerL+innerW*.78,y+3,innerW*.10,Math.max(5,bh-6)).fill({color:0xffffff,alpha:.045});
+      liquid.rect(innerR-innerW*.055,y+4,innerW*.035,Math.max(5,bh-8)).fill({color:0x001018,alpha:.12});
 
-      if(i===0)liquid.ellipse(w/2,liquidBottom,innerW*.49,3.2).fill({color,alpha:.93});
+      // only the actual surface gets a wavy meniscus
+      if(isTop){
+        liquid.moveTo(innerL,y+3.8)
+          .bezierCurveTo(innerL+innerW*.13,y+.8,innerL+innerW*.27,y+6.3,innerL+innerW*.43,y+3.1)
+          .bezierCurveTo(innerL+innerW*.58,y+.2,innerL+innerW*.74,y+6.1,innerR,y+2.6)
+          .lineTo(innerR,y+9.5)
+          .bezierCurveTo(innerL+innerW*.75,y+11.7,innerL+innerW*.28,y+10.8,innerL,y+12)
+          .closePath().fill({color,alpha:1});
+        liquid.moveTo(innerL+1,y+3.8)
+          .bezierCurveTo(innerL+innerW*.15,y+1.0,innerL+innerW*.29,y+5.9,innerL+innerW*.44,y+3)
+          .bezierCurveTo(innerL+innerW*.60,y+.8,innerL+innerW*.76,y+5.5,innerR-1,y+2.5)
+          .stroke({color:0xffffff,width:1.0,alpha:.58});
 
-      if(i===tube.length-1){
-        liquid.ellipse(innerX+innerW*.31,y+bh*.27,Math.max(1.1,innerW*.022),Math.max(1.1,innerW*.022)).fill({color:0xffffff,alpha:.28});
-        liquid.ellipse(innerX+innerW*.68,y+bh*.19,Math.max(1.0,innerW*.018),Math.max(1.0,innerW*.018)).fill({color:0xffffff,alpha:.22});
-        liquid.ellipse(innerX+innerW*.77,y+bh*.38,Math.max(.9,innerW*.015),Math.max(.9,innerW*.015)).fill({color:0xffffff,alpha:.18});
+        // subtle bubbles only at free surface
+        liquid.ellipse(innerL+innerW*.28,y+bh*.29,Math.max(1.2,w*.013),Math.max(1.2,w*.013)).fill({color:0xffffff,alpha:.32});
+        liquid.ellipse(innerL+innerW*.71,y+bh*.22,Math.max(1.0,w*.011),Math.max(1.0,w*.011)).fill({color:0xffffff,alpha:.25});
+        liquid.ellipse(innerL+innerW*.62,y+bh*.38,Math.max(.9,w*.009),Math.max(.9,w*.009)).fill({color:0xffffff,alpha:.18});
+      }else{
+        liquid.moveTo(innerL,y+.7).lineTo(innerR,y+.7).stroke({color:0xffffff,width:.55,alpha:.22});
+      }
+
+      if(isBottom){
+        liquid.ellipse(cx,liquidBottom-1,innerW*.47,3.8).fill({color,alpha:.90});
+        liquid.ellipse(cx,liquidBottom+1,innerW*.35,2.3).fill({color:0xffffff,alpha:.08});
       }
       wrap.addChild(liquid);
 
+      // approved reference: bold black symbol directly on liquid, no badges
       const label=new Text({text:sym,style:new TextStyle({
-        fontFamily:'Inter,system-ui,sans-serif',
-        fontSize:Math.max(11,w*.155),
-        fontWeight:'900',
-        fill:0x061018,
-        stroke:{color:0xffffff,width:.55},
-        align:'center'
+        fontFamily:'Inter,system-ui,sans-serif',fontSize:Math.max(12,w*.205),fontWeight:'900',
+        fill:0x061018,align:'center'
       })});
-      label.alpha=.98;
-      label.anchor.set(.5);
-      label.x=w/2;
-      label.y=y+bh/2+1;
+      label.anchor.set(.5);label.x=cx;label.y=y+bh/2+1;label.alpha=.98;
       wrap.addChild(label);
     }
   }
 
+  // front glass reflections over liquid
   const glassFront=new Graphics();
-  glassFront.moveTo(left+1,neckY+1).lineTo(left+1,roundStart).bezierCurveTo(left+1,h-25,w*.32,bottom+1,w/2,bottom+2).bezierCurveTo(w*.68,bottom+1,right-1,h-25,right-1,roundStart).lineTo(right-1,neckY+1)
-    .stroke({color:0xffffff,width:.55,alpha:.24});
-  glassFront.moveTo(left+7,27).bezierCurveTo(left+4,h*.40,left+7,h*.68,left+11,h-39).stroke({color:0xffffff,width:1.55,alpha:.25});
-  glassFront.moveTo(left+10,31).bezierCurveTo(left+8,h*.42,left+10,h*.57,left+12,h*.66).stroke({color:0xb8f5ff,width:.6,alpha:.18});
+  glassFront.moveTo(outerL+2,neckY+2).lineTo(outerL+2,roundY)
+    .bezierCurveTo(outerL+2,h-25,w*.29,bottomY+1,cx,bottomY+3)
+    .bezierCurveTo(w*.71,bottomY+1,outerR-2,h-25,outerR-2,roundY).lineTo(outerR-2,neckY+2)
+    .stroke({color:0xffffff,width:.65,alpha:.26});
+  glassFront.moveTo(outerL+7,28).bezierCurveTo(outerL+3,h*.37,outerL+7,h*.68,outerL+13,h-42)
+    .stroke({color:0xffffff,width:1.65,alpha:.29});
+  glassFront.moveTo(outerR-9,34).bezierCurveTo(outerR-6,h*.43,outerR-8,h*.59,outerR-12,h*.70)
+    .stroke({color:0x86e8ff,width:.62,alpha:.14});
   wrap.addChild(glassFront);
 
+  // thick luminous rim from approved master reference
   const rimGlow=new Graphics();
-  rimGlow.ellipse(w/2,top,w*.45,5.8).stroke({color:tube.length?topColor:0x91efff,width:3.2,alpha:tube.length?.16:.12});
+  rimGlow.ellipse(cx,rimY,w*.51,7.8).stroke({color:tube.length?topColor:0x7bdfff,width:4.0,alpha:tube.length?.15:.12});
   wrap.addChild(rimGlow);
 
   const rim=new Graphics();
-  rim.ellipse(w/2,top,w*.45,5.6).fill({color:0x10202b,alpha:.93}).stroke({color:0xf4fdff,width:1.7,alpha:.98});
-  rim.ellipse(w/2,top,w*.35,3.3).fill({color:0x02080d,alpha:.99}).stroke({color:0xa9efff,width:.75,alpha:.70});
-  rim.moveTo(w*.30,7.6).bezierCurveTo(w*.40,4.6,w*.60,4.6,w*.70,7.6).stroke({color:0xffffff,width:1.0,alpha:.82});
-  rim.moveTo(w*.35,10.2).bezierCurveTo(w*.43,12.0,w*.57,12.0,w*.65,10.2).stroke({color:0x7cdfff,width:.6,alpha:.30});
+  rim.ellipse(cx,rimY,w*.50,7.3).fill({color:0xbbefff,alpha:.16}).stroke({color:0xf7feff,width:2.15,alpha:1});
+  rim.ellipse(cx,rimY,w*.405,4.65).fill({color:0x03101a,alpha:.98}).stroke({color:0xa9edff,width:1.15,alpha:.82});
+  rim.moveTo(w*.265,rimY-1.6).bezierCurveTo(w*.38,rimY-6.1,w*.62,rimY-6.1,w*.735,rimY-1.6)
+    .stroke({color:0xffffff,width:1.35,alpha:.94});
+  rim.moveTo(w*.31,rimY+2.1).bezierCurveTo(w*.40,rimY+5.0,w*.60,rimY+5.0,w*.69,rimY+2.1)
+    .stroke({color:0x65dfff,width:.85,alpha:.52});
   wrap.addChild(rim);
 
   parent.addChild(wrap);
