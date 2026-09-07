@@ -3,6 +3,7 @@ import logo from './v92-assets/logo';
 import goal from './v92-assets/goal';
 import progress from './v92-assets/progress';
 import synthesis from './v92-assets/synthesis';
+import labTable from './v92-assets/lab-table-1';
 import undo from './v92-assets/undo';
 import restart from './v92-assets/restart';
 import hint from './v92-assets/hint';
@@ -15,6 +16,7 @@ const assets={
   '--v92-goal':goal,
   '--v92-progress':progress,
   '--v92-synthesis':synthesis,
+  '--v92-lab-table':labTable,
   '--v92-undo':undo,
   '--v92-restart':restart,
   '--v92-hint':hint,
