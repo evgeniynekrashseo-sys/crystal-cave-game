@@ -41,3 +41,23 @@ body:before{opacity:.95!important;background-image:linear-gradient(rgba(53,132,1
   .goal strong{font-size:11.5px!important}
   .rank{padding-left:10px!important;padding-right:10px!important}
 }
+
+/* V69 — consolidated first-screen density rules; migrated from index.html to keep one authoritative UI stylesheet. */
+@media(max-width:760px){
+  .app{padding-top:calc(64px + env(safe-area-inset-top))!important;padding-bottom:22px!important}
+  .top{padding-bottom:8px!important;min-height:48px!important}
+  .brand{font-size:30px!important}.brand small{margin-top:7px!important;font-size:8px!important}
+  .pill,.icon-btn{height:40px!important}.icon-btn{width:40px!important}.pill{min-width:58px!important}
+  .status{margin-top:8px!important}.status h1{font-size:32px!important;margin-bottom:4px!important}.status p{font-size:12px!important}.moves b{font-size:34px!important}.moves span{font-size:10px!important}
+  .goal{margin-top:10px!important;min-height:64px!important;padding-top:10px!important;padding-bottom:10px!important}.goal strong:before{margin-bottom:2px!important}.goal .tag{padding:6px 8px!important}
+  .rank{margin-top:8px!important;padding-top:8px!important;padding-bottom:8px!important}.xp{height:6px!important}
+  .hint{margin-top:10px!important;margin-bottom:8px!important;font-size:13px!important}
+  .board-shell{box-shadow:inset 0 1px rgba(255,255,255,.05),0 18px 42px rgba(0,0,0,.42),0 0 28px rgba(0,126,205,.05)!important}
+  .station{margin-top:12px!important}
+  .controls{margin-top:10px!important}
+}
+@media(max-width:390px){
+  .app{padding-top:calc(68px + env(safe-area-inset-top))!important}
+  .brand{font-size:28px!important}.status h1{font-size:30px!important}.moves b{font-size:32px!important}
+  .goal{margin-top:9px!important}.rank{margin-top:7px!important}.hint{margin-top:9px!important}
+}
