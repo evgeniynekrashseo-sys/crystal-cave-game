@@ -6,27 +6,6 @@
   <meta name="theme-color" content="#020a13" />
   <meta name="description" content="ChemLab — premium element sorting puzzle" />
   <title>ChemLab — Sort & React</title>
-  <style>
-    /* V66 — first-screen density pass: reference-oriented mobile hierarchy without touching gameplay. */
-    @media (max-width:760px){
-      .app{padding-top:calc(64px + env(safe-area-inset-top))!important;padding-bottom:22px!important}
-      .top{padding-bottom:8px!important;min-height:48px!important}
-      .brand{font-size:30px!important}.brand small{margin-top:7px!important;font-size:8px!important}
-      .pill,.icon-btn{height:40px!important}.icon-btn{width:40px!important}.pill{min-width:58px!important}
-      .status{margin-top:8px!important}.status h1{font-size:32px!important;margin-bottom:4px!important}.status p{font-size:12px!important}.moves b{font-size:34px!important}.moves span{font-size:10px!important}
-      .goal{margin-top:10px!important;min-height:64px!important;padding-top:10px!important;padding-bottom:10px!important}.goal strong:before{margin-bottom:2px!important}.goal .tag{padding:6px 8px!important}
-      .rank{margin-top:8px!important;padding-top:8px!important;padding-bottom:8px!important}.xp{height:6px!important}
-      .hint{margin-top:10px!important;margin-bottom:8px!important;font-size:13px!important}
-      .board-shell{box-shadow:inset 0 1px rgba(255,255,255,.05),0 18px 42px rgba(0,0,0,.42),0 0 28px rgba(0,126,205,.05)!important}
-      .station{margin-top:12px!important}
-      .controls{margin-top:10px!important}
-    }
-    @media (max-width:390px){
-      .app{padding-top:calc(68px + env(safe-area-inset-top))!important}
-      .brand{font-size:28px!important}.status h1{font-size:30px!important}.moves b{font-size:32px!important}
-      .goal{margin-top:9px!important}.rank{margin-top:7px!important}.hint{margin-top:9px!important}
-    }
-  </style>
 </head>
 <body>
   <main class="app">
@@ -41,6 +20,6 @@
   </main>
   <div class="overlay" id="win"><div class="modal"><h2>Дослід завершено 🧪</h2><p>Усі елементи правильно розділено</p><div id="winReward"></div><button id="next">Наступний дослід</button></div></div>
   <div class="overlay" id="lose"><div class="modal"><h2>Ви програли</h2><p>Ходи закінчились. Пройди цей етап ще раз.</p><button id="retrySame">Повторити цю комбінацію</button><button class="secondary" id="retryNew">Інша комбінація</button></div></div>
-  <div class="overlay" id="settingsPanel"><div class="modal"><h2>ChemLab V68</h2><p>Consolidated premium style pipeline · material-lighting pass · compact mobile board · refined glass/liquid renderer · progress-safe gameplay</p><button class="secondary" id="closeSettings">Закрити</button></div></div><div class="toast" id="toast"></div>
+  <div class="overlay" id="settingsPanel"><div class="modal"><h2>ChemLab V69</h2><p>Single-source premium UI pipeline · material-lighting pass · compact mobile board · refined glass/liquid renderer · progress-safe gameplay</p><button class="secondary" id="closeSettings">Закрити</button></div></div><div class="toast" id="toast"></div>
   <script type="module" src="/src/diagnostics.ts"></script><script type="module" src="/src/main.ts"></script>
 </body></html>
