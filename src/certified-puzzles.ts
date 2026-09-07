@@ -1,4 +1,4 @@
-export type CertifiedPuzzle<T extends string>={tubes:T[][];solution:[number,number][]};
+export type CertifiedPuzzle<T extends string>={tubes:T[][];solution:[number,number][];key:string};
 type Template={state:number[][];solution:[number,number][]};
 
 const BANK:Record<number,Template[]>={
@@ -38,11 +38,18 @@ const BANK:Record<number,Template[]>={
 
 function rng(seed:number){let x=seed|0||12345;return()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return(x>>>0)/4294967296}}
 
-export function createCertifiedPuzzle<T extends string>(symbols:T[],level:number,seed:number):CertifiedPuzzle<T>{
+export function createCertifiedPuzzle<T extends string>(symbols:T[],level:number,seed:number,avoidKeys:string[]=[]):CertifiedPuzzle<T>{
   const bank=BANK[symbols.length];
   if(!bank)throw new Error(`No certified puzzle bank for ${symbols.length} symbols`);
   const r=rng(level*104729+seed*31337+symbols.length*97);
-  const template=bank[Math.floor(r()*bank.length)];
+  const startIndex=Math.floor(r()*bank.length);
+  let templateIndex=startIndex;
+  for(let offset=0;offset<bank.length;offset++){
+    const candidate=(startIndex+offset)%bank.length;
+    if(!avoidKeys.includes(`${symbols.length}:${candidate}`)){templateIndex=candidate;break}
+  }
+  const template=bank[templateIndex];
+  const key=`${symbols.length}:${templateIndex}`;
   const colorMap=symbols.slice();
   for(let i=colorMap.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[colorMap[i],colorMap[j]]=[colorMap[j],colorMap[i]]}
   const tubeOrder=template.state.map((_,i)=>i);
@@ -50,5 +57,5 @@ export function createCertifiedPuzzle<T extends string>(symbols:T[],level:number
   const oldToNew:number[]=[];tubeOrder.forEach((oldIndex,newIndex)=>oldToNew[oldIndex]=newIndex);
   const tubes=tubeOrder.map(oldIndex=>template.state[oldIndex].map(colorIndex=>colorMap[colorIndex]));
   const solution=template.solution.map(([a,b])=>[oldToNew[a],oldToNew[b]] as [number,number]);
-  return{tubes,solution};
+  return{tubes,solution,key};
 }
