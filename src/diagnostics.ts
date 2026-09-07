@@ -1,6 +1,6 @@
 type ChemLabDiagnostics={build:string;startedAt:number;loadMs?:number;domContentLoadedMs?:number;firstPaintMs?:number;firstContentfulPaintMs?:number;longTasks:number;errors:string[];frameSample?:{fps:number;avgFrameMs:number;worstFrameMs:number;frames:number}};
 declare global{interface Window{__CHEMLAB_DIAGNOSTICS__?:ChemLabDiagnostics}}
-const diag:ChemLabDiagnostics={build:'V70',startedAt:performance.now(),longTasks:0,errors:[]};window.__CHEMLAB_DIAGNOSTICS__=diag;
+const diag:ChemLabDiagnostics={build:'V71',startedAt:performance.now(),longTasks:0,errors:[]};window.__CHEMLAB_DIAGNOSTICS__=diag;
 window.addEventListener('error',e=>diag.errors.push(String(e.message||e.error||'runtime error')));window.addEventListener('unhandledrejection',e=>diag.errors.push(`unhandledrejection: ${String(e.reason)}`));
 window.addEventListener('load',()=>{const nav=performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming|undefined;if(nav){diag.loadMs=Math.round(nav.loadEventEnd-nav.startTime);diag.domContentLoadedMs=Math.round(nav.domContentLoadedEventEnd-nav.startTime)}for(const p of performance.getEntriesByType('paint')){if(p.name==='first-paint')diag.firstPaintMs=Math.round(p.startTime);if(p.name==='first-contentful-paint')diag.firstContentfulPaintMs=Math.round(p.startTime)}});
 try{const obs=new PerformanceObserver(list=>{diag.longTasks+=list.getEntries().length});obs.observe({entryTypes:['longtask']})}catch{}
