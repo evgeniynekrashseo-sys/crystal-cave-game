@@ -7,84 +7,101 @@ export type PremiumGeometry={w:number;h:number};
 export function drawPremiumTube(parent:Container,tube:PremiumTube,colorOf:(s:PremiumSymbol)=>number,g:PremiumGeometry,selected:boolean){
   const wrap=new Container();
   const w=g.w,h=g.h;
-  const left=w*.21,right=w*.79,top=8,bottom=h-14,neckY=18,roundStart=h-40;
-  const innerX=w*.245,innerW=w*.51;
-  const bottomColor=tube.length?colorOf(tube[0]):0x1d8fbd;
-  const topColor=tube.length?colorOf(tube[tube.length-1]):0x1d8fbd;
+  const left=w*.16,right=w*.84,top=8,bottom=h-11,neckY=17,roundStart=h-45;
+  const innerX=w*.205,innerW=w*.59;
+  const bottomColor=tube.length?colorOf(tube[0]):0x58dfff;
+  const topColor=tube.length?colorOf(tube[tube.length-1]):0x58dfff;
 
-  const shadow=new Graphics();
-  shadow.ellipse(w/2,h+5,w*.24,3.8).fill({color:0x00050a,alpha:.52});
-  if(tube.length)shadow.ellipse(w/2,h+4,w*.16,2.2).fill({color:bottomColor,alpha:.10});
-  wrap.addChild(shadow);
+  const floor=new Graphics();
+  floor.ellipse(w/2,h+7,w*.31,4.6).fill({color:0x00040a,alpha:.58});
+  floor.ellipse(w/2,h+5,w*.22,2.8).fill({color:tube.length?bottomColor:0x4865ff,alpha:tube.length?.20:.08});
+  wrap.addChild(floor);
 
   if(selected){
     const halo=new Graphics();
-    halo.moveTo(left-2,neckY).lineTo(left-2,roundStart).bezierCurveTo(left-2,h-22,w*.33,bottom+2,w/2,bottom+3).bezierCurveTo(w*.67,bottom+2,right+2,h-22,right+2,roundStart).lineTo(right+2,neckY)
-      .stroke({color:0x56e8ff,width:2.2,alpha:.30});
+    halo.ellipse(w/2,h*.52,w*.52,h*.43).fill({color:0x52e7ff,alpha:.035});
+    halo.moveTo(left-3,neckY).lineTo(left-3,roundStart).bezierCurveTo(left-3,h-25,w*.29,bottom+3,w/2,bottom+4).bezierCurveTo(w*.71,bottom+3,right+3,h-25,right+3,roundStart).lineTo(right+3,neckY)
+      .stroke({color:0x77edff,width:2.0,alpha:.34});
     wrap.addChild(halo);
   }
 
-  const body=new Graphics();
-  body.moveTo(left,neckY).lineTo(left,roundStart).bezierCurveTo(left,h-23,w*.33,bottom,w/2,bottom+1).bezierCurveTo(w*.67,bottom,right,h-23,right,roundStart).lineTo(right,neckY)
-    .fill({color:0x03131c,alpha:.22})
-    .stroke({color:selected?0xe7fbff:0xaadfee,width:selected?1.25:.72,alpha:selected?.92:.46});
-  body.moveTo(left+4,25).bezierCurveTo(left+2,h*.40,left+5,h*.72,left+8,h-31).stroke({color:0xffffff,width:.85,alpha:.22});
-  body.moveTo(right-4,28).bezierCurveTo(right-2,h*.45,right-5,h*.68,right-8,h-34).stroke({color:0x69dfff,width:.52,alpha:.09});
-  wrap.addChild(body);
+  const glassBack=new Graphics();
+  glassBack.moveTo(left,neckY).lineTo(left,roundStart).bezierCurveTo(left,h-24,w*.31,bottom,w/2,bottom+1).bezierCurveTo(w*.69,bottom,right,h-24,right,roundStart).lineTo(right,neckY)
+    .fill({color:0x061520,alpha:.31})
+    .stroke({color:selected?0xf3fdff:0xc8f2ff,width:selected?1.45:1.0,alpha:selected?.97:.68});
+  glassBack.moveTo(left+4,25).bezierCurveTo(left+1,h*.37,left+4,h*.72,left+9,h-36).stroke({color:0xffffff,width:1.35,alpha:.44});
+  glassBack.moveTo(right-4,28).bezierCurveTo(right-1,h*.42,right-4,h*.72,right-9,h-38).stroke({color:0x8eeaff,width:.75,alpha:.17});
+  glassBack.moveTo(w*.30,bottom-3).bezierCurveTo(w*.40,bottom+1,w*.60,bottom+1,w*.70,bottom-3).stroke({color:0xffffff,width:.9,alpha:.20});
+  wrap.addChild(glassBack);
 
   if(tube.length){
-    const liquidBottom=h-18;
-    const usableH=h-42;
+    const liquidBottom=h-17;
+    const usableH=h-43;
     const slot=usableH/4;
 
     for(let i=0;i<tube.length;i++){
       const sym=tube[i],color=colorOf(sym);
       const y=liquidBottom-(i+1)*slot;
-      const bh=slot+.7;
+      const bh=slot+1.1;
       const liquid=new Graphics();
 
-      liquid.rect(innerX,y,innerW,bh).fill({color,alpha:.91});
-      liquid.rect(innerX,y+bh*.58,innerW,bh*.42).fill({color:0x001018,alpha:.10});
-      liquid.rect(innerX+innerW*.07,y+3,Math.max(1,innerW*.055),Math.max(3,bh-6)).fill({color:0xffffff,alpha:.11});
-      liquid.rect(innerX+innerW*.83,y+3,Math.max(1,innerW*.04),Math.max(3,bh-6)).fill({color:0x001018,alpha:.11});
+      liquid.rect(innerX,y+2,innerW,bh-2).fill({color,alpha:.96});
+      liquid.rect(innerX,y+bh*.57,innerW,bh*.43).fill({color:0x00111b,alpha:.09});
+      liquid.rect(innerX+innerW*.055,y+5,Math.max(1.2,innerW*.045),Math.max(4,bh-9)).fill({color:0xffffff,alpha:.15});
+      liquid.rect(innerX+innerW*.86,y+5,Math.max(1,innerW*.035),Math.max(4,bh-9)).fill({color:0x001018,alpha:.10});
+
+      liquid.moveTo(innerX,y+3.2)
+        .bezierCurveTo(innerX+innerW*.16,y+.4,innerX+innerW*.29,y+6.0,innerX+innerW*.44,y+3.0)
+        .bezierCurveTo(innerX+innerW*.59,y+.3,innerX+innerW*.73,y+5.5,innerX+innerW,y+2.2)
+        .lineTo(innerX+innerW,y+7.6)
+        .bezierCurveTo(innerX+innerW*.72,y+10.4,innerX+innerW*.28,y+9.4,innerX,y+10.8)
+        .closePath().fill({color,alpha:.995});
+      liquid.moveTo(innerX+1,y+3.2)
+        .bezierCurveTo(innerX+innerW*.18,y+.9,innerX+innerW*.31,y+5.6,innerX+innerW*.45,y+2.8)
+        .bezierCurveTo(innerX+innerW*.61,y+.6,innerX+innerW*.77,y+5.1,innerX+innerW-1,y+2.1)
+        .stroke({color:0xffffff,width:.75,alpha:.36});
+
+      if(i===0)liquid.ellipse(w/2,liquidBottom,innerW*.49,3.2).fill({color,alpha:.93});
 
       if(i===tube.length-1){
-        liquid.ellipse(w/2,y+1.6,innerW*.49,3.1).fill({color,alpha:.98});
-        liquid.moveTo(innerX+1,y+2)
-          .bezierCurveTo(innerX+innerW*.22,y-.8,innerX+innerW*.34,y+3.8,innerX+innerW*.50,y+1.4)
-          .bezierCurveTo(innerX+innerW*.65,y-.4,innerX+innerW*.78,y+3.1,innerX+innerW-1,y+1)
-          .stroke({color:0xffffff,width:.55,alpha:.28});
+        liquid.ellipse(innerX+innerW*.31,y+bh*.27,Math.max(1.1,innerW*.022),Math.max(1.1,innerW*.022)).fill({color:0xffffff,alpha:.28});
+        liquid.ellipse(innerX+innerW*.68,y+bh*.19,Math.max(1.0,innerW*.018),Math.max(1.0,innerW*.018)).fill({color:0xffffff,alpha:.22});
+        liquid.ellipse(innerX+innerW*.77,y+bh*.38,Math.max(.9,innerW*.015),Math.max(.9,innerW*.015)).fill({color:0xffffff,alpha:.18});
       }
-
-      if(i===0)liquid.ellipse(w/2,liquidBottom,innerW*.48,2.8).fill({color,alpha:.88});
       wrap.addChild(liquid);
 
       const label=new Text({text:sym,style:new TextStyle({
         fontFamily:'Inter,system-ui,sans-serif',
-        fontSize:Math.max(10,w*.135),
-        fontWeight:'800',
-        fill:0xffffff,
-        stroke:{color:0x061018,width:2},
+        fontSize:Math.max(11,w*.155),
+        fontWeight:'900',
+        fill:0x061018,
+        stroke:{color:0xffffff,width:.55},
         align:'center'
       })});
-      label.alpha=.96;
+      label.alpha=.98;
       label.anchor.set(.5);
       label.x=w/2;
-      label.y=y+bh/2+.5;
+      label.y=y+bh/2+1;
       wrap.addChild(label);
     }
   }
 
   const glassFront=new Graphics();
-  glassFront.moveTo(left+1,neckY+2).lineTo(left+1,roundStart).bezierCurveTo(left+1,h-24,w*.34,bottom+1,w/2,bottom+2).bezierCurveTo(w*.66,bottom+1,right-1,h-24,right-1,roundStart).lineTo(right-1,neckY+2)
-    .stroke({color:0xffffff,width:.38,alpha:.16});
-  glassFront.moveTo(left+6,26).bezierCurveTo(left+4,h*.42,left+6,h*.68,left+9,h-34).stroke({color:0xffffff,width:1.05,alpha:.13});
+  glassFront.moveTo(left+1,neckY+1).lineTo(left+1,roundStart).bezierCurveTo(left+1,h-25,w*.32,bottom+1,w/2,bottom+2).bezierCurveTo(w*.68,bottom+1,right-1,h-25,right-1,roundStart).lineTo(right-1,neckY+1)
+    .stroke({color:0xffffff,width:.55,alpha:.24});
+  glassFront.moveTo(left+7,27).bezierCurveTo(left+4,h*.40,left+7,h*.68,left+11,h-39).stroke({color:0xffffff,width:1.55,alpha:.25});
+  glassFront.moveTo(left+10,31).bezierCurveTo(left+8,h*.42,left+10,h*.57,left+12,h*.66).stroke({color:0xb8f5ff,width:.6,alpha:.18});
   wrap.addChild(glassFront);
 
+  const rimGlow=new Graphics();
+  rimGlow.ellipse(w/2,top,w*.45,5.8).stroke({color:tube.length?topColor:0x91efff,width:3.2,alpha:tube.length?.16:.12});
+  wrap.addChild(rimGlow);
+
   const rim=new Graphics();
-  rim.ellipse(w/2,top,w*.32,3.4).fill({color:0x06121a,alpha:.98}).stroke({color:0xe7fbff,width:1.0,alpha:.88});
-  rim.ellipse(w/2,top,w*.25,2.0).fill({color:0x01080d,alpha:.98}).stroke({color:tube.length?topColor:0x69dfff,width:.48,alpha:tube.length?.34:.46});
-  rim.moveTo(w*.39,6.5).bezierCurveTo(w*.46,4.9,w*.54,4.9,w*.61,6.5).stroke({color:0xffffff,width:.55,alpha:.56});
+  rim.ellipse(w/2,top,w*.45,5.6).fill({color:0x10202b,alpha:.93}).stroke({color:0xf4fdff,width:1.7,alpha:.98});
+  rim.ellipse(w/2,top,w*.35,3.3).fill({color:0x02080d,alpha:.99}).stroke({color:0xa9efff,width:.75,alpha:.70});
+  rim.moveTo(w*.30,7.6).bezierCurveTo(w*.40,4.6,w*.60,4.6,w*.70,7.6).stroke({color:0xffffff,width:1.0,alpha:.82});
+  rim.moveTo(w*.35,10.2).bezierCurveTo(w*.43,12.0,w*.57,12.0,w*.65,10.2).stroke({color:0x7cdfff,width:.6,alpha:.30});
   wrap.addChild(rim);
 
   parent.addChild(wrap);
