@@ -1,0 +1,19 @@
+/* V90 — approved reference fidelity pass */
+:root{--ref-cyan:#2ddcff;--ref-line:rgba(49,170,224,.72);--ref-panel:#061522}
+body{background:radial-gradient(circle at 8% 38%,rgba(0,150,255,.16),transparent 28%),radial-gradient(circle at 92% 16%,rgba(119,64,255,.20),transparent 28%),linear-gradient(180deg,#03111d 0%,#020b15 60%,#010810 100%)!important}
+.top{border-bottom-color:rgba(86,169,219,.25)!important}
+.goal,.rank,.station{background:linear-gradient(180deg,rgba(6,27,44,.96),rgba(2,14,24,.985))!important;border-color:rgba(39,143,197,.72)!important}
+.goal{box-shadow:inset 0 1px rgba(255,255,255,.045),0 14px 32px rgba(0,0,0,.24)!important}
+.rank{box-shadow:inset 0 1px rgba(255,255,255,.035)!important}
+.hint{color:#43ddff!important;text-align:left!important;text-shadow:0 0 16px rgba(48,220,255,.14)!important}
+.board-shell{background:radial-gradient(ellipse at 50% 100%,rgba(44,168,255,.13),transparent 40%),radial-gradient(ellipse at 50% 0%,rgba(54,219,255,.055),transparent 34%),linear-gradient(180deg,#031827 0%,#02101c 58%,#010913 100%)!important;border:1.35px solid rgba(31,159,220,.90)!important;border-radius:27px!important;box-shadow:inset 0 1px rgba(255,255,255,.07),inset 0 -30px 70px rgba(0,0,0,.26),0 24px 58px rgba(0,0,0,.40),0 0 30px rgba(0,155,235,.06)!important}
+.board-shell:before{background-size:34px 34px!important;opacity:.42!important}
+.board-shell:after{height:14%!important;bottom:0!important;background:radial-gradient(ellipse,rgba(33,145,232,.24),transparent 70%)!important;filter:blur(15px)!important}
+.game-canvas canvas{filter:saturate(1.13) contrast(1.04) brightness(1.035)!important}
+.station{border-radius:22px!important;box-shadow:inset 0 1px rgba(255,255,255,.04),0 16px 34px rgba(0,0,0,.28)!important}
+.station-icon{background:radial-gradient(circle at 50% 45%,rgba(43,203,255,.16),transparent 60%),linear-gradient(180deg,rgba(11,55,86,.32),rgba(2,17,28,.40))!important;border-color:rgba(59,181,230,.72)!important}
+.recipe .slot{background:linear-gradient(180deg,#0a1b2a,#04111c)!important;border-color:#ffc83d!important;box-shadow:0 0 14px rgba(255,200,61,.10),inset 0 0 14px rgba(255,200,61,.025)!important}
+.controls .control{background:linear-gradient(180deg,rgba(6,28,46,.97),rgba(2,14,24,.99))!important;border-color:rgba(37,139,193,.68)!important}
+@media(min-width:900px){.board-shell{padding:2px 8px 0!important}.game-canvas{min-height:410px!important}.station{margin-top:18px!important}}
+@media(max-width:760px){.app{padding-top:calc(54px + env(safe-area-inset-top))!important}.brand{font-size:31px!important}.status{margin-top:6px!important}.status h1{font-size:33px!important}.moves b{font-size:35px!important}.goal{margin-top:8px!important;border-radius:16px!important}.rank{margin-top:6px!important;border-radius:14px!important}.hint{margin:8px 4px 7px!important;text-align:center!important;font-size:12.5px!important}.board-shell{border-radius:18px!important}.station{margin-top:9px!important;min-height:98px!important;border-radius:18px!important}.controls{margin-top:8px!important}.control{min-height:70px!important}.game-canvas{min-height:0!important}}
+@media(max-width:420px){.app{padding-top:calc(56px + env(safe-area-inset-top))!important}.brand{font-size:29px!important}.goal{min-height:56px!important}.rank{padding-top:6px!important;padding-bottom:6px!important}.station{grid-template-columns:54px 1fr!important;padding:10px!important}.station-icon{width:45px!important;height:45px!important;font-size:24px!important}.slot{width:32px!important;height:32px!important}}
