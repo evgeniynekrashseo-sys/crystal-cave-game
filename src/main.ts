@@ -1,5 +1,6 @@
 import { Application, Container, Graphics } from 'pixi.js';
 import { drawPremiumTube } from './v60-renderer';
+import { createCertifiedPuzzle } from './certified-puzzles';
 import './style.css';
 import './v52.css';
 
@@ -25,45 +26,7 @@ function topRun(t:Tube){if(!t.length)return 0;let n=1,x=t[t.length-1];for(let i=
 function legal(a:number,b:number){if(a===b||!tubes[a]?.length||!tubes[b]||tubes[b].length>=CAP)return 0;const x=tubes[a].at(-1)!,d=tubes[b];if(d.length&&d.at(-1)!==x)return 0;return Math.min(topRun(tubes[a]),CAP-d.length)}
 function solved(){return tubes.every(t=>!t.length||(t.length===CAP&&t.every(x=>x===t[0])))}
 function complete(i:number){const t=tubes[i];return t.length===CAP&&t.every(x=>x===t[0])}
-function homogeneous(t:Tube){return t.length>0&&t.every(x=>x===t[0])}
-function mixScore(T:Tube[]){let layers=0,mixed=0;for(const t of T){let local=0;for(let i=1;i<t.length;i++)if(t[i]!==t[i-1])local++;layers+=local;if(local>0)mixed++}return layers*18+mixed*9}
-function generate(l:number,s:number){
-  seed=s||1;currentSymbols=choose(l);
-  const order=currentSymbols.slice(),base=rng(l*99991+seed*17);
-  for(let i=order.length-1;i;i--){const j=Math.floor(base()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
-  const desired=l<=2?6:l<=4?8:l<=7?11:l<=14?14:17;
-  let bestT:Tube[]=[],bestRev:[number,number][]=[],best=-1;
-  for(let candidate=0;candidate<14;candidate++){
-    const r=rng(l*130363+seed*97+candidate*7919),T=order.map(x=>Array(CAP).fill(x) as Tube);T.push([]);
-    const rev:[number,number][]=[];
-    for(let step=0;step<desired*5&&rev.length<desired;step++){
-      const options:{src:number;dst:number;max:number;mixedTarget:boolean}[]=[];
-      for(let src=0;src<T.length;src++){
-        if(!homogeneous(T[src]))continue;
-        const sym=T[src][0];
-        for(let dst=0;dst<T.length;dst++){
-          if(dst===src||T[dst].length>=CAP)continue;
-          if(T[dst].length&&T[dst].at(-1)===sym)continue;
-          const max=Math.min(T[src].length,CAP-T[dst].length);
-          if(max>0)options.push({src,dst,max,mixedTarget:T[dst].length>0});
-        }
-      }
-      if(!options.length)break;
-      const preferred=options.filter(o=>o.mixedTarget);
-      const pool=preferred.length&&r()<.82?preferred:options;
-      const pick=pool[Math.floor(r()*pool.length)];
-      let amount=1;
-      if(pick.max>1&&((l<=2&&r()<.28)||(l>8&&r()<.12)))amount=2;
-      amount=Math.min(amount,pick.max);
-      for(let q=0;q<amount;q++)T[pick.dst].push(T[pick.src].pop()!);
-      rev.unshift([pick.dst,pick.src]);
-    }
-    const score=mixScore(T)+rev.length*2;
-    if(score>best){best=score;bestT=clone(T);bestRev=rev.slice()}
-  }
-  solution=bestRev;
-  return bestT.length?bestT:order.map(x=>Array(CAP).fill(x) as Tube).concat([[]]);
-}
+function generate(l:number,s:number){seed=s||1;currentSymbols=choose(l);const puzzle=createCertifiedPuzzle(currentSymbols,l,seed);solution=puzzle.solution;return puzzle.tubes}
 async function init(){app=new Application();await app.init({backgroundAlpha:0,antialias:true,resolution:Math.min(devicePixelRatio||1,2),autoDensity:true,preference:'webgl',powerPreference:'high-performance',autoStart:false});els.board.appendChild(app.canvas);root=new Container();app.stage.addChild(root);new ResizeObserver(resize).observe(els.board);resize()}
 function geometry(n:number){const mobile=boardW<=520,two=(mobile&&n>=5)||n>=7,cols=mobile&&n>=5?3:(n>=7?4:n),desired=mobile&&n>=5?82:n<=4?96:n===5?88:n===6?82:76,gap=mobile&&n>=5?Math.max(24,Math.min(36,(boardW-cols*desired)/(cols+1))):Math.max(18,Math.min(34,(boardW-cols*desired)/(cols+1))),w=Math.max(60,Math.min(desired,(boardW-gap*(cols+1))/cols)),h=w*3.28,total=cols*w+(cols-1)*gap;return{two,cols,gap,w,h,start:(boardW-total)/2}}
 function resize(){if(!app)return;boardW=Math.max(280,Math.floor(els.board.getBoundingClientRect().width));const g=geometry(tubes.length),rows=Math.max(1,Math.ceil(tubes.length/g.cols));const contentH=Math.ceil(24+rows*g.h+(rows-1)*38+24);boardH=boardW<=520?contentH:(rows>1?contentH:Math.max(380,Math.round(boardW*.58)));app.renderer.resize(boardW,boardH);renderBoard()}
