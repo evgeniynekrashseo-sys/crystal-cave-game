@@ -12,7 +12,7 @@ const $=<T extends HTMLElement>(id:string)=>document.getElementById(id) as T;
 const els={level:$<HTMLElement>('levelTitle'),sub:$<HTMLElement>('levelSub'),moves:$<HTMLElement>('moves'),gold:$<HTMLElement>('gold'),nug:$<HTMLElement>('nugget'),xp:$<HTMLElement>('xpText'),xpFill:$<HTMLElement>('xpFill'),board:$<HTMLElement>('gameCanvas'),goal:$<HTMLElement>('goalText'),toast:$<HTMLElement>('toast'),win:$<HTMLElement>('win'),lose:$<HTMLElement>('lose'),winReward:$<HTMLElement>('winReward'),next:$<HTMLButtonElement>('next'),retrySame:$<HTMLButtonElement>('retrySame'),retryNew:$<HTMLButtonElement>('retryNew'),undo:$<HTMLButtonElement>('undo'),shuffle:$<HTMLButtonElement>('shuffle'),addTube:$<HTMLButtonElement>('addTube'),hint:$<HTMLButtonElement>('hintBtn'),synth:$<HTMLElement>('station')};
 function readState():Persisted{const f:Persisted={level:1,gold:0,nug:0,xp:0,score:0,discovered:['Na','Cl','Fe'],streak:0,bestStreak:0};try{const x=JSON.parse(localStorage.getItem('chemlab_v50')||'null');if(x)return{...f,...x}}catch{}return f}
 const P=readState();
-let tubes:Tube[]=[],selected=-1,moves=0,seed=1,solution:[number,number][]=[],history:{tubes:Tube[];moves:number}[]=[],extraUsed=false,currentSymbols:SymbolKey[]=[],app:Application,root:Container,boardW=360,boardH=470,inputLocked=false,tubeViews:Container[]=[];
+let tubes:Tube[]=[],selected=-1,moves=0,seed=1,solution:[number,number][]=[],history:{tubes:Tube[];moves:number}[]=[],extraUsed=false,currentSymbols:SymbolKey[]=[],app:Application,root:Container,boardW=360,boardH=470,inputLocked=false,tubeViews:Container[]=[],assistsUsed=0;
 let soundOn=localStorage.getItem('chemlab_sound')!=='off';
 const clone=(v:Tube[])=>v.map(t=>t.slice()) as Tube[];
 function save(){localStorage.setItem('chemlab_v50',JSON.stringify(P))}
@@ -38,14 +38,14 @@ function haptic(ms=10){navigator.vibrate?.(ms)}
 function tween(ms:number,fn:(p:number)=>void){return new Promise<void>(ok=>{const s=performance.now(),f=(n:number)=>{const p=Math.min(1,(n-s)/ms);fn(1-Math.pow(1-p,3));app.renderer.render(app.stage);p<1?requestAnimationFrame(f):ok()};requestAnimationFrame(f)})}
 async function pour(a:number,b:number,color:number){const s=tubeViews[a],d=tubeViews[b];if(!s||!d)return;const sx=s.x,sy=s.y,dx=d.x,dy=d.y,dir=dx>=sx?1:-1,stream=new Graphics();root.addChild(stream);await tween(180,p=>{s.x=sx+(dx-sx)*.42*p;s.y=sy-34*p;s.rotation=dir*.30*p});for(let p=0;p<=1;p+=.2){stream.clear();const x1=s.x+(dir>0?s.width*.82:s.width*.18),y1=s.y+22,x2=dx+d.width/2,y2=dy+16;stream.moveTo(x1,y1).bezierCurveTo(x1+dir*16,y1+16,x2-dir*10,y2-16,x2,y2).stroke({color,width:Math.max(4,s.width*.075),alpha:.95});app.renderer.render(app.stage);await new Promise(r=>setTimeout(r,24))}stream.destroy();tone(560);haptic();await tween(150,p=>{s.x=sx+(dx-sx)*.42*(1-p);s.y=sy-34*(1-p);s.rotation=dir*.30*(1-p)})}
 async function flash(i:number){const c=tubeViews[i];if(!c)return;const q=new Graphics().roundRect(-4,0,c.width+8,c.height+2,24).stroke({color:0x61ecff,width:3,alpha:.9});c.addChild(q);tone(820,.12,.03);await tween(300,p=>q.alpha=1-p);q.destroy()}
-function start(l:number,s:number){P.level=Math.max(1,l);selected=-1;history=[];extraUsed=false;inputLocked=false;tubes=generate(P.level,s);moves=Math.max(9,solution.length+(P.level<5?6:P.level<10?4:3));els.win.classList.remove('show');els.lose.classList.remove('show');save();render();resize()}
+function start(l:number,s:number){P.level=Math.max(1,l);selected=-1;history=[];extraUsed=false;assistsUsed=0;inputLocked=false;tubes=generate(P.level,s);moves=Math.max(9,solution.length+(P.level<5?6:P.level<10?4:3));els.win.classList.remove('show');els.lose.classList.remove('show');save();render();resize()}
 async function tap(i:number){if(inputLocked)return;if(selected<0){if(tubes[i].length){selected=i;renderBoard();tone(310,.04,.01)}return}if(selected===i){selected=-1;renderBoard();return}const n=legal(selected,i);if(!n){if(tubes[i].length){selected=i;renderBoard()}else toast('Сюди зараз не можна перелити');return}history.push({tubes:clone(tubes),moves});const from=selected,color=COLORS[tubes[from].at(-1)!];selected=-1;inputLocked=true;await pour(from,i,color);for(let k=0;k<n;k++)tubes[i].push(tubes[from].pop()!);moves--;render();if(complete(i))await flash(i);inputLocked=false;if(solved())win();else if(moves<=0)lose()}
-function win(){const reward=50+P.level*5+Math.min(30,moves*2),xp=25+P.level*2;P.gold+=reward;P.xp+=xp;P.streak=(P.streak||0)+1;P.bestStreak=Math.max(P.bestStreak||0,P.streak);save();els.winReward.textContent=`+${reward} кредитів · +${xp} XP`;tone(1040,.2,.04);haptic(25);els.win.classList.add('show')}
+function win(){const reward=50+P.level*5+Math.min(30,moves*2),xp=25+P.level*2,clean=assistsUsed===0,mastery=clean?1:0;P.gold+=reward;P.xp+=xp;P.nug+=mastery;P.streak=(P.streak||0)+1;P.bestStreak=Math.max(P.bestStreak||0,P.streak);save();els.winReward.textContent=`+${reward} кредитів · +${xp} XP${mastery?' · +1 кристал майстерності':''} · серія ${P.streak}`;renderHud();tone(clean?1180:1040,.2,.04);haptic(clean?35:25);els.win.classList.add('show')}
 function lose(){P.streak=0;save();els.lose.classList.add('show')}
-function hint(){for(let a=0;a<tubes.length;a++)for(let b=0;b<tubes.length;b++)if(legal(a,b)){toast(`Підказка: пробірка ${a+1} → ${b+1}`);return}}
-els.undo.onclick=()=>{const h=history.pop();if(!h)return toast('Немає ходу для скасування');tubes=clone(h.tubes);moves=h.moves;selected=-1;render()};
+function hint(){for(let a=0;a<tubes.length;a++)for(let b=0;b<tubes.length;b++)if(legal(a,b)){assistsUsed++;toast(`Підказка: пробірка ${a+1} → ${b+1}`);return}}
+els.undo.onclick=()=>{const h=history.pop();if(!h)return toast('Немає ходу для скасування');assistsUsed++;tubes=clone(h.tubes);moves=h.moves;selected=-1;render()};
 els.shuffle.onclick=()=>start(P.level,(Date.now()%100000)||1);
-els.addTube.onclick=()=>{if(extraUsed)return toast('Резервну пробірку вже використано');tubes.push([]);extraUsed=true;render();resize()};
+els.addTube.onclick=()=>{if(extraUsed)return toast('Резервну пробірку вже використано');assistsUsed++;tubes.push([]);extraUsed=true;render();resize()};
 els.hint.onclick=hint;
 els.next.onclick=()=>start(P.level+1,(Date.now()%100000)||1);
 els.retrySame.onclick=()=>start(P.level,seed);
@@ -54,5 +54,5 @@ els.synth.onclick=()=>toast('Ігровий синтез записано в ж�
 $('settings').onclick=()=>$('settingsPanel').classList.add('show');
 $('closeSettings').onclick=()=>$('settingsPanel').classList.remove('show');
 document.getElementById('sound')?.addEventListener('click',e=>{soundOn=!soundOn;localStorage.setItem('chemlab_sound',soundOn?'on':'off');(e.currentTarget as HTMLElement).textContent=soundOn?'🔊':'🔇'});
-document.getElementById('hub')?.addEventListener('click',()=>toast(`Лабораторія · відкрито ${P.discovered.length}/118`));
+document.getElementById('hub')?.addEventListener('click',()=>toast(`Лабораторія · ${P.discovered.length}/118 · найкраща серія ${P.bestStreak||0} · кристали ${P.nug}`));
 await init();start(P.level,(Date.now()%100000)||1);
