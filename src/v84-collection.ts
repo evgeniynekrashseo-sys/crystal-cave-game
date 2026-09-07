@@ -1,0 +1,10 @@
+type CoreState={nug?:number};
+const coreKey='chemlab_v50';
+const weeklyKey='chemlab_weekly_v83';
+const host=document.getElementById('collectionLab');
+const read=<T,>(key:string,fallback:T):T=>{try{return JSON.parse(localStorage.getItem(key)||'null')??fallback}catch{return fallback}};
+const render=()=>{if(!host)return;const core=read<CoreState>(coreKey,{});const nug=Math.max(0,Number(core.nug)||0);const weekly=read<{days?:string[]}>(weeklyKey,{});const cleanDays=Array.isArray(weekly.days)?weekly.days.length:0;const items=[{name:'Neon Glass',need:3,mark:'NEON'},{name:'Violet Glass',need:6,mark:'VIOLET'},{name:'Gold Glass',need:10,mark:'GOLD'}];const nodes=host.querySelectorAll<HTMLElement>('[data-collection-item]');nodes.forEach((node,i)=>{const item=items[i];if(!item)return;const unlocked=nug>=item.need;node.classList.toggle('unlocked',unlocked);node.classList.toggle('locked',!unlocked);const state=node.querySelector<HTMLElement>('[data-collection-state]');const meta=node.querySelector<HTMLElement>('[data-collection-meta]');if(state)state.textContent=unlocked?'ВІДКРИТО':'ЗАБЛОКОВАНО';if(meta)meta.textContent=unlocked?'Доступно у лабораторії':`Ще ${Math.max(0,item.need-nug)} чистих проходжень`;});const meter=host.querySelector<HTMLElement>('[data-collection-meter]');const meta=host.querySelector<HTMLElement>('[data-collection-summary]');const unlocked=items.filter(x=>nug>=x.need).length;if(meter)meter.style.width=`${Math.round(unlocked/items.length*100)}%`;if(meta)meta.textContent=unlocked===items.length?`Колекція скла 3/3 · weekly protocol ${Math.min(7,cleanDays)}/7`:`Колекція скла ${unlocked}/3 · наступний unlock через ${Math.max(0,items.find(x=>nug<x.need)!.need-nug)} чистих проходжень`;};
+render();
+window.addEventListener('storage',render);
+const win=document.getElementById('win');if(win)new MutationObserver(()=>{if(win.classList.contains('show'))requestAnimationFrame(render)}).observe(win,{attributes:true,attributeFilter:['class']});
+export {};
