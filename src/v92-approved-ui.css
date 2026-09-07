@@ -4,7 +4,7 @@ body{
     linear-gradient(180deg,rgba(0,4,10,.16),rgba(0,5,12,.42)),
     var(--v92-background) center top/cover fixed no-repeat!important;
 }
-body:before{opacity:.12!important}
+body:before{opacity:.08!important}
 
 .brand{
   width:285px!important;height:111px!important;max-width:38vw!important;
@@ -15,24 +15,28 @@ body:before{opacity:.12!important}
 .brand small,.labtag{display:none!important}
 
 .goal,.rank:not([aria-label="Шлях майстерності"]),.station,.control{position:relative!important;isolation:isolate!important;overflow:hidden!important}
-.goal:after,.rank:not([aria-label="Шлях майстерності"]):after,.station:before,.control.asset-lock:before{
-  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background-position:center;background-repeat:no-repeat;background-size:100% 100%;
+.goal:after,.rank:not([aria-label="Шлях майстерності"]):after,.station:before{
+  content:'';position:absolute;inset:0;pointer-events:none;background-position:center;background-repeat:no-repeat;background-size:100% 100%;
 }
 .goal{background:#03111d!important;border-color:transparent!important;box-shadow:none!important}
-.goal:after{background-image:var(--v92-goal);opacity:1!important}
+.goal:after{background-image:var(--v92-goal);opacity:1!important;z-index:0!important}
 .goal:before{display:none!important}
-.goal>*{position:relative;z-index:1}
+.goal>*{position:relative!important;z-index:1!important}
 
 .rank:not([aria-label="Шлях майстерності"]){background:#03111d!important;border-color:transparent!important;box-shadow:none!important}
-.rank:not([aria-label="Шлях майстерності"]):after{background-image:var(--v92-progress);opacity:1!important}
-.rank:not([aria-label="Шлях майстерності"]>*{position:relative;z-index:1}
+.rank:not([aria-label="Шлях майстерності"]):after{background-image:var(--v92-progress);opacity:1!important;z-index:0!important}
+.rank:not([aria-label="Шлях майстерності"])>*{position:relative!important;z-index:1!important}
 
 .board-shell{
+  position:relative!important;
   background:
-    linear-gradient(180deg,rgba(2,12,21,.72),rgba(1,8,15,.82)),
-    var(--v92-background) center bottom/cover no-repeat!important;
+    linear-gradient(180deg,rgba(2,12,21,.58),rgba(1,8,15,.72)),
+    var(--v92-background) center/cover no-repeat!important;
 }
-.board-shell:before{opacity:.16!important}
+.board-shell:before{
+  content:''!important;position:absolute!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;height:31%!important;
+  background:var(--v92-lab-table) center bottom/100% 100% no-repeat!important;opacity:.82!important;pointer-events:none!important;z-index:0!important;
+}
 .board-shell:after{display:none!important}
 .game-canvas{position:relative!important;z-index:1!important}
 
@@ -63,6 +67,7 @@ body:before{opacity:.12!important}
   .station{width:100%!important;aspect-ratio:414/110!important;margin-top:12px!important}
   .controls{grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:stretch!important}
   #undo,#shuffle,#hintBtn{height:auto!important;min-height:0!important}
+  .board-shell:before{height:24%!important;opacity:.72!important}
 }
 @media(max-width:420px){
   .app{padding-top:calc(78px + env(safe-area-inset-top))!important}
