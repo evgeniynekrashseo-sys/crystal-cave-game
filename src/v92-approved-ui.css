@@ -1,0 +1,71 @@
+/* V92 — approved crop integration. Static visual surfaces come directly from the approved asset sheet. */
+body{
+  background:
+    linear-gradient(180deg,rgba(0,4,10,.16),rgba(0,5,12,.42)),
+    var(--v92-background) center top/cover fixed no-repeat!important;
+}
+body:before{opacity:.12!important}
+
+.brand{
+  width:285px!important;height:111px!important;max-width:38vw!important;
+  margin:0!important;font-size:0!important;line-height:0!important;letter-spacing:0!important;
+  background:var(--v92-logo) left center/contain no-repeat!important;
+  -webkit-text-fill-color:transparent!important;color:transparent!important;text-shadow:none!important;
+}
+.brand small,.labtag{display:none!important}
+
+.goal,.rank:not([aria-label="Шлях майстерності"]),.station,.control{position:relative!important;isolation:isolate!important;overflow:hidden!important}
+.goal:after,.rank:not([aria-label="Шлях майстерності"]):after,.station:before,.control.asset-lock:before{
+  content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background-position:center;background-repeat:no-repeat;background-size:100% 100%;
+}
+.goal{background:#03111d!important;border-color:transparent!important;box-shadow:none!important}
+.goal:after{background-image:var(--v92-goal);opacity:1!important}
+.goal:before{display:none!important}
+.goal>*{position:relative;z-index:1}
+
+.rank:not([aria-label="Шлях майстерності"]){background:#03111d!important;border-color:transparent!important;box-shadow:none!important}
+.rank:not([aria-label="Шлях майстерності"]):after{background-image:var(--v92-progress);opacity:1!important}
+.rank:not([aria-label="Шлях майстерності"]>*{position:relative;z-index:1}
+
+.board-shell{
+  background:
+    linear-gradient(180deg,rgba(2,12,21,.72),rgba(1,8,15,.82)),
+    var(--v92-background) center bottom/cover no-repeat!important;
+}
+.board-shell:before{opacity:.16!important}
+.board-shell:after{display:none!important}
+.game-canvas{position:relative!important;z-index:1!important}
+
+.station{
+  min-height:0!important;aspect-ratio:414/110!important;padding:0!important;border:0!important;background:#03111d!important;box-shadow:none!important;display:block!important;
+}
+.station:before{background-image:var(--v92-synthesis);z-index:0!important;opacity:1!important}
+.station>*{visibility:hidden!important}
+
+#undo,#shuffle,#hintBtn{border:0!important;background-position:center!important;background-size:100% 100%!important;background-repeat:no-repeat!important;box-shadow:none!important;color:transparent!important}
+#undo{background-image:var(--v92-undo)!important;aspect-ratio:129/131!important}
+#shuffle{background-image:var(--v92-restart)!important;aspect-ratio:136/131!important}
+#hintBtn{background-image:var(--v92-hint)!important;aspect-ratio:129/123!important}
+#undo>*,#shuffle>*,#hintBtn>*{visibility:hidden!important}
+#addTube{background:linear-gradient(180deg,rgba(3,23,39,.96),rgba(1,12,22,.99))!important;border:1px solid rgba(38,151,205,.82)!important}
+
+#settings,#hub{font-size:0!important;background-color:transparent!important;background-position:center!important;background-repeat:no-repeat!important;background-size:76% auto!important}
+#settings{background-image:var(--v92-settings)!important}
+#hub{background-image:var(--v92-lab-icon)!important}
+
+@media(max-width:760px){
+  .app{padding-top:calc(76px + env(safe-area-inset-top))!important}
+  .brand{width:205px!important;height:80px!important;max-width:48vw!important}
+  .top{align-items:center!important}
+  .goal{min-height:82px!important;padding:16px 18px 14px 88px!important}
+  .goal strong{font-size:13px!important}.goal strong:before{font-size:9px!important}
+  .rank:not([aria-label="Шлях майстерності"]){min-height:54px!important;padding:10px 16px!important}
+  .station{width:100%!important;aspect-ratio:414/110!important;margin-top:12px!important}
+  .controls{grid-template-columns:repeat(4,minmax(0,1fr))!important;align-items:stretch!important}
+  #undo,#shuffle,#hintBtn{height:auto!important;min-height:0!important}
+}
+@media(max-width:420px){
+  .app{padding-top:calc(78px + env(safe-area-inset-top))!important}
+  .brand{width:188px!important;height:73px!important}
+  .goal{padding-left:78px!important}
+}
