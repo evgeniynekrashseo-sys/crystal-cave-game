@@ -1,6 +1,5 @@
 import './v99-economy-readiness';
 import './v101-mobile-focus';
-import './v102-cosmetic-equip-preview';
 type Save={wins?:number;cleanWins?:number};
 const readSave=():Save=>{try{return JSON.parse(localStorage.getItem('chemlab_v50')||'{}')}catch{return {}}};
 const tiers=[
@@ -18,5 +17,7 @@ function render(){
   cards.innerHTML=tiers.map((tier,index)=>{const unlocked=clean>=tier.target;const remaining=Math.max(0,tier.target-clean);const active=!unlocked&&tiers.slice(0,index).every(t=>clean>=t.target);return `<article class="v98-preview__card${active?' is-next':''}${unlocked?' is-unlocked':''}"><div class="v98-preview__visual v98-preview__visual--${index+1}" aria-hidden="true"><i></i><b></b></div><div class="v98-preview__meta"><span>${tier.rarity}</span><strong>${tier.code}</strong><p>${tier.label}</p><small>${unlocked?'ВІДКРИТО':active?`ЩЕ ${remaining} ЧИСТИХ ПРОХОДЖЕНЬ`:`ВІДКРИЄТЬСЯ НА ${tier.target}`}</small></div></article>`}).join('');
   const next=tiers.find(t=>clean<t.target);const signal=section.querySelector<HTMLElement>('[data-preview-signal]');if(signal)signal.textContent=next?`${clean}/${next.target}`:'ALL UNLOCKED';
 }
-render();window.addEventListener('storage',render);document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
+render();
+void import('./v102-cosmetic-equip-preview');
+window.addEventListener('storage',render);document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
 export {};
