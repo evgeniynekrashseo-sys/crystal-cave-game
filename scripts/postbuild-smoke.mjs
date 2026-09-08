@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const root=new URL('../dist/',import.meta.url);
 const fail=(message)=>{console.error(`\n[ChemLab postbuild] FAIL: ${message}`);process.exitCode=1};
@@ -23,14 +24,14 @@ if(!process.exitCode) pass('all referenced production assets exist');
 
 const files=[];
 const walk=(dir)=>{for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,entry.name);entry.isDirectory()?walk(p):files.push(p)}};
-walk(path.fileURLToPath(root));
+walk(fileURLToPath(root));
 const js=files.filter(f=>f.endsWith('.js'));
 const css=files.filter(f=>f.endsWith('.css'));
 if(!js.length) fail('production JavaScript bundle missing'); else pass(`${js.length} JavaScript bundle(s) present`);
 if(!css.length) fail('production CSS bundle missing'); else pass(`${css.length} CSS bundle(s) present`);
 
 const bundleText=js.map(f=>fs.readFileSync(f,'utf8')).join('\n');
-if(!bundleText.includes('V105')) fail('V105 diagnostics marker missing from production JavaScript'); else pass('V105 diagnostics marker present in production bundle');
+if(!bundleText.includes('V106')) fail('V106 diagnostics marker missing from production JavaScript'); else pass('V106 diagnostics marker present in production bundle');
 if(bundleText.includes('localStorage.setItem("chemlab_v50"')||bundleText.includes("localStorage.setItem('chemlab_v50'")) pass('core save writer present in compiled gameplay bundle'); else fail('core save persistence missing from compiled gameplay bundle');
 
 if(process.exitCode){console.error('\n[ChemLab postbuild] Production artifact validation failed.');process.exit(process.exitCode)}
