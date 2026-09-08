@@ -1,0 +1,15 @@
+/* V97 — win payoff only. No puzzle state, save data or solvability changes. */
+.board-shell{position:relative!important;overflow:hidden!important}
+.v97-burst{position:absolute;inset:50% auto auto 50%;width:1px;height:1px;z-index:9;pointer-events:none;animation:v97-burst-life .72s ease-out both}
+.v97-burst i{position:absolute;left:0;top:0;width:7px;height:7px;border-radius:50%;background:rgba(116,226,255,.95);box-shadow:0 0 18px rgba(68,195,255,.9);transform:translate(-50%,-50%);animation:v97-particle .72s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i)*7ms)}
+.v97-burst i:nth-child(3n){width:4px;height:12px;border-radius:999px;background:rgba(195,132,255,.95)}
+.v97-burst i:nth-child(4n){width:9px;height:3px;background:rgba(255,214,103,.95)}
+#win .modal.v97-win-hit{animation:v97-win-hit .48s cubic-bezier(.2,.9,.22,1.15) both}
+#win .modal.v97-win-hit h2{text-shadow:0 0 28px rgba(95,221,255,.55)}
+#next{position:relative;overflow:hidden}
+#win.show #next:after{content:'';position:absolute;inset:-40% -20%;background:linear-gradient(110deg,transparent 32%,rgba(255,255,255,.22) 48%,transparent 64%);transform:translateX(-130%);animation:v97-cta-scan 1.4s .35s ease-out 1}
+@keyframes v97-particle{0%{opacity:1;transform:translate(-50%,-50%) scale(.7)}100%{opacity:0;transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(.15)}}
+@keyframes v97-burst-life{0%,85%{opacity:1}100%{opacity:0}}
+@keyframes v97-win-hit{0%{transform:scale(.94) translateY(8px);filter:brightness(.9)}55%{transform:scale(1.018) translateY(-2px);filter:brightness(1.08)}100%{transform:scale(1) translateY(0);filter:none}}
+@keyframes v97-cta-scan{to{transform:translateX(130%)}}
+@media(prefers-reduced-motion:reduce){.v97-burst{display:none!important}#win .modal.v97-win-hit,#win.show #next:after{animation:none!important}}
