@@ -31,7 +31,8 @@ if(!js.length) fail('production JavaScript bundle missing'); else pass(`${js.len
 if(!css.length) fail('production CSS bundle missing'); else pass(`${css.length} CSS bundle(s) present`);
 
 const bundleText=js.map(f=>fs.readFileSync(f,'utf8')).join('\n');
-if(!bundleText.includes('V106')) fail('V106 diagnostics marker missing from production JavaScript'); else pass('V106 diagnostics marker present in production bundle');
+if(!bundleText.includes('V107')) fail('V107 diagnostics marker missing from production JavaScript'); else pass('V107 diagnostics marker present in production bundle');
+if(bundleText.includes('ION CHROME')&&bundleText.includes('VIOLET PHASE')&&bundleText.includes('AURUM CORE')) pass('cosmetic progression layers are compiled into production'); else fail('cosmetic progression runtime layers missing from compiled production bundle');
 if(bundleText.includes('localStorage.setItem("chemlab_v50"')||bundleText.includes("localStorage.setItem('chemlab_v50'")) pass('core save writer present in compiled gameplay bundle'); else fail('core save persistence missing from compiled gameplay bundle');
 
 if(process.exitCode){console.error('\n[ChemLab postbuild] Production artifact validation failed.');process.exit(process.exitCode)}
