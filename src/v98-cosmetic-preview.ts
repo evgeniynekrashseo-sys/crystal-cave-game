@@ -1,3 +1,4 @@
+import './v99-economy-readiness';
 type Save={wins?:number;cleanWins?:number};
 const readSave=():Save=>{try{return JSON.parse(localStorage.getItem('chemlab_v50')||'{}')}catch{return {}}};
 const tiers=[
