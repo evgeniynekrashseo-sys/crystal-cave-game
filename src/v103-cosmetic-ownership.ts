@@ -12,9 +12,9 @@ const readMastery=()=>{try{const save=JSON.parse(localStorage.getItem(CORE_KEY)|
 const cards=()=>[...document.querySelectorAll<HTMLElement>('.v98-preview__card')];
 const section=document.querySelector<HTMLElement>('.v98-preview');
 const settingsTitle=document.querySelector<HTMLElement>('#settingsPanel h2');
-if(settingsTitle)settingsTitle.textContent='ChemLab V103';
+if(settingsTitle)settingsTitle.textContent='ChemLab V104';
 const settingsCopy=document.querySelector<HTMLElement>('#settingsPanel p');
-if(settingsCopy)settingsCopy.textContent='Approved full asset lock · mastery-backed cosmetic ownership · persistent safe equip · physical reagent motion cues · mobile game focus · prestige cosmetic vault · premium victory payoff · certified anti-repeat puzzles · guaranteed solution paths';
+if(settingsCopy)settingsCopy.textContent='Approved full asset lock · mastery-backed cosmetic ownership · unlock celebration · persistent safe equip · physical reagent motion cues · mobile game focus · prestige cosmetic vault · premium victory payoff · certified anti-repeat puzzles · guaranteed solution paths';
 
 if(section){
   const head=section.querySelector('.v98-preview__head');
@@ -55,4 +55,5 @@ if(section){
   window.addEventListener('storage',()=>{bind();restore()});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){bind();restore()}});
 }
+void import('./v104-unlock-celebration');
 export {};
