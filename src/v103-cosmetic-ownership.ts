@@ -11,10 +11,6 @@ type Save={nug?:number};
 const readMastery=()=>{try{const save=JSON.parse(localStorage.getItem(CORE_KEY)||'{}') as Save;return Math.max(0,Number(save.nug??0)||0)}catch{return 0}};
 const cards=()=>[...document.querySelectorAll<HTMLElement>('.v98-preview__card')];
 const section=document.querySelector<HTMLElement>('.v98-preview');
-const settingsTitle=document.querySelector<HTMLElement>('#settingsPanel h2');
-if(settingsTitle)settingsTitle.textContent='ChemLab V104';
-const settingsCopy=document.querySelector<HTMLElement>('#settingsPanel p');
-if(settingsCopy)settingsCopy.textContent='Approved full asset lock · mastery-backed cosmetic ownership · unlock celebration · persistent safe equip · physical reagent motion cues · mobile game focus · prestige cosmetic vault · premium victory payoff · certified anti-repeat puzzles · guaranteed solution paths';
 
 if(section){
   const head=section.querySelector('.v98-preview__head');
@@ -30,9 +26,12 @@ if(section){
     if(theme)document.body.dataset.cosmeticPreview=theme;else delete document.body.dataset.cosmeticPreview;
     cards().forEach((card,index)=>{
       const active=theme===themes[index];
+      const owned=unlocked(index);
       card.classList.toggle('is-previewing',active);
-      card.classList.toggle('is-equipped',active&&!preview&&unlocked(index));
+      card.classList.toggle('is-equipped',active&&!preview&&owned);
+      card.classList.toggle('is-locked',!owned);
       card.setAttribute('aria-pressed',String(active));
+      card.dataset.ownership=owned?'owned':'locked';
     });
     if(status)status.textContent=label(theme,preview);
   };
@@ -46,8 +45,9 @@ if(section){
   const bind=()=>cards().forEach((card,index)=>{
     card.setAttribute('role','button');card.setAttribute('tabindex','0');
     const name=card.querySelector('strong')?.textContent||'косметичний стиль';
+    const owned=unlocked(index);
     const activate=()=>{const theme=themes[index];if(unlocked(index)){persistEquip(theme);apply(theme,false)}else{apply(theme,true)}};
-    card.setAttribute('aria-label',unlocked(index)?`Екіпірувати ${name}`:`Переглянути заблокований стиль ${name}`);
+    card.setAttribute('aria-label',owned?`Екіпірувати ${name}`:`Переглянути заблокований стиль ${name}. Відкривається на рівні майстерності ${targets[index]}`);
     card.onclick=activate;card.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();activate()}};
   });
   bind();restore();
@@ -55,5 +55,4 @@ if(section){
   window.addEventListener('storage',()=>{bind();restore()});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){bind();restore()}});
 }
-void import('./v104-unlock-celebration');
 export {};
