@@ -12,14 +12,15 @@ const bootstrap=read('src/v92-bootstrap.ts');
 const cosmeticOwnership=read('src/v103-cosmetic-ownership.ts');
 const cosmeticCelebration=read('src/v104-unlock-celebration.ts');
 const cosmeticLadder=read('src/v98-cosmetic-preview.ts');
+const cosmeticOwnershipCss=read('src/v103-cosmetic-ownership.css');
 const postbuild=read('scripts/postbuild-smoke.mjs');
 
 const build=`V${String(pkg.version).split('.')[0]}`;
 
-if(pkg.version!=='108.0.0') fail(`package version must be 108.0.0, got ${pkg.version}`); else pass(`release version ${pkg.version}`);
+if(pkg.version!=='109.0.0') fail(`package version must be 109.0.0, got ${pkg.version}`); else pass(`release version ${pkg.version}`);
 if(!diagnostics.includes(`build:'${build}'`)) fail(`diagnostics build must match ${build}`); else pass(`diagnostics synced to ${build}`);
 if(!pkg.scripts?.build?.includes('npm run postbuild')) fail('build must execute production artifact validation'); else pass('build executes production artifact validation');
-if(!postbuild.includes("bundleText.includes('V108')")) fail('postbuild validator must verify V108 marker'); else pass('postbuild validator checks compiled release marker');
+if(!postbuild.includes("bundleText.includes('V109')")) fail('postbuild validator must verify V109 marker'); else pass('postbuild validator checks compiled release marker');
 if(!postbuild.includes("from 'node:url'")) fail('postbuild validator must import fileURLToPath from node:url'); else pass('postbuild path conversion uses node:url');
 
 const requiredRuntimeLayers=[
@@ -32,7 +33,11 @@ for(const layer of requiredRuntimeLayers){
   if(!bootstrap.includes(layer)) fail(`production runtime layer missing: ${layer}`); else pass(`runtime layer wired: ${layer}`);
 }
 if(bootstrap.includes("await import('./v102-cosmetic-equip-preview')")) fail('V102 interaction runtime must not boot beside V103 ownership; duplicate cosmetic controls/listeners would result'); else pass('cosmetic interaction has a single runtime owner');
-if(!bootstrap.includes("ChemLab V108")) fail('settings runtime marker must expose ChemLab V108'); else pass('settings runtime marker exposes V108');
+if(cosmeticOwnership.includes("import('./v104-unlock-celebration')")) fail('V103 must not orchestrate V104; release-layer orchestration belongs to bootstrap'); else pass('runtime orchestration is centralized in bootstrap');
+if(cosmeticOwnership.includes('ChemLab V104')) fail('stale release marker detected in cosmetic ownership layer'); else pass('cosmetic ownership has no stale release marker');
+if(!cosmeticOwnership.includes("card.classList.toggle('is-locked',!owned)")) fail('cosmetic cards must expose explicit locked state'); else pass('cosmetic cards expose locked state');
+if(!cosmeticOwnershipCss.includes("content:'LOCKED'")) fail('locked cosmetic state must have visible treatment'); else pass('locked cosmetic state has visible treatment');
+if(!bootstrap.includes("ChemLab V109")) fail('settings runtime marker must expose ChemLab V109'); else pass('settings runtime marker exposes V109');
 
 const saveKeyMatches=[...main.matchAll(/chemlab_v\d+/g)].map(m=>m[0]);
 if(!saveKeyMatches.length||saveKeyMatches.some(k=>k!=='chemlab_v50')) fail(`core save key drift detected: ${[...new Set(saveKeyMatches)].join(', ')||'missing'}`); else pass('core save schema remains chemlab_v50');
