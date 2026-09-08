@@ -15,10 +15,11 @@ const postbuild=read('scripts/postbuild-smoke.mjs');
 
 const build=`V${String(pkg.version).split('.')[0]}`;
 
-if(pkg.version!=='105.0.0') fail(`package version must be 105.0.0, got ${pkg.version}`); else pass(`release version ${pkg.version}`);
+if(pkg.version!=='106.0.0') fail(`package version must be 106.0.0, got ${pkg.version}`); else pass(`release version ${pkg.version}`);
 if(!diagnostics.includes(`build:'${build}'`)) fail(`diagnostics build must match ${build}`); else pass(`diagnostics synced to ${build}`);
 if(!pkg.scripts?.build?.includes('npm run postbuild')) fail('build must execute production artifact validation'); else pass('build executes production artifact validation');
-if(!postbuild.includes("bundleText.includes('V105')")) fail('postbuild validator must verify V105 marker'); else pass('postbuild validator checks compiled release marker');
+if(!postbuild.includes("bundleText.includes('V106')")) fail('postbuild validator must verify V106 marker'); else pass('postbuild validator checks compiled release marker');
+if(!postbuild.includes("from 'node:url'")) fail('postbuild validator must import fileURLToPath from node:url'); else pass('postbuild path conversion uses node:url');
 
 const saveKeyMatches=[...main.matchAll(/chemlab_v\d+/g)].map(m=>m[0]);
 if(!saveKeyMatches.length||saveKeyMatches.some(k=>k!=='chemlab_v50')) fail(`core save key drift detected: ${[...new Set(saveKeyMatches)].join(', ')||'missing'}`); else pass('core save schema remains chemlab_v50');
