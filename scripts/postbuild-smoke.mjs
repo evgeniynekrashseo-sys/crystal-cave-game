@@ -1,0 +1,37 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root=new URL('../dist/',import.meta.url);
+const fail=(message)=>{console.error(`\n[ChemLab postbuild] FAIL: ${message}`);process.exitCode=1};
+const pass=(message)=>console.log(`[ChemLab postbuild] PASS: ${message}`);
+
+if(!fs.existsSync(root)){fail('dist directory missing');process.exit(1)}
+const indexUrl=new URL('index.html',root);
+if(!fs.existsSync(indexUrl)){fail('dist/index.html missing');process.exit(1)}
+const html=fs.readFileSync(indexUrl,'utf8');
+
+const refs=[...html.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map(m=>m[1]).filter(v=>!v.startsWith('data:')&&!v.startsWith('http')&&!v.startsWith('#'));
+if(!refs.length) fail('no production asset references found'); else pass(`${refs.length} production asset references found`);
+
+for(const ref of refs){
+  if(ref.startsWith('/')){fail(`absolute asset path is unsafe for repository Pages: ${ref}`);continue}
+  const clean=ref.replace(/^\.\//,'').split(/[?#]/)[0];
+  const file=new URL(clean,root);
+  if(!fs.existsSync(file)) fail(`referenced production asset missing: ${ref}`);
+}
+if(!process.exitCode) pass('all referenced production assets exist');
+
+const files=[];
+const walk=(dir)=>{for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,entry.name);entry.isDirectory()?walk(p):files.push(p)}};
+walk(path.fileURLToPath(root));
+const js=files.filter(f=>f.endsWith('.js'));
+const css=files.filter(f=>f.endsWith('.css'));
+if(!js.length) fail('production JavaScript bundle missing'); else pass(`${js.length} JavaScript bundle(s) present`);
+if(!css.length) fail('production CSS bundle missing'); else pass(`${css.length} CSS bundle(s) present`);
+
+const bundleText=js.map(f=>fs.readFileSync(f,'utf8')).join('\n');
+if(!bundleText.includes('V105')) fail('V105 diagnostics marker missing from production JavaScript'); else pass('V105 diagnostics marker present in production bundle');
+if(bundleText.includes('localStorage.setItem("chemlab_v50"')||bundleText.includes("localStorage.setItem('chemlab_v50'")) pass('core save writer present in compiled gameplay bundle'); else fail('core save persistence missing from compiled gameplay bundle');
+
+if(process.exitCode){console.error('\n[ChemLab postbuild] Production artifact validation failed.');process.exit(process.exitCode)}
+console.log('\n[ChemLab postbuild] Production artifact validation passed.');
