@@ -1,12 +1,13 @@
 {
   "name": "chemlab-sort-react",
   "private": true,
-  "version": "99.0.0",
+  "version": "100.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "typecheck": "tsc --noEmit",
-    "build": "npm run typecheck && vite build",
+    "preflight": "node scripts/preflight.mjs",
+    "build": "npm run preflight && npm run typecheck && vite build",
     "preview": "vite preview"
   },
   "dependencies": {"pixi.js": "^8.0.0"},
