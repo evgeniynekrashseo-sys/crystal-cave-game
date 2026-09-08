@@ -1,6 +1,11 @@
+import './v102-cosmetic-equip-preview.css';
 const PREVIEW_KEY='chemlab_ui_v102_cosmetic_preview';
 const themes=['ion','violet','aurum'] as const;
 type Theme=typeof themes[number];
+const settingsTitle=document.querySelector<HTMLElement>('#settingsPanel h2');
+if(settingsTitle)settingsTitle.textContent='ChemLab V102';
+const settingsCopy=document.querySelector<HTMLElement>('#settingsPanel p');
+if(settingsCopy)settingsCopy.textContent='Approved full asset lock · live cosmetic equip preview · physical reagent motion cues · mobile game focus · prestige cosmetic vault · premium victory payoff · certified anti-repeat puzzles · guaranteed solution paths';
 const cards=[...document.querySelectorAll<HTMLElement>('.v98-preview__card')];
 const section=document.querySelector<HTMLElement>('.v98-preview');
 if(section&&cards.length){
