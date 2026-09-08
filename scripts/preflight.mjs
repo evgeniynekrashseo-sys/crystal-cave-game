@@ -11,7 +11,7 @@ const diagnostics=read('src/diagnostics.ts');
 
 const build=`V${String(pkg.version).split('.')[0]}`;
 
-if(pkg.version!=='100.0.0') fail(`package version must be 100.0.0, got ${pkg.version}`); else pass(`release version ${pkg.version}`);
+if(pkg.version!=='101.0.0') fail(`package version must be 101.0.0, got ${pkg.version}`); else pass(`release version ${pkg.version}`);
 if(!diagnostics.includes(`build:'${build}'`)) fail(`diagnostics build must match ${build}`); else pass(`diagnostics synced to ${build}`);
 
 const saveKeyMatches=[...main.matchAll(/chemlab_v\d+/g)].map(m=>m[0]);
