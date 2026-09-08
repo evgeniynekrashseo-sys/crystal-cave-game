@@ -8,6 +8,7 @@ const pkg=JSON.parse(read('package.json'));
 const main=read('src/main.ts');
 const certified=read('src/certified-puzzles.ts');
 const diagnostics=read('src/diagnostics.ts');
+const bootstrap=read('src/v92-bootstrap.ts');
 const cosmeticOwnership=read('src/v103-cosmetic-ownership.ts');
 const cosmeticCelebration=read('src/v104-unlock-celebration.ts');
 const cosmeticLadder=read('src/v98-cosmetic-preview.ts');
@@ -15,11 +16,23 @@ const postbuild=read('scripts/postbuild-smoke.mjs');
 
 const build=`V${String(pkg.version).split('.')[0]}`;
 
-if(pkg.version!=='106.0.0') fail(`package version must be 106.0.0, got ${pkg.version}`); else pass(`release version ${pkg.version}`);
+if(pkg.version!=='107.0.0') fail(`package version must be 107.0.0, got ${pkg.version}`); else pass(`release version ${pkg.version}`);
 if(!diagnostics.includes(`build:'${build}'`)) fail(`diagnostics build must match ${build}`); else pass(`diagnostics synced to ${build}`);
 if(!pkg.scripts?.build?.includes('npm run postbuild')) fail('build must execute production artifact validation'); else pass('build executes production artifact validation');
-if(!postbuild.includes("bundleText.includes('V106')")) fail('postbuild validator must verify V106 marker'); else pass('postbuild validator checks compiled release marker');
+if(!postbuild.includes("bundleText.includes('V107')")) fail('postbuild validator must verify V107 marker'); else pass('postbuild validator checks compiled release marker');
 if(!postbuild.includes("from 'node:url'")) fail('postbuild validator must import fileURLToPath from node:url'); else pass('postbuild path conversion uses node:url');
+
+const requiredRuntimeLayers=[
+  "await import('./v99-economy-readiness')",
+  "await import('./v101-mobile-focus')",
+  "await import('./v102-cosmetic-equip-preview')",
+  "await import('./v103-cosmetic-ownership')",
+  "await import('./v104-unlock-celebration')",
+];
+for(const layer of requiredRuntimeLayers){
+  if(!bootstrap.includes(layer)) fail(`production runtime layer missing: ${layer}`); else pass(`runtime layer wired: ${layer}`);
+}
+if(!bootstrap.includes("ChemLab V107")) fail('settings runtime marker must expose ChemLab V107'); else pass('settings runtime marker exposes V107');
 
 const saveKeyMatches=[...main.matchAll(/chemlab_v\d+/g)].map(m=>m[0]);
 if(!saveKeyMatches.length||saveKeyMatches.some(k=>k!=='chemlab_v50')) fail(`core save key drift detected: ${[...new Set(saveKeyMatches)].join(', ')||'missing'}`); else pass('core save schema remains chemlab_v50');
@@ -47,7 +60,7 @@ for(const invariant of requiredCore){
 }
 
 const forbiddenOperationalPatterns=[/\bgrams?\b.{0,40}\b(?:mix|combine|heat)\b/i,/\b(?:mix|combine|heat)\b.{0,40}\bgrams?\b/i,/\b(?:°c|celsius)\b.{0,50}\b(?:mix|combine|react)\b/i];
-const sourceBundle=[main,certified,cosmeticOwnership,cosmeticCelebration,cosmeticLadder].join('\n');
+const sourceBundle=[main,certified,cosmeticOwnership,cosmeticCelebration,cosmeticLadder,bootstrap].join('\n');
 if(forbiddenOperationalPatterns.some(r=>r.test(sourceBundle))) fail('potentially operational real-world chemistry instruction detected in release sources'); else pass('no operational chemistry quantities/instructions detected in release sources');
 
 if(process.exitCode){console.error('\n[ChemLab preflight] Release blocked.');process.exit(process.exitCode)}
