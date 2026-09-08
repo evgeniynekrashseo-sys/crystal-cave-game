@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Preflight, typecheck, build and artifact smoke V105
+      - name: Preflight, typecheck, build and artifact smoke V106
         run: npm run build
 
       - name: Setup Pages
