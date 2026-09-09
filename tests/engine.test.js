@@ -1,16 +1,17 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  POOL,move,solved,createCertifiedPuzzle,budget,symbolCount,normalize,
+  POOL,move,cleared,collectCompleted,completionReward,createCertifiedPuzzle,createCertifiedLevel,budget,symbolCount,waveCount,normalize,
   difficultyProfile,mechanicBlock,moveWithMechanics
 } from '../dist/engine.js';
 
 test('production puzzles are certified, deterministic and preserve tokens',()=>{
   for(const level of [1,4,8,15,25,45,80])for(let seed=0;seed<50;seed++){
     const p=createCertifiedPuzzle(POOL.slice(0,symbolCount(level)),level,seed);
-    let t=p.tubes;
+    let t=p.tubes,collected=0;
     const state={frozenTurns:p.mechanics.frozen?.turns||0};
-    assert(!solved(t));
+    assert(!cleared(t));
+    assert.equal(t.some(a=>a.length===4&&a.every(v=>v===a[0])),false);
     const inventory=t.flat().sort();
     assert.equal(inventory.length,symbolCount(level)*4);
     for(const [a,b] of p.solution){
@@ -18,11 +19,36 @@ test('production puzzles are certified, deterministic and preserve tokens',()=>{
       assert(t,'the certified path must respect its level modifiers');
       if(state.frozenTurns>0)state.frozenTurns--;
       assert(t.every(a=>a.length<=4));
-      assert.deepEqual(t.flat().sort(),inventory);
+      const result=collectCompleted(t);
+      collected+=result.completed.length;
+      t=result.tubes;
+      assert.equal(t.flat().length,inventory.length-collected*4);
     }
-    assert(solved(t));
+    assert(cleared(t));
+    assert.equal(collected,symbolCount(level));
     assert(budget(p,level)>p.solution.length);
     assert.deepEqual(p,createCertifiedPuzzle(POOL.slice(0,symbolCount(level)),level,seed));
+  }
+});
+
+test('completed elements disappear and award level-scaled coins',()=>{
+  const input=[['Na','Na','Na','Na'],['Cl','Fe'],['Cl','Cl','Cl','Cl'],[]];
+  const result=collectCompleted(input);
+  assert.deepEqual(result.completed,[{index:0,symbol:'Na'},{index:2,symbol:'Cl'}]);
+  assert.deepEqual(result.tubes,[[],['Cl','Fe'],[],[]]);
+  assert.deepEqual(input,[['Na','Na','Na','Na'],['Cl','Fe'],['Cl','Cl','Cl','Cl'],[]]);
+  assert.equal(completionReward(1,2),24);
+  assert(completionReward(25)>completionReward(1));
+});
+
+test('advanced levels add waves without adding more than seven tubes',()=>{
+  for(const level of [1,15,25,45]){
+    const symbols=POOL.slice(0,symbolCount(level));
+    const run=createCertifiedLevel(symbols,level,90210);
+    assert.equal(run.waves.length,waveCount(level));
+    assert(run.waves.every(wave=>wave.tubes.length<=7));
+    assert.equal(run.totalGroups,run.waves.reduce((sum,wave)=>sum+new Set(wave.tubes.flat()).size,0));
+    assert.deepEqual(run,createCertifiedLevel(symbols,level,90210));
   }
 });
 
@@ -31,6 +57,10 @@ test('difficulty grows instead of plateauing after level 15',()=>{
   assert.equal(early.symbols,3);
   assert.equal(mid.symbols,6);
   assert.equal(late.symbols,8);
+  assert.equal(early.waves,1);
+  assert.equal(mid.waves,2);
+  assert.equal(late.waves,4);
+  assert.equal(late.maxTubes,7);
   assert(early.scrambleSteps<mid.scrambleSteps);
   assert(mid.scrambleSteps<late.scrambleSteps);
   assert(early.moveSlack>mid.moveSlack);

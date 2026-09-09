@@ -3,6 +3,20 @@ export const POOL=[...BASE_POOL,...'H He Li Be B C N O F Ne Na Mg Al Si P S Cl A
 
 export const clone=x=>x.map(t=>[...t]);
 export const solved=t=>t.every(a=>!a.length||(a.length===4&&a.every(v=>v===a[0])));
+export const cleared=t=>t.every(a=>!a.length);
+export const completeTube=a=>a.length===4&&a.every(v=>v===a[0]);
+
+export function collectCompleted(t){
+  const completed=[];
+  const tubes=t.map((tube,index)=>{
+    if(!completeTube(tube))return [...tube];
+    completed.push({index,symbol:tube[0]});
+    return [];
+  });
+  return {tubes,completed};
+}
+
+export const completionReward=(level,count=1)=>Math.max(0,Math.floor(count))*(12+Math.min(28,Math.floor((Math.max(1,level)-1)/3)*2));
 
 export function move(t,a,b){
   if(a===b||!t[a]?.length||!t[b]||t[b].length===4)return null;
@@ -23,6 +37,7 @@ function rng(seed){
 }
 
 export const symbolCount=level=>level<4?3:level<8?4:level<15?5:level<25?6:level<45?7:8;
+export const waveCount=level=>level<15?1:level<25?2:level<45?3:4;
 
 export function difficultyProfile(level){
   const l=Math.max(1,Math.floor(level));
@@ -44,6 +59,8 @@ export function difficultyProfile(level){
 
   return {
     symbols,
+    waves:waveCount(l),
+    maxTubes:7,
     moveSlack,
     scrambleSteps,
     frostTurns,
@@ -96,6 +113,30 @@ function certifiedMechanics(start,solution,symbols,level,seed){
   return mechanics;
 }
 
+function certifyClearingPath(start,solution,mechanics,symbols){
+  let check=clone(start);
+  const state={frozenTurns:mechanics.frozen?.turns||0};
+  const clearingSolution=[];
+  let collected=0;
+
+  for(const [a,b] of solution){
+    const next=moveWithMechanics(check,a,b,mechanics,state);
+    // A source can already be empty because its completed element was synthesized.
+    if(!next){
+      if(!check[a]?.length)continue;
+      return null;
+    }
+    check=next;
+    clearingSolution.push([a,b]);
+    const settled=collectCompleted(check);
+    check=settled.tubes;
+    collected+=settled.completed.length;
+    if(state.frozenTurns>0)state.frozenTurns--;
+  }
+
+  return cleared(check)&&collected===symbols.length?clearingSolution:null;
+}
+
 export function createCertifiedPuzzle(symbols,level,seed,recent=[]){
   const profile=difficultyProfile(level);
   for(let attempt=0;attempt<40;attempt++){
@@ -126,17 +167,36 @@ export function createCertifiedPuzzle(symbols,level,seed,recent=[]){
       seen.add(key(t));
     }
 
-    if(solved(t))continue;
+    if(solved(t)||t.some(completeTube))continue;
     const puzzleKey=key(t);
     if(recent.includes(puzzleKey)&&attempt<39)continue;
     const mechanics=certifiedMechanics(t,solution,symbols,level,seed+attempt*7919);
     if(!mechanics)continue;
-    return {tubes:t,solution,key:puzzleKey,seed,level,mechanics,profile};
+    const clearingSolution=certifyClearingPath(t,solution,mechanics,symbols);
+    if(!clearingSolution)continue;
+    return {tubes:t,solution:clearingSolution,key:puzzleKey,seed,level,mechanics,profile};
   }
   throw Error('No certified puzzle');
 }
 
+export function createCertifiedLevel(symbols,level,seed,recent=[]){
+  const count=waveCount(level);
+  const batchSize=Math.min(5,symbols.length);
+  const waves=[];
+  for(let i=0;i<count;i++){
+    const offset=(i*2)%symbols.length;
+    const batch=Array.from({length:batchSize},(_,j)=>symbols[(offset+j)%symbols.length]);
+    waves.push(createCertifiedPuzzle(batch,level,(seed+i*0x9E3779B9)>>>0,i===0?recent:[]));
+  }
+  return {
+    level,seed,waves,
+    totalGroups:waves.reduce((sum,wave)=>sum+new Set(wave.tubes.flat()).size,0),
+    key:waves.map(wave=>wave.key).join('::')
+  };
+}
+
 export function mechanicBlock(t,a,b,mechanics={},state={}){
+  if(state.crossFrozenTurns>0&&(a===state.crossFrozenTube||b===state.crossFrozenTube))return 'cross-frozen';
   if(mechanics.frozen&&state.frozenTurns>0&&(a===mechanics.frozen.tube||b===mechanics.frozen.tube))return 'frozen';
   if(mechanics.stabilizer&&b===mechanics.stabilizer.tube&&t[a]?.at(-1)!==mechanics.stabilizer.target)return 'stabilizer';
   return null;

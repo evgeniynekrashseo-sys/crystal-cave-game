@@ -8,7 +8,7 @@ ChemLab is a deterministic tube-sorting puzzle framed as a fictional laboratory 
 
 A level starts with several tubes. Each tube contains up to 4 stacked symbolic element tokens. The player selects a source tube and then a destination tube. A move transfers the contiguous top run of identical symbols from the source into the destination when the move is legal.
 
-The level is solved when every non-empty tube contains exactly 4 identical symbols.
+When a tube reaches 4 identical symbols, the completed element is synthesized: its tokens disappear, the tube becomes reusable, and the player immediately receives coins. The level is solved when all element tokens have been synthesized and every tube is empty.
 
 The game must remain an abstract puzzle. It must not provide operational real-world chemical instructions, quantities, temperatures, procedures, or dangerous reaction guidance.
 
@@ -38,10 +38,7 @@ legal only when:
 Win condition:
 
 ```text
-for every tube:
-  tube is empty
-  OR
-  tube has exactly 4 items AND all 4 are identical
+every tube is empty after all complete groups have been synthesized
 ```
 
 Lose condition:
@@ -65,7 +62,7 @@ state = puzzle.tubes
 solution = puzzle.solution
 ```
 
-The game must never ship a puzzle without a known valid solution path.
+The game must never ship a puzzle without a known valid solution path. Certification replays the path with completed groups disappearing after every successful move; redundant moves whose source was already synthesized are removed from the delivered solution.
 
 Exact retry must reproduce the same puzzle by preserving the level and seed.
 
@@ -92,7 +89,9 @@ Canonical discovery pool:
 Na, Cl, Fe, O, C, H, Au, Li, He, Be, B, N, F, Ne, Mg, Al, Si, P, S
 ```
 
-The discovery list expands gradually with level progression.
+The discovery list expands automatically with level progression. Every completed level unlocks the next unknown element in `ORDER`, grants 3 crystals, and presents a dedicated discovery notification before the next experiment.
+
+The notification must provide a direct action to the periodic table. The table opens with the newly discovered cell centered, revealed, and visually highlighted. The element is eligible for the next generated experiment immediately after discovery.
 
 The system may visually represent these as fictional game tokens. Do not convert the puzzle into real-world chemistry instructions.
 
@@ -121,6 +120,34 @@ minimum displayed budget should not fall below 9
 
 This preserves challenge while keeping every certified level realistically completable.
 
+## 8.1 Escalating waves and tube cap
+
+Difficulty grows through additional element waves instead of an ever-wider rack:
+
+```text
+levels 1–14  -> 1 wave
+levels 15–24 -> 2 waves
+levels 25–44 -> 3 waves
+level 45+    -> 4 waves
+```
+
+Each wave uses at most 5 active symbols plus 2 empty tubes, so a generated level never exceeds 7 tubes. After every element in a wave is synthesized, the same rack refills with the next certified wave. The total move budget is the sum of all certified wave budgets.
+
+Every wave has its own deterministic certified solution. Exact retry reproduces the same full sequence of waves.
+
+## 8.2 Board cross-reactions
+
+Selecting a destination with a different top symbol may trigger a known fictional cross-reaction instead of a normal pour. Cross-reactions:
+
+- never mutate or consume puzzle tokens;
+- are claimable once per recipe per level, including across retries;
+- grant the recipe reward and count toward reaction quests;
+- may create a visual blast and add one move;
+- may freeze the target tube until the next successful move;
+- never invalidate the certified puzzle solution.
+
+If no recipe exists or the recipe was already claimed, the normal mismatched-pour rejection applies.
+
 ## 9. Undo
 
 Before every successful move, push a snapshot:
@@ -128,11 +155,13 @@ Before every successful move, push a snapshot:
 ```text
 history.push({
   tubes: deepClone(currentTubes),
-  moves: currentMoves
+  moves: currentMoves,
+  gold: currentGold,
+  mechanicState: clone(currentMechanicState)
 })
 ```
 
-Undo restores the latest snapshot.
+Undo restores the latest snapshot, including coins earned by a synthesis on that move. This prevents repeatedly undoing and completing the same tube to farm currency.
 
 Using undo counts as an assist for mastery purposes.
 
@@ -209,6 +238,14 @@ recentPuzzles = []
 All future visual rebuilds must preserve this state contract unless a backward-compatible migration is intentionally implemented.
 
 ## 14. Rewards
+
+Each synthesized tube grants an immediate level-scaled reward:
+
+```text
+coinsPerTube = 12 + min(28, floor((level - 1) / 3) * 2)
+```
+
+If several tubes complete on the same move, each completed tube pays the reward once.
 
 On level completion:
 

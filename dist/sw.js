@@ -1,4 +1,4 @@
-const CACHE='chemlab-release-5';
+const CACHE='chemlab-release-7';
 const ASSETS=['./','index.html','style.css','app.js','liquid.js','expansion.js','progression.js','engine.js','lab.webp','manifest.webmanifest','icon.svg'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
