@@ -1,1 +1,59 @@
-<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#091d26"><meta name="description" content="ChemLab — збирай елементи, розгадуй лабораторні головоломки та відкривай нові рівні"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"><title>ChemLab — Лабораторія відкриттів</title></head><body><div class="scene"></div><main id="game"><header><button class="round" id="settings" aria-label="Налаштування">☰</button><div class="brand">CHEM<span>LAB</span><small>ЛАБОРАТОРІЯ ВІДКРИТТІВ</small></div><button class="currency" id="collection"><span>✦</span> <b id="gold">0</b></button></header><section class="heading"><div class="eyebrow" id="chapter">РОЗДІЛ I · ПЕРШЕ СВІТЛО</div><h1>Експеримент <span id="level">01</span></h1><p id="objective">Збери однакові елементи в кожній колбі</p></section><div class="world-hud"><button id="research-button">✧ <span id="research-label">Дослідження O</span></button><span>◈ <b id="crystal-count">0</b></span></div><div class="status"><div><i class="dot"></i> <span id="completed">0 / 3</span> зібрано</div><div><b id="moves">0</b> ходів</div></div><section id="board" aria-label="Ігрові колби"></section><div id="feedback" role="status" aria-live="polite">Торкнись колби, потім обери, куди перелити</div><nav class="tools" aria-label="Інструменти"><button id="undo"><span>↶</span>Назад</button><button id="hint"><span>✧</span>Підказка</button><button id="reserve"><span>♧</span>+ Колба</button><button id="restart"><span>⟳</span>Заново</button></nav><nav class="world-nav" aria-label="Розвиток лабораторії"><button id="reactor-button"><span>⚗</span>Реактор</button><button id="quests-button"><span>☷<i id="quest-dot" hidden></i></span>Квести</button><button id="lab-button"><span>⌂</span>Лабораторія <b id="lab-rank">1</b></button></nav><footer><button id="atlas">◈ <span>Елементи</span> <b id="discovered">3 / 118</b></button><div class="mastery">✦ <b id="mastery">0</b><small>МАЙСТЕРНІСТЬ</small></div></footer></main><dialog id="modal"><div id="modalbody"></div><button id="close" class="secondary">Повернутися до гри</button></dialog><script type="module" src="app.js"></script></body></html>
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#091d26">
+  <meta name="description" content="ChemLab — збирай елементи, розгадуй лабораторні головоломки та відкривай нові рівні">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <title>ChemLab — лабораторія відкриттів</title>
+</head>
+<body>
+  <div class="scene"></div>
+  <main id="game">
+    <header>
+      <button class="round" id="settings" aria-label="Налаштування">☰</button>
+      <div class="brand">CHEM<span>LAB</span><small>ЛАБОРАТОРІЯ ВІДКРИТТІВ</small></div>
+      <button class="currency" id="collection" aria-label="Баланс монет"><span>✦</span> <b id="gold">0</b></button>
+    </header>
+    <section class="heading">
+      <div class="eyebrow" id="chapter">РОЗДІЛ I · ПЕРШЕ СВІТЛО</div>
+      <h1>Експеримент <span id="level">01</span></h1>
+      <p id="objective">Збери однакові елементи в кожній колбі</p>
+    </section>
+    <div class="world-hud">
+      <button id="research-button">✧ <span id="research-label">Дослідження O</span></button>
+      <span>◈ <b id="crystal-count">0</b></span>
+    </div>
+    <div class="status">
+      <div><i class="dot"></i> <span id="completed">0 / 3</span> зібрано</div>
+      <div><b id="moves">0</b> ходів</div>
+    </div>
+    <div class="level-modifier" id="level-modifier" aria-label="Особливості рівня"></div>
+    <section id="board" aria-label="Ігрові колби"></section>
+    <div id="feedback" role="status" aria-live="polite">Торкнись колби, потім обери, куди перелити</div>
+    <div class="tools">
+      <button id="undo"><span>↶</span>Назад</button>
+      <button id="hint"><span>✧</span>Підказка</button>
+      <button id="reserve"><span>♧</span>+ Колба</button>
+      <button id="restart"><span>↻</span>Заново</button>
+    </div>
+    <nav class="world-nav" aria-label="Розділи лабораторії">
+      <button id="reactor-button"><span>⚗</span>Реактор</button>
+      <button id="quests-button"><span>▦<i id="quest-dot" hidden></i></span>Квести</button>
+      <button id="lab-button"><span>⌂</span>Лабораторія <b id="lab-rank">1</b></button>
+    </nav>
+    <footer>
+      <button id="atlas">◆ <span>Елементи</span> <b id="discovered">3 / 118</b></button>
+      <div class="mastery">✦ <span id="mastery">0</span><small>МАЙСТЕРНІСТЬ</small></div>
+    </footer>
+  </main>
+  <dialog id="modal">
+    <div id="modalbody"></div>
+    <button class="secondary" id="close">Закрити</button>
+  </dialog>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

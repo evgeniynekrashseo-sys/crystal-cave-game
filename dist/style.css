@@ -7,19 +7,18 @@
 /* Simulated liquid is clipped by the glass; symbol labels remain accessible. */
 .liquid-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}.tube .token{background:none;box-shadow:none;animation:none;z-index:1;pointer-events:none}.tube .token:before{display:none}.tube:after{z-index:2}.liquid-moving{z-index:30!important;transform-origin:50% 8px;transition:none!important}.liquid-moving .token{opacity:.4}.pour-stream{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:25}
 
-/* Four readable liquid portions inside every tube. The dividers are visual only. */
-.tube{--slot-height:34px}
-.tube::before{
-  content:"";
-  position:absolute;
-  inset:0 4px;
-  pointer-events:none;
-  z-index:1;
-  background:
-    linear-gradient(90deg,transparent 0,#dffcff80 14%,#f3ffffb3 50%,#dffcff80 86%,transparent 100%) center calc(100% - var(--slot-height))/100% 1px no-repeat,
-    linear-gradient(90deg,transparent 0,#dffcff80 14%,#f3ffffb3 50%,#dffcff80 86%,transparent 100%) center calc(100% - var(--slot-height) - var(--slot-height))/100% 1px no-repeat,
-    linear-gradient(90deg,transparent 0,#dffcff80 14%,#f3ffffb3 50%,#dffcff80 86%,transparent 100%) center calc(100% - var(--slot-height) - var(--slot-height) - var(--slot-height))/100% 1px no-repeat;
-  filter:drop-shadow(0 0 2px #aef7ff70);
+/* Reference-derived glass: portions are drawn by the liquid renderer, never as a tube-wide grid. */
+.tube{
+  --slot-height:34px;
+  border-color:#dffbffcc;
+  background:linear-gradient(90deg,#efffff2e 0,#8fdbec0a 24%,#0018275e 70%,#dffcff31 100%);
+  box-shadow:inset 4px 0 5px #ffffff40,inset -4px 0 7px #9ceaff24,0 0 0 1px #55879a99,0 0 12px #6edcff20;
+}
+.tube::before{content:none}
+.rim{
+  border-color:#e5feffde;
+  background:linear-gradient(180deg,#efffff,#7faeb7 27%,#0a3541 55%,#c9f8ff 100%);
+  box-shadow:inset 0 0 3px #fff,0 2px 4px #0009,0 0 9px #9aefff2e;
 }
 .tube .token{
   inline-size:100%;
@@ -31,8 +30,28 @@
   white-space:nowrap;
   text-overflow:ellipsis;
   line-height:1;
-  font-size:clamp(11px,3.7vw,15px);
+  color:#03131b;
+  font-size:clamp(13px,4.2vw,17px);
+  font-weight:900;
+  letter-spacing:-.02em;
+  text-shadow:0 1px 0 #ffffff70,0 0 2px #ffffff42;
   z-index:2;
 }
-.tube:after{z-index:3}
-@media(max-height:800px){.tube{--slot-height:27px}.tube .token{font-size:13px;padding-inline:5px}}
+.tube:after{z-index:3;width:3px;left:6px;background:linear-gradient(#f2ffffa6,#ffffff12)}
+.tube-wrap.frozen-tube .tube{border-color:#b9f2ff;box-shadow:inset 0 0 14px #bcefff66,0 0 15px #71dfff55}
+.tube-wrap.frozen-tube .rim{box-shadow:inset 0 0 4px #fff,0 0 13px #7ee7ff99}
+.tube-wrap.frozen-tube::after{content:none}
+.tube-wrap.catalyst-tube .tube{box-shadow:inset 4px 0 5px #ffffff40,inset -4px 0 7px #9ceaff24,0 0 0 1px #dcbcff99,0 0 16px #be73ff55}
+.tube-wrap.catalyst-tube .tube-number{color:#e0bcff}
+.tube-wrap.gate-tube .tube{border-color:#ffd58cbf;box-shadow:inset 4px 0 5px #ffffff40,inset -4px 0 7px #ffe7b025,0 0 0 1px #d89c4c99,0 0 14px #ffc05a36}
+.tube-badge{position:absolute;top:20px;right:-2px;z-index:5;min-width:25px;padding:3px 5px;border:1px solid #dffeff88;border-radius:9px;background:#071923e8;color:#f3feff;font-size:8px;font-weight:900;line-height:1;box-shadow:0 3px 8px #0008;pointer-events:none}
+.level-modifier{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:8px 10px 0;min-height:23px}
+.level-modifier::-webkit-scrollbar{display:none}
+.level-modifier span{flex:0 0 auto;border:1px solid #90d6d22e;border-radius:999px;background:#09212bc4;padding:5px 8px;color:#bad4d2;font-size:7px;letter-spacing:.35px}
+.level-modifier span:first-child{color:#d9c2ff;border-color:#be91ee3d}
+#game[data-density=dense] #board{width:100%;max-width:400px;margin-inline:auto;gap:13px 10px;padding-top:15px}
+#game[data-density=dense] .tube-wrap{width:68px;height:176px}
+#game[data-density=dense] .tube{left:7px;width:54px;height:146px}
+#game[data-density=dense] .rim{left:4px;width:60px}
+#game[data-density=dense] .token{height:31px;min-height:31px;font-size:14px;padding-inline:5px}
+@media(max-height:800px){.tube{--slot-height:27px}.tube .token{font-size:14px;padding-inline:5px}}

@@ -77,7 +77,9 @@ Base symbol count by level:
 levels 1–3   -> 3 active symbols
 levels 4–7   -> 4 active symbols
 levels 8–14  -> 5 active symbols
-level 15+    -> 6 active symbols
+levels 15–24 -> 6 active symbols
+levels 25–44 -> 7 active symbols
+level 45+    -> 8 active symbols
 ```
 
 More discovered symbols may exist in the account state, but the active level selects only the amount required by the current difficulty tier.
@@ -108,13 +110,12 @@ Exact retry ignores anti-repeat filtering and restores the same combination.
 
 ## 8. Move budget
 
-The initial move budget is derived from the certified solution length with extra tolerance:
+The initial move budget is derived from the certified solution length with tolerance that contracts as mastery grows:
 
 ```text
 base = solution.length
-level < 5   -> base + 6
-level < 10  -> base + 4
-level >= 10 -> base + 3
+slack = max(1, 7 - floor((level - 1) / 3))
+budget = base + slack
 minimum displayed budget should not fall below 9
 ```
 
@@ -370,3 +371,16 @@ The new user request extends the discovery pool to all 118 element symbols, pres
 The sample reactor combines unlocked symbols independently of the sorting board. It provides fictional explosions, gold deposits, crystals and artifact rewards. A freezing recipe locks only the sample reactor until the next successful sorting move; the puzzle cannot be deadlocked by this effect. Each recipe grants once per campaign level, with a shared charge allowance (3 + reactor upgrade). Retry/shuffle/undo do not replenish claims. Mastery `nug` remains a clean-win reward; reaction crystals are a separate currency.
 
 Research quests require a campaign level and cumulative reaction total. The active symbol count is capped by discovered count; selection rotates and includes the newest discovery. Every resulting puzzle still requires a certified solution. Daily quests use UTC calendar dates and idempotent claim flags. Three laboratory upgrades and earned-currency cosmetics do not affect solvability. See `MONETIZATION_ROADMAP.md` for the store-release boundary and monetization implementation that remains outstanding.
+
+## 24. Difficulty curve and chapter modifiers (focus-group revision)
+
+Difficulty must not plateau after level 15. The certified reverse scramble grows from 7 steps at the opening level toward deeper late-game states, while move slack contracts gradually from 7 to 1. Symbol tiers extend to 7 active symbols at level 25 and 8 at level 45, provided those symbols have been discovered.
+
+New rules unlock as chapter mechanics:
+
+- level 4: a cryo-locked tube cannot be used for the first successful move;
+- level 8: a marked catalyst tube grants two bonus moves when filled with its target symbol;
+- level 15: a stabilizer tube accepts only its displayed target symbol;
+- later levels rotate and combine these rules; cryo duration grows to two moves from level 30.
+
+Every cryo tube and stabilizer target is selected against the stored certificate. The certified solution must not touch a frozen tube before it thaws, and every certified transfer into a stabilizer must match its target. Therefore modifiers increase decision difficulty without invalidating the guaranteed solution. Undo restores both tube state and modifier state.
