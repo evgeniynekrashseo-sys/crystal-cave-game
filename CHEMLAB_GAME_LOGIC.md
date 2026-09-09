@@ -362,3 +362,11 @@ Visual target:
 - gameplay visible immediately on first frame.
 
 This section describes presentation goals only. The logic rules above remain authoritative.
+
+## 23. Discovery-world extension (user-authorized, 2026-09-09)
+
+The new user request extends the discovery pool to all 118 element symbols, preserves existing discoveries, and replaces automatic discovery with explicit research quests. The canonical core save key and fields remain unchanged; the symbol whitelist is expanded backward-compatibly. Expansion state is stored separately in `chemlab_world_v1`.
+
+The sample reactor combines unlocked symbols independently of the sorting board. It provides fictional explosions, gold deposits, crystals and artifact rewards. A freezing recipe locks only the sample reactor until the next successful sorting move; the puzzle cannot be deadlocked by this effect. Each recipe grants once per campaign level, with a shared charge allowance (3 + reactor upgrade). Retry/shuffle/undo do not replenish claims. Mastery `nug` remains a clean-win reward; reaction crystals are a separate currency.
+
+Research quests require a campaign level and cumulative reaction total. The active symbol count is capped by discovered count; selection rotates and includes the newest discovery. Every resulting puzzle still requires a certified solution. Daily quests use UTC calendar dates and idempotent claim flags. Three laboratory upgrades and earned-currency cosmetics do not affect solvability. See `MONETIZATION_ROADMAP.md` for the store-release boundary and monetization implementation that remains outstanding.

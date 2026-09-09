@@ -1,4 +1,5 @@
-export const POOL=['Na','Cl','Fe','O','C','H','Au','Li','He','Be','B','N','F','Ne','Mg','Al','Si','P','S'];
+const BASE_POOL=['Na','Cl','Fe','O','C','H','Au','Li','He','Be','B','N','F','Ne','Mg','Al','Si','P','S'];
+export const POOL=[...BASE_POOL,...'H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr Rf Db Sg Bh Hs Mt Ds Rg Cn Nh Fl Mc Lv Ts Og'.split(' ').filter(s=>!BASE_POOL.includes(s))];
 export const clone=x=>x.map(t=>[...t]);
 export const solved=t=>t.every(a=>!a.length||(a.length===4&&a.every(v=>v===a[0])));
 export function move(t,a,b){if(a===b||!t[a]?.length||!t[b]||t[b].length===4)return null;const x=t[a].at(-1);if(t[b].length&&t[b].at(-1)!==x)return null;let n=0;for(let i=t[a].length-1;i>=0&&t[a][i]===x;i--)n++;n=Math.min(n,4-t[b].length);const out=clone(t);out[b].push(...out[a].splice(-n));return out;}
