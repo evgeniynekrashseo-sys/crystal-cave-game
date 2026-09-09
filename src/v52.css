@@ -1,4 +1,0 @@
-/* ChemLab V68 — legacy compatibility shim.
-   The historic V52 override layer is intentionally retired; main.ts still imports this file,
-   which now forwards to the single premium presentation source of truth. */
-@import url('./premium-ui.css');
