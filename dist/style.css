@@ -82,3 +82,46 @@
 @keyframes orbit-spin{to{transform:rotate(360deg)}}
 @keyframes table-unlock{50%{transform:scale(1.18);box-shadow:0 0 36px var(--el)}}
 @media(prefers-reduced-motion:reduce){#board.refilling .tube-wrap,.unlock-orbit,.unlock-orbit::after,.ptable.just-unlocked{animation-duration:.16s!important;animation-iteration-count:1!important}}
+
+/* Reference pass: brighter laboratory glass, heavier rim and fuller liquid capsules. */
+.tube-wrap{filter:drop-shadow(0 12px 11px #000b) drop-shadow(0 0 5px #7cddff35)}
+.tube{
+  top:12px;
+  left:8px;
+  width:61px;
+  height:157px;
+  border:3px solid #dffbffe8;
+  border-top:0;
+  border-radius:7px 7px 29px 29px;
+  background:linear-gradient(90deg,#f4ffff4a 0,#b8efff0d 22%,#00122070 68%,#eaffff3f 100%);
+  box-shadow:inset 5px 0 4px #ffffff59,inset -5px 0 8px #78dfff20,inset 0 -5px 10px #9deaff18,0 0 0 1px #5b98adcc,0 0 15px #68ddff36;
+}
+.rim{
+  top:4px;
+  left:3px;
+  width:71px;
+  height:17px;
+  border:3px solid #ecfffff2;
+  background:linear-gradient(180deg,#ffffff 0,#bfefff 23%,#164a5b 52%,#dffcff 76%,#6bb3ca 100%);
+  box-shadow:inset 0 0 4px #fff,0 3px 4px #000b,0 0 13px #a8f5ff75;
+}
+.tube:after{left:6px;top:12px;bottom:18px;width:4px;background:linear-gradient(#ffffffc9 0,#dbfbff7a 34%,#ffffff18 100%)}
+.tube .token{font-size:17px;font-weight:950;color:#03141c;text-shadow:0 1px 0 #ffffffa6,0 0 3px #ffffff75}
+.tube-wrap.selected{filter:drop-shadow(0 0 18px #8bffdb9c) drop-shadow(0 12px 9px #0009)}
+.tube-wrap.done .tube{box-shadow:inset 5px 0 5px #fff8,inset -4px 0 8px #baffd82e,0 0 0 1px #c6ffe1,0 0 25px #8dffc272}
+@media(max-height:800px){.tube{left:7px;width:53px;height:131px;border-radius:6px 6px 25px 25px}.rim{left:2px;width:62px;height:15px}.tube .token{font-size:15px}}
+
+/* Reference glass sprite overlays the animated liquid without covering it. */
+#board{gap:24px 14px;align-items:center;padding-top:24px}
+.tube-wrap,#game[data-density=dense] .tube-wrap{width:74px;height:266px;isolation:isolate;filter:drop-shadow(0 7px 8px #0009)}
+.glass-sprite{position:absolute;top:0;left:0;width:100%;height:242px;mix-blend-mode:screen;z-index:4;pointer-events:none;object-fit:fill}
+.tube-wrap .rim{display:none}
+.tube-wrap .tube,#game[data-density=dense] .tube{top:19px;left:10px;width:54px;height:212px;border:0;border-radius:0 0 27px 27px;background:transparent;box-shadow:none;padding:0}
+.tube-wrap .tube:after,.tube-wrap .tube:before{display:none}
+.tube-wrap .tube .token,#game[data-density=dense] .tube .token{height:44px;min-height:44px;flex:0 0 44px;font-size:18px;font-weight:800;color:#02141d;text-shadow:none;padding:0 3px}
+.tube-number{bottom:2px}
+.tube-badge{top:19px;right:-2px;z-index:5}
+.tube-wrap.selected{filter:drop-shadow(0 0 10px #83f7ef8c)}
+@media(max-width:380px){#board{column-gap:8px}.tube-wrap,#game[data-density=dense] .tube-wrap{width:68px}.tube-wrap .tube,#game[data-density=dense] .tube{left:9px;width:50px}}
+@media(max-height:800px){.tube-wrap,#game[data-density=dense] .tube-wrap{height:220px}.glass-sprite{height:198px}.tube-wrap .tube,#game[data-density=dense] .tube{top:16px;height:174px}.tube-wrap .tube .token,#game[data-density=dense] .tube .token{height:36px;min-height:36px;flex-basis:36px;font-size:16px}}
+@media(max-width:600px){#board,#game[data-density=dense] #board{gap:16px 8px;max-width:100%}.tube-wrap,#game[data-density=dense] .tube-wrap{width:68px;height:216px}.glass-sprite{height:194px}.tube-wrap .tube,#game[data-density=dense] .tube{left:9px;top:15px;width:50px;height:170px}.tube-wrap .tube .token,#game[data-density=dense] .tube .token{height:35px;min-height:35px;flex-basis:35px;font-size:16px}}

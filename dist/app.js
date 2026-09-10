@@ -1,17 +1,17 @@
 import {LiquidRenderer,bubblingSound} from './liquid.js';
 import {initExpansion} from './expansion.js';
 import {tint,NAMES} from './progression.js';
-import {clone,cleared,collectCompleted,completionReward,createCertifiedLevel,budget,normalize,mechanicBlock,moveWithMechanics} from './engine.js';
+import {clone,collectCompleted,completionReward,levelOutcome,createCertifiedLevel,budget,normalize,mechanicBlock,moveWithMechanics} from './engine.js';
 const $=id=>document.getElementById(id);let save;try{save=normalize(JSON.parse(localStorage.getItem('chemlab_v50')))}catch{save=normalize(null)}
 const liquid=new LiquidRenderer();
-let world;let levelRun,puzzle,waveIndex=0,tubes,moves,history=[],selected=-1,assisted=false,reserve=false,locked=false,ended=false,seed=0,sound=true,ctx,storageWarn=false,mechanicState={frozenTurns:0,catalystClaimed:false,completed:0,crossFrozenTurns:0,crossFrozenTube:-1};
+let world;let levelRun,puzzle,waveIndex=0,tubes,moves,history=[],selected=-1,assisted=false,reserve=false,locked=false,ended=false,completedLevel=false,seed=0,sound=true,ctx,storageWarn=false,mechanicState={frozenTurns:0,catalystClaimed:false,completed:0,crossFrozenTurns:0,crossFrozenTube:-1};
 const persist=()=>{try{localStorage.setItem('chemlab_v50',JSON.stringify(save))}catch{storageWarn=true;}};
 const say=s=>$('feedback').textContent=s;
 function tone(f=500){if(!sound)return;try{ctx??=new (window.AudioContext||window.webkitAudioContext)();ctx.resume();const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(f,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(f*.55,ctx.currentTime+.15);g.gain.setValueAtTime(.045,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.2);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.21)}catch{}}
 function gurgle(){if(!sound)return;try{ctx??=new (window.AudioContext||window.webkitAudioContext)();ctx.resume().catch(()=>{});bubblingSound(ctx)}catch{}}
 function newSeed(){return crypto.getRandomValues(new Uint32Array(1))[0]}
 function waveState(completed=mechanicState.completed||0){return{frozenTurns:puzzle.mechanics.frozen?.turns||0,catalystClaimed:false,completed,crossFrozenTurns:0,crossFrozenTube:-1};}
-function start(exact=false){if(locked)return;seed=exact?seed:newSeed();const symbols=world.symbols();if(!exact||!levelRun||levelRun.level!==save.level)levelRun=createCertifiedLevel(symbols,save.level,seed,exact?[]:save.recentPuzzles);waveIndex=0;puzzle=levelRun.waves[waveIndex];tubes=clone(puzzle.tubes);moves=levelRun.waves.reduce((sum,wave)=>sum+budget(wave,save.level),0);history=[];selected=-1;assisted=false;reserve=false;ended=false;mechanicState={frozenTurns:puzzle.mechanics.frozen?.turns||0,catalystClaimed:false,completed:0,crossFrozenTurns:0,crossFrozenTube:-1};save.recentPuzzles=[...save.recentPuzzles.filter(k=>k!==levelRun.key),levelRun.key].slice(-3);persist();world.onStart();$('modal').close();render();say(storageWarn?'Збереження недоступне у цьому браузері':'Торкнись колби, потім обери, куди перелити');}
+function start(exact=false){if(locked)return;seed=exact?seed:newSeed();const symbols=world.symbols();if(!exact||!levelRun||levelRun.level!==save.level)levelRun=createCertifiedLevel(symbols,save.level,seed,exact?[]:save.recentPuzzles);waveIndex=0;puzzle=levelRun.waves[waveIndex];tubes=clone(puzzle.tubes);moves=levelRun.waves.reduce((sum,wave)=>sum+budget(wave,save.level),0);history=[];selected=-1;assisted=false;reserve=false;ended=false;completedLevel=false;mechanicState={frozenTurns:puzzle.mechanics.frozen?.turns||0,catalystClaimed:false,completed:0,crossFrozenTurns:0,crossFrozenTube:-1};save.recentPuzzles=[...save.recentPuzzles.filter(k=>k!==levelRun.key),levelRun.key].slice(-3);persist();world.onStart();$('modal').close();render();say(storageWarn?'Збереження недоступне у цьому браузері':'Торкнись колби, потім обери, куди перелити');}
 function mechanicTags(){
  const tags=[`Складність ${'◆'.repeat(puzzle.profile.rank)}`];
  if(levelRun.waves.length>1)tags.push(`Хвиля ${waveIndex+1} / ${levelRun.waves.length}`);
@@ -97,7 +97,7 @@ function render(){
    const gate=puzzle.mechanics.stabilizer?.tube===i;
    const badge=frozen?'❄':gate?`⇣${puzzle.mechanics.stabilizer.target}`:catalyst?`✦${puzzle.mechanics.catalyst.target}`:'';
    const note=frozen?', кріо-замок':gate?`, стабілізатор лише для ${puzzle.mechanics.stabilizer.target}`:catalyst?', каталізатор':'';
-   return `<button class="tube-wrap ${selected===i?'selected':''} ${done?'done':''} ${frozen?'frozen-tube':''} ${catalyst?'catalyst-tube':''} ${gate?'gate-tube':''}" data-tube="${i}" aria-label="Колба ${i+1}: ${t.length?t.join(', '):'порожня'}${note}" aria-pressed="${selected===i}" ${frozen?'aria-disabled="true"':''}><span class="rim"></span><span class="tube"><canvas class="liquid-canvas" aria-hidden="true"></canvas>${t.map(s=>`<span class="token" style="--c:${tint(s)}">${s}</span>`).join('')}</span>${badge?`<span class="tube-badge">${badge}</span>`:''}<span class="tube-number">${done?'✓':String(i+1).padStart(2,'0')}</span></button>`;
+   return `<button class="tube-wrap ${selected===i?'selected':''} ${done?'done':''} ${frozen?'frozen-tube':''} ${catalyst?'catalyst-tube':''} ${gate?'gate-tube':''}" data-tube="${i}" aria-label="Колба ${i+1}: ${t.length?t.join(', '):'порожня'}${note}" aria-pressed="${selected===i}" ${frozen?'aria-disabled="true"':''}><img class="glass-sprite" src="tube-glass.webp" alt="" aria-hidden="true"><span class="rim"></span><span class="tube"><canvas class="liquid-canvas" aria-hidden="true"></canvas>${t.map(s=>`<span class="token" style="--c:${tint(s)}">${s}</span>`).join('')}</span>${badge?`<span class="tube-badge">${badge}</span>`:''}<span class="tube-number">${done?'✓':String(i+1).padStart(2,'0')}</span></button>`;
  }).join('');
  liquid.sync(tubes,selected);
 }
@@ -157,8 +157,9 @@ $('board').addEventListener('click',async e=>{
    persist();
    synthesisNotice=`⚗ Чистий синтез: +${reward} монет`;
  }
- world.onMove();
- if(cleared(tubes)&&waveIndex<levelRun.waves.length-1){
+ const outcome=levelOutcome(tubes,waveIndex,levelRun.waves.length);
+ try{world.onMove()}catch{persist()}
+ if(outcome==='wave'){
    await refillWave();
    locked=false;
    render();
@@ -167,14 +168,30 @@ $('board').addEventListener('click',async e=>{
  }
  locked=false;
  render();
- if(cleared(tubes))win();
+ if(outcome==='win'){win();return;}
  else if(moves<=0)lose();
  else say([synthesisNotice,mechanicNotice].filter(Boolean).join(' · ')||'Добре! Продовжуй збирати однакові елементи');
 });
-function modal(html){$('modal').classList.remove('wide');$('modalbody').innerHTML=html;if(!$('modal').open)$('modal').showModal();$('modal').scrollTop=0;}
-$('close').onclick=()=>$('modal').close();
-function win(){if(ended)return;ended=true;const l=save.level,reward=50+l*5+Math.min(30,moves*2);save.gold+=reward;save.xp+=25+l*2;save.score+=100+l*10+moves*5;save.streak++;save.bestStreak=Math.max(save.streak,save.bestStreak);if(!assisted)save.nug++;save.level++;const unlocked=world.onWin(!assisted);persist();render();$('level').textContent=String(l).padStart(2,'0');tone(880);modal(`<div class="eyebrow">${unlocked?'НОВИЙ ЕЛЕМЕНТ ПЕРІОДИЧНОЇ ТАБЛИЦІ':'ЕКСПЕРИМЕНТ '+l+' ЗАВЕРШЕНО'}</div>${unlocked?`<div class="unlock-orbit" style="--el:${tint(unlocked)}"><small>${save.discovered.length}</small><b>${unlocked}</b></div><h2>Відкрито ${NAMES[unlocked]||unlocked}</h2><p>Елемент ${unlocked} додано до періодичної таблиці та наступних експериментів · +3 ◈</p><button class="primary" id="open-map">Відкрити у таблиці →</button>`:`<div class="reward">✦</div><h2>Чистий синтез!</h2>`}<p>+${reward} монет · +${25+l*2} XP<br>${assisted?'Експеримент із підтримкою':'+1 кристал майстерності'} · Серія ${save.streak}</p><button class="secondary" id="next">Експеримент ${save.level} →</button>`);if(unlocked)$('open-map').onclick=()=>world.atlas(unlocked);$('next').onclick=()=>start();}
-function lose(){ended=true;save.streak=0;persist();render();modal('<div class="reward">↻</div><h2>Спробуй інший шлях</h2><p>Ходи закінчилися. Цей експеримент має розв’язок. Почни ще раз або візьми нову комбінацію.</p><button class="primary" id="retry">Повторити цей рівень</button><button class="secondary" id="shuffle">Нова комбінація</button>');$('retry').onclick=()=>start(true);$('shuffle').onclick=()=>start();}
+function modal(html){$('modal').classList.remove('wide');$('modalbody').innerHTML=html;$('close').textContent=completedLevel?'Наступний експеримент →':'Закрити';if(!$('modal').open)$('modal').showModal();$('modal').scrollTop=0;}
+$('close').onclick=()=>{if(completedLevel)start();else $('modal').close();};
+function win(){
+ if(ended)return;
+ ended=true;
+ completedLevel=true;
+ const l=save.level,reward=50+l*5+Math.min(30,moves*2),known=new Set(save.discovered);
+ save.gold+=reward;save.xp+=25+l*2;save.score+=100+l*10+moves*5;save.streak++;save.bestStreak=Math.max(save.streak,save.bestStreak);if(!assisted)save.nug++;save.level++;
+ // Meta progression is secondary: even a storage/UI failure must never block level completion.
+ let unlocked=null;
+ try{unlocked=world.onWin(!assisted)}catch{unlocked=save.discovered.find(symbol=>!known.has(symbol))||null}
+ persist();
+ try{render()}catch{}
+ $('level').textContent=String(l).padStart(2,'0');
+ tone(880);
+ modal(`<div class="eyebrow">${unlocked?'НОВИЙ ЕЛЕМЕНТ ПЕРІОДИЧНОЇ ТАБЛИЦІ':'ЕКСПЕРИМЕНТ '+l+' ЗАВЕРШЕНО'}</div>${unlocked?`<div class="unlock-orbit" style="--el:${tint(unlocked)}"><small>${save.discovered.length}</small><b>${unlocked}</b></div><h2>Відкрито ${NAMES[unlocked]||unlocked}</h2><p>Елемент ${unlocked} додано до періодичної таблиці та наступних експериментів · +3 ◈</p><button class="primary" id="open-map">Відкрити у таблиці →</button>`:`<div class="reward">✦</div><h2>Чистий синтез!</h2>`}<p>+${reward} монет · +${25+l*2} XP<br>${assisted?'Експеримент із підтримкою':'+1 кристал майстерності'} · Серія ${save.streak}</p><button class="secondary" id="next">Експеримент ${save.level} →</button>`);
+ if(unlocked)$('open-map').onclick=()=>world.atlas(unlocked);
+ $('next').onclick=()=>start();
+}
+function lose(){ended=true;completedLevel=false;save.streak=0;persist();render();modal('<div class="reward">↻</div><h2>Спробуй інший шлях</h2><p>Ходи закінчилися. Цей експеримент має розв’язок. Почни ще раз або візьми нову комбінацію.</p><button class="primary" id="retry">Повторити цей рівень</button><button class="secondary" id="shuffle">Нова комбінація</button>');$('retry').onclick=()=>start(true);$('shuffle').onclick=()=>start();}
 $('undo').onclick=()=>{if(locked||ended||!history.length)return;const h=history.pop();waveIndex=h.waveIndex;puzzle=levelRun.waves[waveIndex];tubes=h.tubes;moves=h.moves;save.gold=h.gold;mechanicState=h.mechanicState;assisted=true;selected=-1;persist();render();say('Хід скасовано · монети за синтез повернено');};
 $('hint').onclick=()=>{if(locked||ended)return;assisted=true;for(let a=0;a<tubes.length;a++)for(let b=0;b<tubes.length;b++)if(moveWithMechanics(tubes,a,b,puzzle.mechanics,mechanicState)){selected=a;render();for(const i of [a,b])document.querySelector(`[data-tube="${i}"]`).classList.add('hinted');say(`Можливий хід: колба ${a+1} → колба ${b+1}`);return}say('Немає доступних ходів. Скасуй хід або додай колбу');};
 $('reserve').onclick=()=>{if(reserve||locked||ended)return;reserve=true;assisted=true;tubes.push([]);selected=-1;render();say('Резервна колба готова · використано допомогу');};

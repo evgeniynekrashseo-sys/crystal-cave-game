@@ -1,37 +1,18 @@
-# ChemLab design QA
+# ChemLab glass and progression QA — 2026-09-10
 
-- Date: 2026-09-09
-- Source target: user-supplied `D040DFBB-BCF7-43AA-9F20-C4E4946764F8(4).jpeg`
-- Implementation: supervised local Sites preview, level 42 QA fixture
-- Browser viewport: 1298 × 1000 px
-- Responsive game canvas: 530 px wide
-- Dense board: 400 px wide, 9 tubes in a 5 + 4 layout
+final result: passed
 
-## Visual comparison
+Scope: test-tube appearance matching the supplied reference, preserving interactive liquids and fixing post-win continuation. The surrounding screen was not redesigned.
 
-The comparison was run with the source image and the current implementation rendered together.
+Reference: `/workspace/scratch/ee83bc649bd6/upload/D040DFBB-BCF7-43AA-9F20-C4E4946764F8(6).jpeg`.
+Browser render: `/workspace/scratch/ee83bc649bd6/qa-glass.jpg` (1363 × 936).
+Combined reference/component comparison: `/workspace/scratch/ee83bc649bd6/qa-comparison.jpg`.
+Mobile browser capture: `/workspace/scratch/ee83bc649bd6/qa-mobile.jpg` (390 × 844 iframe viewport).
 
-- Separate liquid portions: matched. Each occupied element owns a rounded, softly separated liquid body; empty tube space has no grid lines.
-- Element labels: matched. Symbols use a large dark weight, stay centered inside their liquid portion, and report zero measured horizontal overflow.
-- Glass: matched to the target direction with a bright rim, thick side highlights, rounded base and soft neon edge.
-- Liquid character: matched as a live equivalent rather than a flat copy. Each portion keeps its own color volume while the exposed top surface waves and bubbles.
-- High-level density: adapted to the existing mobile game shell. The reference has one row of six; ChemLab uses 5 + 4 at level 42 so nine tubes remain legible.
+Visual inspection: open oval rim, transparent glass, rounded bottom, aligned liquid boundaries and readable dark labels. Removed opaque sprite background. Seven tubes fit in two rows on mobile; the page scrolls to lower tools. No clipped labels or overlapping tubes. The generated glass is an approximation of the supplied reference, with subtler glow and a different highlight profile. Puzzle contents vary by level and seed; component comparison intentionally preserves actual gameplay contents.
 
-## Iterations
+Interaction evidence: completed level 1 through normal tube clicks; three synthesized sets cleared and coins increased; oxygen unlock appeared; visited discovery UI; pressed Next experiment and observed Experiment 02 with filled tubes and reset progress. No application errors in browser console; unrelated browser extension metadata errors were present.
 
-1. First render exposed two issues: late-level tubes were too small and the stabilizer description clipped horizontally.
-2. Final render enlarged dense tubes, wrapped modifier chips, removed the redundant large frost glyph, reduced hard segment outlines, and softened gaps between portions.
+Automated validation: 22/22 existing tests passed, including empty-rack progression, refill waves, reward rules and liquid-surface stability.
 
-## Interaction and state checks
-
-- A frozen tube rejected input and explained the remaining lock duration.
-- A legal pour animated, reduced moves by one, and changed the frost counter from 2 to 1.
-- The next valid move opened the cryo lock.
-- Hint respected active modifiers.
-- Undo restored both the move count and frost counter.
-- Every tested label fit inside its token: maximum overflow 0 px.
-- Application-origin console warnings/errors: 0. Browser-extension telemetry errors were excluded as unrelated to the page.
-
-## Result
-
-Passed. The component-level source target is reproduced faithfully within the existing ChemLab visual language, and the new late-game mechanics remain readable at the densest tested layout.
+P3 follow-up: glow can be further art-directed; mobile tools remain below the initial viewport on longer racks.

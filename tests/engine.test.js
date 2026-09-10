@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  POOL,move,cleared,collectCompleted,completionReward,createCertifiedPuzzle,createCertifiedLevel,budget,symbolCount,waveCount,normalize,
+  POOL,move,cleared,collectCompleted,completionReward,levelOutcome,createCertifiedPuzzle,createCertifiedLevel,budget,symbolCount,waveCount,normalize,
   difficultyProfile,mechanicBlock,moveWithMechanics
 } from '../dist/engine.js';
 
@@ -50,6 +50,13 @@ test('advanced levels add waves without adding more than seven tubes',()=>{
     assert.equal(run.totalGroups,run.waves.reduce((sum,wave)=>sum+new Set(wave.tubes.flat()).size,0));
     assert.deepEqual(run,createCertifiedLevel(symbols,level,90210));
   }
+});
+
+test('an empty rack always advances a wave or completes the level',()=>{
+  assert.equal(levelOutcome([[],[]],0,1),'win');
+  assert.equal(levelOutcome([[],[]],0,3),'wave');
+  assert.equal(levelOutcome([[],[]],2,3),'win');
+  assert.equal(levelOutcome([['Na'],[]],0,1),'continue');
 });
 
 test('difficulty grows instead of plateauing after level 15',()=>{

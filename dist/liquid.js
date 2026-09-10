@@ -24,7 +24,8 @@ export function impulse(s,at=0.5,power=20){
 
 export function liquidPalette(symbol){
   const index=Math.max(0,ORDER.indexOf(symbol));
-  const hue=(index*137.508+28)%360;
+  const referenceHues={Li:140,Au:46,He:190,Cl:330,Fe:30,Na:255};
+  const hue=referenceHues[symbol]??(index*137.508+28)%360;
   return {
     top:`hsl(${hue} 100% 72%)`,
     middle:`hsl(${hue} 94% 61%)`,
@@ -35,7 +36,7 @@ export function liquidPalette(symbol){
 
 // Geometry is exported so the visual contract can be tested without a browser.
 // Every occupied slot becomes its own soft liquid portion; empty slots stay empty.
-export function segmentGeometry(tokens,unit,height,weights=null,gap=1.6){
+export function segmentGeometry(tokens,unit,height,weights=null,gap=1.5){
   let used=0;
   return tokens.map((symbol,index)=>{
     const fill=Math.max(0,unit*(weights?.[index]??1));
@@ -49,11 +50,11 @@ export function segmentGeometry(tokens,unit,height,weights=null,gap=1.6){
 
 function segmentPath(c,item,layer){
   const {w,wave}=item;
-  const left=2.5,right=w-2.5;
-  const innerLeft=left+3,innerRight=right-3;
+  const left=.5,right=w-.5;
+  const innerLeft=left+2.5,innerRight=right-2.5;
   const visibleHeight=Math.max(0,layer.bottom-layer.top);
-  const bottomRadius=Math.min(layer.index===0?13:6,visibleHeight*.42);
-  const topRadius=Math.min(4,visibleHeight*.22);
+  const bottomRadius=Math.min(layer.index===0?w/2:2,visibleHeight*.65);
+  const topRadius=Math.min(3,visibleHeight*.12);
   const isSurface=layer.index===item.tokens.length-1;
   const waveStrength=isSurface?1:.16;
   const rippleStrength=isSurface?.7:.18;
@@ -194,6 +195,14 @@ export class LiquidRenderer{
       c.strokeStyle='#ffffff20';
       c.lineWidth=.55;
       segmentPath(c,item,layer);
+      c.stroke();
+      // Elliptical meniscus makes each boundary read as a liquid surface.
+      c.beginPath();
+      c.ellipse(w/2,layer.top+1,w/2-1.5,2.6,0,0,Math.PI*2);
+      c.fillStyle=palette.glow;
+      c.fill();
+      c.strokeStyle='#edffffa0';
+      c.lineWidth=.7;
       c.stroke();
 
       // Only the actual liquid surface gets a bright meniscus; no grid is drawn.

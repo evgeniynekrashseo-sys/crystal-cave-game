@@ -17,6 +17,7 @@ export function collectCompleted(t){
 }
 
 export const completionReward=(level,count=1)=>Math.max(0,Math.floor(count))*(12+Math.min(28,Math.floor((Math.max(1,level)-1)/3)*2));
+export const levelOutcome=(t,waveIndex,totalWaves)=>!cleared(t)?'continue':waveIndex<totalWaves-1?'wave':'win';
 
 export function move(t,a,b){
   if(a===b||!t[a]?.length||!t[b]||t[b].length===4)return null;
