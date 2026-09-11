@@ -37,7 +37,7 @@ test('completed elements disappear and award level-scaled coins',()=>{
   assert.deepEqual(result.completed,[{index:0,symbol:'Na'},{index:2,symbol:'Cl'}]);
   assert.deepEqual(result.tubes,[[],['Cl','Fe'],[],[]]);
   assert.deepEqual(input,[['Na','Na','Na','Na'],['Cl','Fe'],['Cl','Cl','Cl','Cl'],[]]);
-  assert.equal(completionReward(1,2),24);
+  assert.equal(completionReward(1,2),28);
   assert(completionReward(25)>completionReward(1));
 });
 
@@ -77,6 +77,9 @@ test('difficulty grows instead of plateauing after level 15',()=>{
   assert(difficultyProfile(15).stabilizer);
   const combined=difficultyProfile(18);
   assert(combined.frostTurns&&combined.catalyst&&combined.stabilizer);
+  assert.equal(symbolCount(95),10);
+  assert.equal(waveCount(95),6);
+  assert(completionReward(45)>completionReward(1));
 });
 
 test('level modifiers block only their declared moves',()=>{

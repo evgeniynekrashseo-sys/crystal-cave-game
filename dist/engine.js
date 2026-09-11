@@ -16,7 +16,7 @@ export function collectCompleted(t){
   return {tubes,completed};
 }
 
-export const completionReward=(level,count=1)=>Math.max(0,Math.floor(count))*(12+Math.min(28,Math.floor((Math.max(1,level)-1)/3)*2));
+export const completionReward=(level,count=1)=>Math.max(0,Math.floor(count))*(14+Math.min(56,Math.floor((Math.max(1,level)-1)/2)*3));
 export const levelOutcome=(t,waveIndex,totalWaves)=>!cleared(t)?'continue':waveIndex<totalWaves-1?'wave':'win';
 
 export function move(t,a,b){
@@ -37,14 +37,14 @@ function rng(seed){
   return()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};
 }
 
-export const symbolCount=level=>level<4?3:level<8?4:level<15?5:level<25?6:level<45?7:8;
-export const waveCount=level=>level<15?1:level<25?2:level<45?3:4;
+export const symbolCount=level=>level<4?3:level<8?4:level<15?5:level<25?6:level<45?7:level<70?8:level<95?9:10;
+export const waveCount=level=>level<15?1:level<25?2:level<45?3:level<70?4:level<95?5:6;
 
 export function difficultyProfile(level){
   const l=Math.max(1,Math.floor(level));
   const symbols=symbolCount(l);
   const moveSlack=Math.max(1,7-Math.floor((l-1)/3));
-  const scrambleSteps=Math.min(18+symbols*7,3+symbols+Math.ceil(l*.75));
+  const scrambleSteps=Math.min(26+symbols*8,4+symbols+Math.ceil(l*.92));
   let frostTurns=0,catalyst=false,stabilizer=false;
 
   if(l>=4&&l<8)frostTurns=1;

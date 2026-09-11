@@ -63,7 +63,16 @@ async function synthesisFx(completed,rewardEach){
 async function refillWave(){
  const completed=mechanicState.completed;
  waveIndex++;
- puzzle=levelRun.waves[waveIndex];
+ const nextWave=levelRun?.waves?.[waveIndex];
+ if(!nextWave){
+   // A stale/corrupt run must never leave the player on an empty board.
+   waveIndex=Math.max(0,(levelRun?.waves?.length||1)-1);
+   puzzle=levelRun?.waves?.[waveIndex]||puzzle;
+   tubes=[];
+   locked=false;
+   return false;
+ }
+ puzzle=nextWave;
  tubes=clone(puzzle.tubes);
  if(reserve)tubes.push([]);
  mechanicState=waveState(completed);
@@ -74,6 +83,7 @@ async function refillWave(){
  await new Promise(resolve=>setTimeout(resolve,matchMedia('(prefers-reduced-motion: reduce)').matches?120:620));
  $('board').classList.remove('refilling');
  render();
+ return true;
 }
 function render(){
  const complete=mechanicState.completed||0;
@@ -159,10 +169,11 @@ $('board').addEventListener('click',async e=>{
  }
  const outcome=levelOutcome(tubes,waveIndex,levelRun.waves.length);
  try{world.onMove()}catch{persist()}
- if(outcome==='wave'){
-   await refillWave();
+if(outcome==='wave'){
+   const refilled=await refillWave();
    locked=false;
    render();
+   if(!refilled){win();return;}
    say(`Нова хвиля ${waveIndex+1} / ${levelRun.waves.length} · у колбах з’явилися нові елементи`);
    return;
  }
@@ -178,7 +189,7 @@ function win(){
  if(ended)return;
  ended=true;
  completedLevel=true;
- const l=save.level,reward=50+l*5+Math.min(30,moves*2),known=new Set(save.discovered);
+ const l=save.level,reward=70+l*8+Math.min(80,moves*3),known=new Set(save.discovered);
  save.gold+=reward;save.xp+=25+l*2;save.score+=100+l*10+moves*5;save.streak++;save.bestStreak=Math.max(save.streak,save.bestStreak);if(!assisted)save.nug++;save.level++;
  // Meta progression is secondary: even a storage/UI failure must never block level completion.
  let unlocked=null;
