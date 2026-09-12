@@ -1,4 +1,4 @@
-import {POOL,symbolCount} from './engine.js';
+import {POOL,symbolCount} from './engine.js?v=15';
 export const ATOMIC='H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr Rf Db Sg Bh Hs Mt Ds Rg Cn Nh Fl Mc Lv Ts Og'.split(' ');
 export const ORDER=[...POOL,...ATOMIC.filter(s=>!POOL.includes(s))];
 export const NAMES={Na:'Натрій',Cl:'Хлор',Fe:'Залізо',O:'Кисень',C:'Вуглець',H:'Водень',Au:'Золото',Li:'Літій',He:'Гелій',Be:'Берилій',B:'Бор',N:'Азот',F:'Фтор',Ne:'Неон',Mg:'Магній',Al:'Алюміній',Si:'Кремній',P:'Фосфор',S:'Сірка'};

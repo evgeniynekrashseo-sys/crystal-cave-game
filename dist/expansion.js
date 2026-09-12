@@ -1,5 +1,5 @@
-import {elementLesson,lessonHTML} from './element-learning.js';
-import {ORDER,ATOMIC,NAMES,tint,ARTIFACTS,RECIPES,UPGRADES,CITY_BRANCHES,normalizeMeta,rollDay,dailyTasks,claimDaily,resetReactionLevel,reactionReward,runReaction,runBoardReaction,researchQuest,claimResearch,unlockNextElement,buyUpgrade,cityUpgrade,cityImpact,chemistryFor,claimSecret,activeSymbols,tablePositions} from './progression.js';
+import {elementLesson,lessonHTML} from './element-learning.js?v=15';
+import {ORDER,ATOMIC,NAMES,tint,ARTIFACTS,RECIPES,UPGRADES,CITY_BRANCHES,normalizeMeta,rollDay,dailyTasks,claimDaily,resetReactionLevel,reactionReward,runReaction,runBoardReaction,researchQuest,claimResearch,unlockNextElement,buyUpgrade,cityUpgrade,cityImpact,chemistryFor,claimSecret,activeSymbols,tablePositions} from './progression.js?v=15';
 export function initExpansion(api){
  const $=id=>document.getElementById(id);let raw;try{raw=JSON.parse(localStorage.getItem('chemlab_world_v1'))}catch{}const meta=normalizeMeta(raw,api.core().level);let pair=[],busy=false;
  function save(){api.persist();try{localStorage.setItem('chemlab_world_v1',JSON.stringify(meta))}catch{api.say('Не вдалося зберегти розвиток лабораторії на пристрої')}}

@@ -1,4 +1,4 @@
-import {ELEMENTS} from './elements-data.js';
+import {ELEMENTS} from './elements-data.js?v=15';
 export const FAMILY={'Nonmetal':'Неметал','Noble gas':'Благородний газ','Alkali metal':'Лужний метал','Alkaline earth metal':'Лужноземельний метал','Metalloid':'Металоїд','Halogen':'Галоген','Transition metal':'Перехідний метал','Post-transition metal':'Постперехідний метал','Lanthanide':'Лантаноїд','Actinide':'Актиноїд'};
 const aliases={H:'водень',C:'вуглець',N:'азот',O:'кисень',F:'фтор',Si:'кремній',S:'сірка',Fe:'залізо',Cu:'мідь',Ag:'срібло',Sn:'олово',Sb:'сурма',Au:'золото',Hg:'ртуть',Pb:'свинець'};
 const facts={

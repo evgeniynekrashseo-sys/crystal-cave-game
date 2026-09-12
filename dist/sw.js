@@ -1,5 +1,5 @@
-const CACHE='chemlab-release-14-art-education';
-const ASSETS=['./','index.html','style.css','app.js','liquid.js','expansion.js','progression.js','engine.js','city.js','settlement-model.js','settlement.css','settlement-renderer.js','settlement-art.png','mission.js','settlement-sprites.png','elements-data.js','element-learning.js','city-research.js','lab.webp','tube-glass.webp','manifest.webmanifest','icon.svg'];
+const CACHE='chemlab-release-15-cdn-safe';
+const ASSETS=['./','index.html','style.css?v=15','app.js?v=15','liquid.js?v=15','expansion.js?v=15','progression.js?v=15','engine.js?v=15','city.js?v=15','settlement-model.js?v=15','settlement.css?v=15','settlement-renderer.js?v=15','settlement-art.png','mission.js?v=15','settlement-sprites.png','elements-data.js?v=15','element-learning.js?v=15','city-research.js?v=15','lab.webp','tube-glass.webp','manifest.webmanifest','icon.svg'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
