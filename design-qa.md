@@ -28,3 +28,10 @@ Browser verification was attempted through the prescribed cloud browser. Navigat
 
 ## Remaining gate
 Open the running app in an authorized browser, compare the mobile settlement with the selected source, exercise construction/upgrade/research/return-to-chemistry and a formula mission, and inspect console errors. Record captures and fix material findings before changing final result to passed.
+
+## Art and education revision (2026-09-12)
+The renderer now uses a newly generated 4×4 atlas, settlement-sprites.png, with isolated cottages, laboratory, field, well, tree, ore, lumbermill, barn, clinic, granary, mine, factory, energy center, two resident poses and a truck. It no longer masks building silhouettes from the town screenshot. Runtime chromakey removes the atlas background once; sprites are trimmed to visible bounds. Cast shadows, gentler walking motion, directional frames and work-dependent factory smoke were added. The original scene image remains only for meadow/water texture. The style is detailed illustrative 3D, not photorealistic. A further ground-texture generation was unavailable due to image quota.
+
+All 118 elements now have PubChem-derived factual cards, Ukrainian element names, isotope/mass notes and an unscored comprehension question. City research cards separate resident need, numerical game benefit, chemistry and historical context.
+
+Visual/touch verification remains blocked by the previously recorded browser policy. Earlier explicit user authorization to publish without this check remains in effect. final result remains blocked; no claim of visually verified fidelity.

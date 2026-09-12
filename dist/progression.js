@@ -8,9 +8,8 @@ const types=['blast','freeze','gold','crystal','artifact'];
 const base=[['Na','Cl','blast','Спалах наднової'],['Cl','Fe','freeze','Полярне серце'],['Na','Fe','gold','Золотий дощ']];
 export const RECIPES=[...base.map((r,i)=>({id:`r${i}`,a:r[0],b:r[1],type:r[2],name:r[3]})),...ORDER.slice(3).map((s,i)=>({id:`r${i+3}`,a:s,b:ORDER[i%3],type:types[(i+3)%5],name:['Зоряний імпульс','Крижаний резонанс','Сонячний осад','Кристалічне ехо','Реліктова іскра'][(i+3)%5]}))];
 export const CHEMISTRY={
- 'Na+Cl':{equation:'2Na + Cl₂ → 2NaCl',product:'хлорид натрію',note:'Реальна окисно-відновна реакція; потрібне джерело тепла.'},
+ 'Na+Cl':{equation:'2Na + Cl₂ → 2NaCl',product:'хлорид натрію',note:'Окисно-відновна реакція з виділенням енергії; показано сумарне рівняння.'},
  'Cl+Fe':{equation:'2Fe + 3Cl₂ → 2FeCl₃',product:'хлорид заліза(III)',note:'Екзотермічна реакція заліза з хлором.'},
- 'Fe+Na':{equation:'Fe + Na → сплав',product:'металевий сплав',note:'Не самовільна реакція: у грі це модель електролітичного сплавлення.'},
  'H+O':{equation:'2H₂ + O₂ → 2H₂O',product:'вода',note:'Реакція горіння водню; потребує запалювання.'},
  'C+O':{equation:'C + O₂ → CO₂',product:'вуглекислий газ',note:'Повне горіння вуглецю за наявності кисню.'},
  'Fe+O':{equation:'4Fe + 3O₂ → 2Fe₂O₃',product:'оксид заліза(III)',note:'Окиснення заліза киснем.'}

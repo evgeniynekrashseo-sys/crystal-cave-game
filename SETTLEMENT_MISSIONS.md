@@ -24,6 +24,9 @@ Chemical grounding: [primary research on the Haber–Bosch reaction](https://arx
 
 ## Art and release status
 
-The source is the approved bright ChemLab settlement concept. Individual starter structures and residents are masked from it at runtime. The reference's test tubes remain unchanged. Industrial building types currently reuse starter art and need distinct sprites in a later visual pass.
+The source is the approved bright ChemLab settlement concept. Individual structures and residents now come from a dedicated 4×4 sprite atlas with transparent chromakey extraction at runtime. The reference's test tubes remain unchanged. Clinics, storage buildings, mines, factories and the energy center now have dedicated illustrations. The smelter shares the factory illustration.
 
 See design-qa.md: automated tests pass, but cloud-browser policy blocked visual/touch verification. The user authorized publishing this checkpoint without the blocked browser check on 2026-09-12. Publication does not mean visual/touch QA has passed.
+
+## Element learning
+Tap an unlocked element in the periodic table to see its Ukrainian chemical name, common simple-substance name where relevant, atomic number, mass, neutral atom proton/electron counts, oxidation states and electronic configuration. Numerical values were retrieved on 2026-09-12 from [PubChem](https://pubchem.ncbi.nlm.nih.gov/rest/pug/periodictable/JSON). A short question reinforces the meaning of atomic number without adding currency farming.
