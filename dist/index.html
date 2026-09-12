@@ -8,6 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="settlement.css">
   <title>ChemLab — лабораторія відкриттів</title>
 </head>
 <body>
@@ -25,6 +26,7 @@
     </section>
     <div class="world-hud">
       <button id="research-button">✧ <span id="research-label">Дослідження O</span></button>
+      <button id="city-button">⌂ <span>Місто</span></button>
       <span>◈ <b id="crystal-count">0</b></span>
     </div>
     <div class="status">
@@ -32,6 +34,7 @@
       <div><b id="moves">0</b> ходів</div>
     </div>
     <div class="level-modifier" id="level-modifier" aria-label="Особливості рівня"></div>
+    <aside id="formula-quest" hidden aria-live="polite"></aside>
     <section id="board" aria-label="Ігрові колби"></section>
     <div id="feedback" role="status" aria-live="polite">Торкнись колби, потім обери, куди перелити</div>
     <div class="tools">
@@ -43,7 +46,7 @@
     <nav class="world-nav" aria-label="Розділи лабораторії">
       <button id="reactor-button"><span>⚗</span>Реактор</button>
       <button id="quests-button"><span>▦<i id="quest-dot" hidden></i></span>Квести</button>
-      <button id="lab-button"><span>⌂</span>Лабораторія <b id="lab-rank">1</b></button>
+      <button id="lab-button"><span>⌂</span>Місто <b id="lab-rank">1</b></button>
     </nav>
     <footer>
       <button id="atlas">◆ <span>Елементи</span> <b id="discovered">3 / 118</b></button>

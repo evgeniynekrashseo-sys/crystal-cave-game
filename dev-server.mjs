@@ -17,12 +17,14 @@ const mime={
   '.json':'application/json; charset=utf-8',
   '.webmanifest':'application/manifest+json; charset=utf-8',
   '.svg':'image/svg+xml',
+  '.png':'image/png',
   '.webp':'image/webp'
 };
 
 createServer(async(request,response)=>{
   try{
     const url=new URL(request.url||'/',`http://${request.headers.host||'localhost'}`);
+    if(url.pathname==='/__mobile'){response.writeHead(200,{'content-type':'text/html'}).end('<!doctype html><style>body{margin:0;background:#e0e8e6;display:grid;place-items:center;min-height:100vh}iframe{width:390px;height:844px;border:0;box-shadow:0 0 24px #5676}</style><iframe title="Mobile ChemLab" src="/?'+url.searchParams.toString()+'"></iframe>');return;}
     const pathname=decodeURIComponent(url.pathname)==='/'?'/index.html':decodeURIComponent(url.pathname);
     let filename=resolve(root,`.${pathname}`);
     if(filename!==root&&!filename.startsWith(root+sep)){

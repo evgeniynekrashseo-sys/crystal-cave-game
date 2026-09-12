@@ -1,18 +1,30 @@
-# ChemLab glass and progression QA — 2026-09-10
+# Settlement and formula missions — QA checkpoint
 
-final result: passed
+final result: blocked
 
-Scope: test-tube appearance matching the supplied reference, preserving interactive liquids and fixing post-win continuation. The surrounding screen was not redesigned.
+Source visual truth: /workspace/scratch/ee83bc649bd6/generated_images/exec-1525edf4-cbe3-42aa-9950-8b75509332be.png (853 × 1844 pixels).
+Target viewport: mobile 390 × 844 CSS pixels; desktop responsive map.
+State: early settlement, collapsed construction panel.
+Implementation screenshot: unavailable.
 
-Reference: `/workspace/scratch/ee83bc649bd6/upload/D040DFBB-BCF7-43AA-9F20-C4E4946764F8(6).jpeg`.
-Browser render: `/workspace/scratch/ee83bc649bd6/qa-glass.jpg` (1363 × 936).
-Combined reference/component comparison: `/workspace/scratch/ee83bc649bd6/qa-comparison.jpg`.
-Mobile browser capture: `/workspace/scratch/ee83bc649bd6/qa-mobile.jpg` (390 × 844 iframe viewport).
+Browser verification was attempted through the prescribed cloud browser. Navigation returned ERR_BLOCKED_BY_CLIENT; the subsequent inspection was explicitly rejected by the Cloud browser URL policy. No alternative browser, proxy, or indirect rendering was attempted. Visual comparison, actual touch interactions, animation appearance/performance, console inspection, full-view and focused-region comparison remain unverified.
 
-Visual inspection: open oval rim, transparent glass, rounded bottom, aligned liquid boundaries and readable dark labels. Removed opaque sprite background. Seven tubes fit in two rows on mobile; the page scrolls to lower tools. No clipped labels or overlapping tubes. The generated glass is an approximation of the supplied reference, with subtler glow and a different highlight profile. Puzzle contents vary by level and seed; component comparison intentionally preserves actual gameplay contents.
+## Findings
+- P1 / release gate: browser-rendered evidence is unavailable. Do not claim visual fidelity or mobile QA. The user explicitly authorized publishing without the blocked check on 2026-09-12; publication is permitted but is not verification.
+- Source sprites are extracted at runtime from the approved image. Starter buildings, meadow texture and villagers reuse the reference pixels. Later industrial buildings currently reuse those starter sprites; unique modern buildings need a subsequent art pass. Image generation returned a usage limit, so no new atlas was produced.
 
-Interaction evidence: completed level 1 through normal tube clicks; three synthesized sets cleared and coins increased; oxygen unlock appeared; visited discovery UI; pressed Next experiment and observed Experiment 02 with filled tubes and reset progress. No application errors in browser console; unrelated browser extension metadata errors were present.
+## Fidelity surfaces
+- Typography: system sans-serif, large ChemLab header, compact resource counters; visual comparison pending.
+- Spacing/layout: map fills the screen; resource header and bottom dock overlay it; construction/research use a collapsible sheet. Safe-area padding included. Browser overflow/tap-target verification pending.
+- Colors: daylight grass, navy/cyan header, pale translucent controls, matching the source palette direction. Comparison pending.
+- Image quality: original 853 × 1844 source retained; runtime polygon masks isolate actual source imagery. Mask edges, repeated meadow texture and building scale need visual inspection.
+- Copy: Ukrainian labels, actual resource counters, research prerequisites, formula objectives and simplified chemistry explanations.
 
-Automated validation: 22/22 existing tests passed, including empty-rack progression, refill waves, reward rules and liquid-surface stability.
+## Verified without a browser
+- Unit tests exercise deterministic puzzle solvability, modifiers, formula atom counts, single-atom transfers, and mission solvability through level 100.
+- App integration test executes actual app click handlers through sorting, formula collection, undo, impurity clearing, city delivery, win modal and next-level start using a minimal DOM test fixture. This is not browser QA.
+- Settlement tests cover worker movement and deliveries, input-dependent industry, roads/trucks, upgrades, expansion, births, chemistry rewards, idempotent discoveries and persistence.
+- Tube renderer, liquid physics and glass art were not redesigned.
 
-P3 follow-up: glow can be further art-directed; mobile tools remain below the initial viewport on longer racks.
+## Remaining gate
+Open the running app in an authorized browser, compare the mobile settlement with the selected source, exercise construction/upgrade/research/return-to-chemistry and a formula mission, and inspect console errors. Record captures and fix material findings before changing final result to passed.
