@@ -1,5 +1,5 @@
-const CACHE='chemlab-release-15-cdn-safe';
-const ASSETS=['./','index.html','style.css?v=15','app.js?v=15','liquid.js?v=15','expansion.js?v=15','progression.js?v=15','engine.js?v=15','city.js?v=15','settlement-model.js?v=15','settlement.css?v=15','settlement-renderer.js?v=15','settlement-art.png','mission.js?v=15','settlement-sprites.png','elements-data.js?v=15','element-learning.js?v=15','city-research.js?v=15','lab.webp','tube-glass.webp','manifest.webmanifest','icon.svg'];
+const CACHE='chemlab-release-16-premium-city';
+const ASSETS=['./','index.html','style.css?v=16','app.js?v=16','liquid.js?v=16','expansion.js?v=16','progression.js?v=16','engine.js?v=16','city.js?v=16','city-hud.js?v=16','settlement-model.js?v=16','settlement.css?v=16','settlement-renderer.js?v=16','settlement-art.png','settlement-ground-v16.png','mission.js?v=16','settlement-sprites-alpha.png','settlement-details-alpha.png','resource-wood-v16.png','resource-food-v16.png','resource-coin-v16.png','elements-data.js?v=16','element-learning.js?v=16','city-research.js?v=16','lab.webp','tube-glass.webp','manifest.webmanifest','icon.svg','icons/people.svg','icons/water.svg','icons/chemistry.svg','icons/build.svg','icons/discoveries.svg','icons/city.svg','icons/zoom-in.svg','icons/zoom-out.svg','icons/center.svg'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
