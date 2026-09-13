@@ -1,15 +1,15 @@
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=20';
-import {createMeadow,fillMeadow} from './settlement-ground.js?v=20';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection} from './settlement-life.js?v=20';
-import {VOYAGES} from './settlement-model.js?v=20';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=21';
+import {createMeadow,fillMeadow} from './settlement-ground.js?v=21';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection} from './settlement-life.js?v=21';
+import {VOYAGES} from './settlement-model.js?v=21';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./settlement-meadow-v18.png',import.meta.url).href;
 
 const SPRITE_NAMES=['house','lab','farm','well','tree','rock','lumber','ranch','clinic','granary','mine','factory','energy','person','worker','truck'];
 const DETAIL_NAMES=['river','bridge','water','river-bend','path-straight','path-curve','path-t','path-cross','flowers','reeds','grass','berries','fence','scaffold','cargo','lantern'];
-const lifeAtlas=new Image();lifeAtlas.src=new URL('./settlement-life-v20.png',import.meta.url).href;
+const lifeAtlas=new Image();lifeAtlas.src=new URL('./settlement-life-v21.png',import.meta.url).href;
 const LIFE_NAMES=['school','harbor','fishery','ship','cow','pig','sheep','chicken','pen','willow','wildflowers','orchard','woman','pupil','fisherman','gull'];
 const sprites={},details={},life={};let preparedLife=false;
 let grass,preparedMeadow=false,preparedSprites=false,preparedDetails=false;
@@ -154,7 +154,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  if(!occupied(7,8))objects.push({x:7.6,y:8.45,detail:'flowers',width:46});
  if(!occupied(8,8))objects.push({x:8.45,y:8.15,detail:'grass',width:42});
  if(!c.buildings.some(b=>b.x===4&&b.y===2))objects.push({x:4,y:2,kind:'lab',width:unitFor(W)*2.2,lab:true});
- const kind={house:'house',lumber:'lumber',farm:'farm',well:'well',quarry:'rock',ranch:'ranch',clinic:'clinic',granary:'granary',mine:'mine',smelter:'factory',factory:'factory',energy:'energy',school:'school',harbor:'harbor',fishery:'fishery'};
+ const kind={house:'house',lumber:'lumber',farm:'farm',well:'well',quarry:'rock',ranch:'ranch',clinic:'clinic',granary:'granary',mine:'mine',smelter:'factory',factory:'factory',energy:'energy',school:'school',university:'school',market:'house',harbor:'harbor',fishery:'fishery'};
  for(const b of c.buildings)objects.push({x:b.x,y:b.y,kind:kind[b.type],width:unitFor(W)*(b.type==='farm'?1.92:b.type==='well'?1.25:1.84),b});
  for(const a of c.agents){const job=c.buildings.find(b=>b.id===a.job);const kind=a.truck?'truck':job?.type==='fishery'?'fisherman':!a.job&&a.id%3===0&&c.buildings.some(b=>b.type==='school')?'pupil':a.id%3===1?'woman':'person';objects.push({x:a.x,y:a.y,kind,width:a.truck?62:kind==='pupil'?23:29,a});}
  for(const b of c.buildings.filter(b=>['harbor','fishery'].includes(b.type))){

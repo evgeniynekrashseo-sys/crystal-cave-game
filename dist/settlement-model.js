@@ -29,9 +29,11 @@ export const TYPES={
  harbor:{name:'Пристань',cost:{wood:35,stone:15},color:'#79a8b3',workers:1,tech:'preserve',coastal:true,out:{},desc:'Морські контракти, монети та розвідка. Соління допомагає зберігати провізію'},
  road:{name:'Дорога',cost:{stone:1},color:'#c3af89',workers:0,desc:'Дорожня мережа для мешканців і вантажівок'}
 };
+TYPES.market={name:'Ринок',cost:{wood:24,stone:12},color:'#d7b870',workers:1,input:{food:2,goods:1},out:{food:6},desc:'Ринок обмінює товари на їжу та підвищує задоволення мешканців'};
+TYPES.university={name:'Університет',cost:{wood:35,stone:30,goods:8},color:'#b9d5dc',workers:2,tech:'steel',input:{food:2},out:{research:4},desc:'Вища освіта готує дослідників і пришвидшує технологічний прогрес'};
 const num=(v,d=0)=>Number.isFinite(v)?Math.max(0,v):d;
 export const terrain=(x,y)=> y<0?'sea':x===14||x===15&&y>7?'water':(x*7+y*11)%29===0?'ore':(x*11+y*3)%19===0?'rock':(x*13+y*7)%9<2?'forest':'grass';
-export function freshCity(level=1){return {version:1,voyages:[],completedVoyages:0,pendingCoins:0,claimedGoals:[],mapRevision:0,extent:10,population:6,resources:{wood:65,stone:45,food:55,ore:0,metal:0,goods:0,power:0,research:2},tech:[],discoveries:[],buildings:[{id:1,type:'house',x:3,y:4,level:1},{id:2,type:'house',x:5,y:4,level:1},{id:3,type:'lumber',x:3,y:6,level:1},{id:4,type:'farm',x:5,y:6,level:1}],roads:[{x:4,y:4},{x:4,y:5},{x:4,y:6}],agents:[],seconds:0,lastLevel:level,nextId:5,births:0,arrivals:0,events:['Шість мешканців заснували долину. Побудуй каменярню та досліди чисту воду.']};}
+export function freshCity(level=1){return {version:1,voyages:[],expeditions:[],completedVoyages:0,completedExpeditions:0,pendingCoins:0,claimedGoals:[],mapRevision:0,extent:10,population:6,resources:{wood:65,stone:45,food:55,ore:0,metal:0,goods:0,power:0,research:2},tech:[],discoveries:[],buildings:[{id:1,type:'house',x:3,y:4,level:1},{id:2,type:'house',x:5,y:4,level:1},{id:3,type:'lumber',x:3,y:6,level:1},{id:4,type:'farm',x:5,y:6,level:1}],roads:[{x:4,y:4},{x:4,y:5},{x:4,y:6}],agents:[],seconds:0,lastLevel:level,nextId:5,births:0,arrivals:0,events:['Шість мешканців заснували долину. Побудуй каменярню та досліди чисту воду.'],activeEvent:null,eventIndex:0};}
 export function normalizeCity(raw,level=1){if(!raw||raw.version!==1)return freshCity(level);const c=freshCity(level);c.extent=Math.min(SIZE,Math.max(10,Math.floor(num(raw.extent,10))));c.population=Math.min(60,Math.max(6,Math.floor(num(raw.population,6))));for(const k in c.resources)c.resources[k]=num(raw.resources?.[k],c.resources[k]);c.tech=TECH.filter(t=>raw.tech?.includes(t.id)).map(t=>t.id);const coords=new Set();c.buildings=Array.isArray(raw.buildings)?raw.buildings.filter(b=>TYPES[b.type]&&b.type!=='road'&&Number.isInteger(b.x)&&Number.isInteger(b.y)&&b.x>=0&&b.y>=0&&b.x<c.extent&&b.y<c.extent&&!coords.has(`${b.x},${b.y}`)&&coords.add(`${b.x},${b.y}`)).map((b,i)=>({...b,id:i+1,level:Math.min(5,Math.max(1,Math.floor(num(b.level,1)))),ready:num(b.ready)})):c.buildings;c.discoveries=Array.isArray(raw.discoveries)?[...new Set(raw.discoveries.filter(x=>['salt','water','greenhouse','ammonia','glass'].includes(x)))]:[];c.nextId=c.buildings.length+1;c.completedVoyages=Math.floor(num(raw.completedVoyages));c.pendingCoins=Math.floor(num(raw.pendingCoins));c.claimedGoals=Array.isArray(raw.claimedGoals)?[...new Set(raw.claimedGoals.filter(id=>CITY_GOALS.some(g=>g.id===id)))]:[];c.voyages=Array.isArray(raw.voyages)?raw.voyages.filter(v=>Object.hasOwn(VOYAGES,v.kind)&&Number.isInteger(v.x)&&Number.isInteger(v.y)&&c.buildings.some(b=>b.type==="harbor"&&b.x===v.x&&b.y===v.y)).filter((v,i,list)=>list.findIndex(o=>o.x===v.x&&o.y===v.y)===i).map(v=>({kind:v.kind,x:v.x,y:v.y,elapsed:Math.min(VOYAGES[v.kind].duration,num(v.elapsed)),level:Math.min(5,Math.max(1,Math.floor(num(v.level,1))))})):[];for(const a of Array.isArray(raw.agents)?raw.agents:[]){if(a.state==='return'){for(const k in c.resources)c.resources[k]+=num(a.cargo?.[k]);}else if(a.state==='work'){const b=raw.buildings?.find(b=>b.id===a.job);for(const [k,v]of Object.entries(TYPES[b?.type]?.input||{}))c.resources[k]+=v;}}c.roads=Array.isArray(raw.roads)?raw.roads.filter(b=>Number.isInteger(b.x)&&Number.isInteger(b.y)&&b.x>=0&&b.y>=0&&b.x<c.extent&&b.y<c.extent):c.roads;c.lastLevel=num(raw.lastLevel,level);c.seconds=num(raw.seconds);c.births=num(raw.births);c.arrivals=num(raw.arrivals);c.events=Array.isArray(raw.events)?raw.events.filter(x=>typeof x==='string').slice(-8):c.events;return c;}
 export const affordable=(c,cost)=>Object.entries(cost).every(([k,v])=>c.resources[k]>=v);
 const debit=(c,cost)=>{for(const k in cost)c.resources[k]-=cost[k]};
@@ -128,3 +130,44 @@ export function demolish(c,x,y){
  return '';
 }
 export function roadConnections(c,r){return [[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dy])=>c.roads.some(o=>o.x===r.x+dx&&o.y===r.y+dy));}
+
+// Optional long-term city systems. They are initialized lazily so old saves remain compatible.
+export const ERAS=[
+ {id:'settlement',name:'Поселення',requires:0,text:'Перші будинки, поля та чиста вода.'},
+ {id:'craft',name:'Ремісниче містечко',requires:1,text:'Комори, ветеринарія та морська торгівля.'},
+ {id:'industry',name:'Промислова епоха',requires:3,text:'Сталь, заводи, школи та механізація.'},
+ {id:'modern',name:'Сучасне місто',requires:6,text:'Енергія, батареї та автоматизація.'}
+];
+export const DISTRICTS={
+ residential:{name:'Житлова зона',hint:'Будинки, здоров’я та задоволення'},
+ farming:{name:'Аграрна зона',hint:'Поля, худоба та їжа'},
+ industry:{name:'Промислова зона',hint:'Шахти, заводи та логістика'},
+ education:{name:'Освітня зона',hint:'Школа й дослідники'},
+ coast:{name:'Морська зона',hint:'Рибальство, порт і торгівля'}
+};
+export const EXPEDITIONS={
+ quarry:{name:'Експедиція до копалень',duration:38,cost:{food:8,wood:8},reward:{stone:24,ore:4},coins:12},
+ jungle:{name:'Експедиція до дикої долини',duration:52,cost:{food:12,wood:10},reward:{food:30,research:2},coins:18},
+ relic:{name:'Пошук стародавнього артефакту',duration:70,cost:{food:16,goods:2},reward:{research:5,stone:12},coins:35,tech:'steel'}
+};
+export const CITY_EVENTS=[
+ {id:'drought',name:'Посуха',duration:35,text:'Поля споживають більше води. Допоможи місту дослідженням.',cost:{food:12},reward:{research:2},resolve:'water'},
+ {id:'illness',name:'Спалах хвороби',duration:42,text:'Здоров’я мешканців падає, поки не запрацює санітарія.',cost:{food:8},reward:{research:2},resolve:'water'},
+ {id:'market',name:'Ярмарок на березі',duration:30,text:'Торговці готові обміняти товари на монети.',cost:{goods:2},reward:{food:18},resolve:'trade'},
+ {id:'animal',name:'Хвороба худоби',duration:45,text:'Ветеринарія врятує стадо та збереже врожай.',cost:{food:6},reward:{food:18},resolve:'veterinary'}
+];
+export function ensureCitySystems(c){
+ if(!Array.isArray(c.expeditions))c.expeditions=[];if(!Number.isFinite(c.completedExpeditions))c.completedExpeditions=0;
+ if(!Number.isFinite(c.eventIndex))c.eventIndex=0;if(!c.activeEvent)c.activeEvent=null;
+ return c;
+}
+export function cityEra(c){const n=c.tech?.length||0;return ERAS.slice().reverse().find(e=>n>=e.requires)||ERAS[0];}
+export function districtAt(c,x,y){if(y===0)return 'coast';if(y>=5&&x<=7)return 'farming';if(x>=8)return 'industry';if(y<=3)return 'education';return 'residential';}
+export function districtSummary(c){const out=Object.fromEntries(Object.keys(DISTRICTS).map(k=>[k,0]));for(const b of c.buildings||[])out[districtAt(c,b.x,b.y)]++;return out;}
+export function expeditionError(c,b,kind){const e=EXPEDITIONS[kind];if(!e)return 'Невідомий маршрут';if(!b||!['harbor','fishery'].includes(b.type))return 'Потрібна пристань або рибальня';if(c.expeditions.some(x=>x.x===b.x&&x.y===b.y))return 'Експедиція вже в дорозі';if(e.tech&&!c.tech.includes(e.tech))return 'Спочатку відкрий металургію';if(!affordable(c,e.cost))return 'Недостатньо провізії';return '';}
+export function dispatchExpedition(c,id,kind){ensureCitySystems(c);const b=c.buildings.find(b=>b.id===id),error=expeditionError(c,b,kind);if(error)return error;debit(c,EXPEDITIONS[kind].cost);c.expeditions.push({x:b.x,y:b.y,kind,elapsed:0,level:b.level});log(c,`Експедиція вирушила: ${EXPEDITIONS[kind].name}.`);return '';}
+export function advanceCitySystems(c,dt){ensureCitySystems(c);for(const e of c.expeditions){e.elapsed+=dt;const spec=EXPEDITIONS[e.kind];if(e.elapsed<spec.duration)continue;for(const [k,n]of Object.entries(spec.reward))c.resources[k]=Math.min(9999,(c.resources[k]||0)+n*e.level);c.pendingCoins=(c.pendingCoins||0)+spec.coins*e.level;c.completedExpeditions++;log(c,`${spec.name}: команда повернулася з нагородою.`);}c.expeditions=c.expeditions.filter(e=>e.elapsed<EXPEDITIONS[e.kind].duration);
+ if(!c.activeEvent&&c.seconds>0&&Math.floor(c.seconds/90)>c.eventIndex){const event=CITY_EVENTS[c.eventIndex++%CITY_EVENTS.length];c.activeEvent={id:event.id,elapsed:0};log(c,`Подія міста: ${event.name}. ${event.text}`);}
+ if(c.activeEvent){c.activeEvent.elapsed+=dt;const event=CITY_EVENTS.find(e=>e.id===c.activeEvent.id);if(event&&c.activeEvent.elapsed>=event.duration){c.activeEvent=null;log(c,'Місто пережило кризу. Час готуватися до нового виклику.');}}
+}
+export function resolveCityEvent(c){ensureCitySystems(c);const event=CITY_EVENTS.find(e=>e.id===c.activeEvent?.id);if(!event)return false;const ready=event.resolve==='trade'?c.buildings.some(b=>b.type==='market'&&b.ready<=c.seconds):event.resolve==='veterinary'?c.tech.includes('veterinary'):c.tech.includes('water');if(!ready||!affordable(c,event.cost))return false;debit(c,event.cost);for(const [k,n]of Object.entries(event.reward))c.resources[k]=(c.resources[k]||0)+n;c.pendingCoins=(c.pendingCoins||0)+10;c.activeEvent=null;log(c,`Кризу подолано: ${event.name}. Мешканці отримали підтримку.`);return true;}

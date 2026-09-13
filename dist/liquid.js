@@ -1,5 +1,5 @@
 // Presentation-only shallow surface simulation. Never changes puzzle state.
-import {ORDER,tint} from './progression.js?v=20';
+import {ORDER,tint} from './progression.js?v=21';
 
 export function surface(size=14){
   return {y:Array(size).fill(0),v:Array(size).fill(0)};

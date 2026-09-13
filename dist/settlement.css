@@ -136,6 +136,9 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
 .city-stocks{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0}
 .city-stocks span{padding:8px;border:1px solid #afd0d3;border-radius:10px;background:#eefcf8;font-size:11px}
 .city-stocks b{float:right;font-variant-numeric:tabular-nums}
+.city-era{background:linear-gradient(135deg,#eaf8f3,#d6eef0);border:1px solid #8acdd0;border-radius:14px;margin:10px 0;padding:12px!important}
+.city-era>p{margin:5px 0!important}.city-districts{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}.city-districts span{font-size:10px;color:#386778;background:#ffffff90;border-radius:8px;padding:6px}.city-districts span b{font-size:14px;color:#087d98;margin-right:3px}
+.city-event{background:#fff1df;border:1px solid #e3aa70;border-radius:14px;margin:10px 0;padding:12px!important}.city-event button{background:#c87635!important;color:#fff!important;border-color:#f1c18c!important}
 .city-action{padding-top:11px;border-top:1px solid #b6d5d3}
 .city-action>b{font-size:13px}
 .city-action>button{background:#008da8!important;color:#fff!important}

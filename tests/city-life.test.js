@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {freshCity,normalizeCity,build,stats,step,dispatchVoyage,claimCityCoins,demolish,demolitionRefund,cityGoal,claimCityGoal,roadConnections,route} from '../dist/settlement-model.js';
+import {freshCity,normalizeCity,build,stats,step,dispatchVoyage,claimCityCoins,demolish,demolitionRefund,cityGoal,claimCityGoal,roadConnections,route,ensureCitySystems,cityEra,districtSummary,dispatchExpedition,advanceCitySystems,resolveCityEvent} from '../dist/settlement-model.js';
 import {animalPose,boatPose,drawRoadNetwork,drawSea} from '../dist/settlement-life.js';
 const run=(c,seconds)=>{for(let i=0;i<seconds*10;i++)step(c,.1);};
 const rich=()=>{const c=freshCity();for(const k in c.resources)c.resources[k]=500;return c;};
@@ -73,4 +73,12 @@ test('the shore boundary stays fixed while sea highlights animate',()=>{
  for(const time of [0,100]){const points=[];const ctx={save(){},restore(){},beginPath(){},moveTo(x,y){points.push([x,y]);},lineTo(x,y){points.push([x,y]);},closePath(){},fill(){},stroke(){},quadraticCurveTo(){},createLinearGradient(){return{addColorStop(){}};}};
  drawSea(ctx,project,58,time,false,{width:430,height:936});frames.push(points.slice(-2));}
  assert.deepEqual(frames[0],frames[1]);
+});
+
+test('eras, districts, expeditions and crises create a connected strategic loop',()=>{
+ const c=ensureCitySystems(rich());c.tech=['water','preserve','steel'];assert.equal(cityEra(c).id,'industry');
+ const zones=districtSummary(c);assert.equal(Object.keys(zones).length,5);
+ assert.equal(build(c,'harbor',5,0),'');run(c,8);const harbor=c.buildings.at(-1);
+ assert.equal(dispatchExpedition(c,harbor.id,'quarry'),'');const stone=c.resources.stone;advanceCitySystems(c,40);assert(c.resources.stone>stone);assert.equal(c.completedExpeditions,1);assert.equal(claimCityCoins(c),12);
+ c.seconds=90;advanceCitySystems(c,0);assert(c.activeEvent);c.tech=[];assert.equal(resolveCityEvent(c),false);c.tech=['water','preserve','steel'];assert.equal(resolveCityEvent(c),true);assert.equal(c.activeEvent,null);
 });
