@@ -1,7 +1,13 @@
 // Native-density meadow: no enlarged photograph beneath sharp sprite artwork.
 // 2048-pixel tile keeps fine blades crisp when a 2x-density phone zooms in.
 export const GROUND_SIZE=512,GROUND_DENSITY=4;
-export function createMeadow(document){
+export function createMeadow(document,texture){
+ if(texture?.complete&&texture.naturalWidth>=1024&&texture.naturalHeight>=1024){
+  // Use every source pixel. The material stays at four image pixels per world pixel.
+  const tile=document.createElement('canvas');tile.width=texture.naturalWidth;tile.height=texture.naturalHeight;
+  const g=tile.getContext('2d');g.drawImage(texture,0,0);
+  return tile;
+ }
  const tile=document.createElement('canvas');tile.width=tile.height=GROUND_SIZE*GROUND_DENSITY;
  const g=tile.getContext('2d');g.scale(GROUND_DENSITY,GROUND_DENSITY);
  let seed=62137;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};

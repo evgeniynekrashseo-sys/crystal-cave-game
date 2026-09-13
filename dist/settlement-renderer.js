@@ -1,13 +1,14 @@
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=17';
-import {createMeadow,fillMeadow} from './settlement-ground.js?v=17';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=18';
+import {createMeadow,fillMeadow} from './settlement-ground.js?v=18';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
+const meadowArt=new Image();meadowArt.src=new URL('./settlement-meadow-v18.png',import.meta.url).href;
 
 const SPRITE_NAMES=['house','lab','farm','well','tree','rock','lumber','ranch','clinic','granary','mine','factory','energy','person','worker','truck'];
 const DETAIL_NAMES=['river','bridge','water','river-bend','path-straight','path-curve','path-t','path-cross','flowers','reeds','grass','berries','fence','scaffold','cargo','lantern'];
 const sprites={},details={};
-let grass,preparedSprites=false,preparedDetails=false;
+let grass,preparedMeadow=false,preparedSprites=false,preparedDetails=false;
 
 function sliceAtlas(image,names,target){
  for(let i=0;i<names.length;i++){
@@ -34,6 +35,7 @@ function sliceAtlas(image,names,target){
 
 function prepare(){
  if(!grass)grass=createMeadow(document);
+ if(!preparedMeadow&&meadowArt.complete&&meadowArt.naturalWidth>=1024){grass=createMeadow(document,meadowArt);preparedMeadow=true;}
  if(!preparedSprites&&atlas.complete&&atlas.naturalWidth){sliceAtlas(atlas,SPRITE_NAMES,sprites);preparedSprites=true;}
  if(!preparedDetails&&detailAtlas.complete&&detailAtlas.naturalWidth){sliceAtlas(detailAtlas,DETAIL_NAMES,details);preparedDetails=true;}
 }
@@ -56,9 +58,23 @@ function drawRiver(ctx,W,H,pan,zoom,time,reduced){
  const overlap=height*.76;
  const top=-(origin.y+pan.y)/zoom,bottom=(H-origin.y-pan.y)/zoom;
  ctx.save();ctx.translate(origin.x+pan.x,origin.y+pan.y);ctx.scale(zoom,zoom);
+ // Feather the damp ground into the meadow in world space. Only water highlights animate.
+ for(const side of [-1,1]){
+  const edge=centerX+side*width*.43,outer=edge+side*unit*.38;
+  const tone=ctx.createLinearGradient(Math.min(edge,outer),0,Math.max(edge,outer),0);
+  tone.addColorStop(side<0?0:1,'#83945b00');tone.addColorStop(side<0?1:0,'#6878446b');
+  ctx.fillStyle=tone;ctx.fillRect(Math.min(edge,outer),top,Math.abs(outer-edge),bottom-top);
+ }
  for(let i=Math.floor((top-height)/overlap);i*overlap<bottom;i++)paintImage(ctx,details.river,centerX,i*overlap+height,width,{flip:Math.abs(i)%2!==0});
  if(details['river-bend'])paintImage(ctx,details['river-bend'],centerX-4,-unit*4.5,width*1.04,{alpha:.9});
  if(details.bridge)paintImage(ctx,details.bridge,centerX-4,unit*4*.56,width*1.28);
+ // Sparse reeds break the straight bank silhouette; their positions never depend on time or pan.
+ const spacing=unit*1.22;
+ for(let i=Math.floor(top/spacing)-1;i*spacing<bottom+spacing;i++){
+  const hash=((i*37)%97+97)%97,side=hash%2?-1:1,y=i*spacing;
+  if(Math.abs(y-unit*4*.56)<unit*.65)continue;
+  paintImage(ctx,details[hash%3===0?'reeds':'grass'],centerX+side*width*(.42+(hash%5)*.012),y,unit*(.26+(hash%4)*.025),{alpha:.87,flip:side<0});
+ }
  if(!reduced){
   ctx.save();ctx.strokeStyle='#e9ffffb0';ctx.lineWidth=1.2;ctx.lineCap='round';
   for(let i=0;i<7;i++){
@@ -103,6 +119,14 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   const color=ctx.createLinearGradient(center.x,center.y-u*.5,center.x,center.y+u*.5);
   color.addColorStop(0,'#b1b580d9');color.addColorStop(1,'#c4b786e0');ctx.fillStyle=color;ctx.fill();
   ctx.strokeStyle='#7a825455';ctx.lineWidth=Math.max(.7,zoom);ctx.stroke();
+  // Fixed tiny gravel/earth marks make each plot a material surface, not a flat overlay.
+  let seed=((x+1)*73856093^(y+1)*19349663)>>>0;
+  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  for(let i=0;i<34;i++){
+   const p=project(x+.08+random()*.84,y+.08+random()*.84);
+   ctx.fillStyle=i%3?'#e3d8ab8c':'#747d555c';
+   ctx.beginPath();ctx.ellipse(p.x,p.y,(.45+random()*.7)*zoom,(.25+random()*.4)*zoom,0,0,Math.PI*2);ctx.fill();
+  }
   // Contact shadow sits within the plot, directly under the sprite's floor.
   ctx.fillStyle='#38552b3b';ctx.beginPath();ctx.ellipse(center.x,center.y+u*.13,u*.72,u*.29,0,0,Math.PI*2);ctx.fill();
   ctx.restore();

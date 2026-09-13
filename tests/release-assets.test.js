@@ -23,7 +23,11 @@ test('offline release contains every cached file and the complete versioned modu
  const html=readFileSync(new URL('index.html',root),'utf8');
  assert(html.includes(`src="app.js?v=${version}"`));
  assert(html.includes(`href="settlement.css?v=${version}"`));
- for(const file of ['city-hud.js','settlement-ground-v16.png','resource-wood-v16.png','resource-food-v16.png','resource-coin-v16.png']){
+ for(const file of ['city-hud.js','settlement-meadow-v18.png','resource-wood-v16.png','resource-food-v16.png','resource-coin-v16.png']){
   assert(assets.includes(file.endsWith('.js')?`${file}?v=${version}`:file));
+ }
+ const renderer=readFileSync(new URL('settlement-renderer.js',root),'utf8');
+ for(const [,image]of renderer.matchAll(/new URL\(['"]\.\/([^'"]+)['"],import\.meta\.url\)/g)){
+  assert(assets.includes(image),`Renderer image unavailable offline: ${image}`);
  }
 });

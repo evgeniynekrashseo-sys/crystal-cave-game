@@ -1,8 +1,8 @@
-import {CITY_RESEARCH} from './city-research.js?v=17';
-import {mountCityHud} from './city-hud.js?v=17';
-import {drawSettlement,mapTile} from './settlement-renderer.js?v=17';
-import {bindMapControls,boundCamera,MIN_ZOOM,MAX_ZOOM} from './settlement-camera.js?v=17';
-import {SIZE,TYPES,TECH,LABELS,deliverDiscovery,terrain,normalizeCity,onChemistryWin,stats,step,build,canPlace,upgrade,upgradeCost,expand,research,affordable} from './settlement-model.js?v=17';
+import {CITY_RESEARCH} from './city-research.js?v=18';
+import {mountCityHud} from './city-hud.js?v=18';
+import {drawSettlement,mapTile} from './settlement-renderer.js?v=18';
+import {bindMapControls,boundCamera,MIN_ZOOM,MAX_ZOOM} from './settlement-camera.js?v=18';
+import {SIZE,TYPES,TECH,LABELS,deliverDiscovery,terrain,normalizeCity,onChemistryWin,stats,step,build,canPlace,upgrade,upgradeCost,expand,research,affordable} from './settlement-model.js?v=18';
 const KEY='chemlab_settlement_v2';
 export function initCity(api){
  let raw;try{raw=JSON.parse(localStorage.getItem(KEY))}catch{}
