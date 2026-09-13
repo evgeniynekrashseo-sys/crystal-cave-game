@@ -50,6 +50,34 @@ test('camera bounds are symmetric horizontally and permit both vertical directio
  }
 });
 
+test('reversing a drag at any map edge moves immediately, without an overflow dead zone',()=>{
+ for(const axis of ['x','y'])for(const direction of [-1,1]){
+  let camera={zoom:1,pan:{x:0,y:0}};const taps=[];
+  const bounds=c=>({...c,pan:{x:Math.max(-50,Math.min(50,c.pan.x)),y:Math.max(-50,Math.min(50,c.pan.y))}});
+  const gesture=new MapGesture({view:()=>view,camera:()=>camera,change:c=>camera=c,bounds,tap:p=>taps.push(p)});
+  const start={x:200,y:400},outside={...start,[axis]:start[axis]+direction*200};
+  gesture.down(1,start);gesture.move(1,outside);close(camera.pan[axis],direction*50);
+  const back={...outside,[axis]:outside[axis]-direction*10};
+  gesture.move(1,back);close(camera.pan[axis],direction*40);
+  gesture.up(1,back);assert.equal(taps.length,0);
+ }
+});
+
+test('a pinch reverses immediately at both zoom limits and still hands off to pan',()=>{
+ for(const {zoom,distance,reverse}of [{zoom:MAX_ZOOM,distance:500,reverse:490},{zoom:MIN_ZOOM,distance:50,reverse:60}]){
+  let camera={zoom,pan:{x:0,y:0}};const taps=[];
+  const gesture=new MapGesture({view:()=>view,camera:()=>camera,change:c=>camera=c,tap:p=>taps.push(p)});
+  gesture.down(1,{x:100,y:400});gesture.down(2,{x:200,y:400});
+  gesture.move(2,{x:100+distance,y:400});close(camera.zoom,zoom);
+  gesture.move(2,{x:100+reverse,y:400});close(camera.zoom,zoom*reverse/distance);
+  const world=worldPoint(view,camera,{x:100+reverse/2,y:400});
+  gesture.move(1,{x:110,y:420});gesture.move(2,{x:110+reverse,y:420});
+  same(worldPoint(view,camera,{x:110+reverse/2,y:420}),world);
+  const pan={...camera.pan};gesture.up(2,{x:110+reverse,y:420});gesture.move(1,{x:120,y:430});
+  same(camera.pan,{x:pan.x+10,y:pan.y+10});gesture.up(1,{x:120,y:430});assert.equal(taps.length,0);
+ }
+});
+
 function boundFixture(){
  let camera={zoom:1,pan:{x:0,y:0}};const handlers=new Map(),taps=[];
  const canvas={getBoundingClientRect:()=>({left:466,top:0}),setPointerCapture(){},addEventListener:(name,fn,options)=>{assert.equal(options.passive,false);handlers.set(name,fn);},removeEventListener:name=>handlers.delete(name)};

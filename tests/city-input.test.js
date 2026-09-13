@@ -5,11 +5,13 @@ import vm from 'node:vm';
 import * as model from '../dist/settlement-model.js';
 import * as camera from '../dist/settlement-camera.js';
 
-test('real city wiring supports pinch, accurate post-zoom selection and cleanup across reopen',()=>{
+function fixture(){
  class Element{
-  constructor(){this.children=new Map();this.events=new Map();this.dataset={};this.attrs={};this.classes=new Set();this.classList={add:c=>this.classes.add(c),remove:c=>this.classes.delete(c),toggle:(c,on)=>on?this.classes.add(c):this.classes.delete(c)};}
-  querySelector(selector){if(!this.children.has(selector))this.children.set(selector,selector==='canvas'?new Canvas():new Element());return this.children.get(selector);}
-  querySelectorAll(selector){if(selector==='[data-city-tab]'){if(!this.tabs)this.tabs=['build','tech','life'].map(cityTab=>{const e=new Element();e.dataset.cityTab=cityTab;return e;});return this.tabs;}return [];}
+  constructor(){this.children=new Map();this.events=new Map();this.dataset={};this.attrs={};this.scrollTop=0;this.scrollLeft=0;this.classes=new Set();this.classList={add:c=>this.classes.add(c),remove:c=>this.classes.delete(c),toggle:(c,on)=>on?this.classes.add(c):this.classes.delete(c)};}
+  set innerHTML(html){this.html=html;this.children.clear();this.tools=null;this.scrollTop=0;}
+  get innerHTML(){return this.html||'';}
+  querySelector(selector){if(selector==='.city-catalog'&&!this.innerHTML.includes('class="city-catalog"'))return null;if(!this.children.has(selector))this.children.set(selector,selector==='canvas'?new Canvas():new Element());return this.children.get(selector);}
+  querySelectorAll(selector){if(selector==='[data-city-tab]'){if(!this.tabs)this.tabs=['build','tech','life'].map(cityTab=>{const e=new Element();e.dataset.cityTab=cityTab;return e;});return this.tabs;}if(selector==='[data-tool]'){if(!this.tools)this.tools=[...this.innerHTML.matchAll(/data-tool="([^"]+)"/g)].map(([,tool])=>{const e=new Element();e.dataset.tool=tool;return e;});return this.tools;}return [];}
   setAttribute(k,v){this.attrs[k]=v;}insertAdjacentHTML(){}close(){}focus(){}remove(){this.removed=true;}
   addEventListener(k,fn){this.events.set(k,fn);}removeEventListener(k){this.events.delete(k);}
  }
@@ -22,7 +24,12 @@ test('real city wiring supports pinch, accurate post-zoom selection and cleanup 
  const source=readFileSync(new URL('../dist/city.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace('export function initCity','function initCity');
  vm.runInNewContext(source+'\nthis.createCity=initCity;',sandbox);
  const city=sandbox.createCity({core:()=>({level:1,gold:0,discovered:['Na','Cl','Fe']}),canOpen:()=>true,render:()=>renders++,trade(){}});
- city.open();let canvas=root.querySelector('canvas');
+ return {city,window,storage,get root(){return root;},get renders(){return renders;},get current(){return current;}};
+}
+
+test('real city wiring supports pinch, accurate post-zoom selection and cleanup across reopen',()=>{
+ const f=fixture(),{city,window,storage}=f;
+ city.open();let root=f.root,canvas=root.querySelector('canvas');
  assert.equal(canvas.events.size,6);assert.equal(root.querySelector('#city-zoom-value').textContent,'100%');
  canvas.send('pointerdown',{id:1,x:100,y:400});canvas.send('pointerdown',{id:2,x:300,y:400});
  canvas.send('pointermove',{id:1,x:50,y:400});canvas.send('pointermove',{id:2,x:350,y:400});
@@ -32,9 +39,28 @@ test('real city wiring supports pinch, accurate post-zoom selection and cleanup 
  const view={width:430,height:936},c=camera.zoomAt(view,{zoom:1,pan:{x:0,y:0}},1.5,{x:200,y:400});
  const point=camera.projectPoint(view,c,3.5,4.5);
  canvas.send('pointerdown',{id:3,...point});canvas.send('pointerup',{id:3,...point});
- assert.equal(current.zoom,1.5);assert.match(root.querySelector('#city-panel').innerHTML,/Ділянка 4:5 · Будинок · Р1/);assert(root.classes.has('panel-open'));
+ assert.equal(f.current.zoom,1.5);assert.match(root.querySelector('#city-panel').innerHTML,/Ділянка 4:5 · Будинок · Р1/);assert(root.classes.has('panel-open'));
  root.querySelector('#city-center').onclick();assert.equal(root.querySelector('#city-zoom-value').textContent,'100%');
- root.querySelector('#city-exit').onclick();assert.equal(canvas.events.size,0);assert(!window.events.has('resize'));assert.equal(renders,1);
- city.open();canvas=root.querySelector('canvas');assert.equal(canvas.events.size,6);root.querySelector('#city-zoom-in').onclick();assert.equal(root.querySelector('#city-zoom-value').textContent,'120%');
+ root.querySelector('#city-exit').onclick();assert.equal(canvas.events.size,0);assert(!window.events.has('resize'));assert.equal(f.renders,1);
+ city.open();root=f.root;canvas=root.querySelector('canvas');assert.equal(canvas.events.size,6);root.querySelector('#city-zoom-in').onclick();assert.equal(root.querySelector('#city-zoom-value').textContent,'120%');
  root.querySelector('#city-exit').onclick();assert.equal(canvas.events.size,0);assert(storage.has('chemlab_settlement_v2'));
+});
+
+test('city panels retain independent scroll positions after tool/tile selection, tab switches and reopen',()=>{
+ const f=fixture();f.city.open();let root=f.root;
+ const tab=name=>root.querySelectorAll('[data-city-tab]').find(e=>e.dataset.cityTab===name).onclick();
+ tab('build');let panel=root.querySelector('#city-panel');
+ panel.scrollTop=75;panel.querySelector('.city-catalog').scrollLeft=1494;
+ panel.querySelectorAll('[data-tool]').find(e=>e.dataset.tool==='road').onclick();
+ assert.equal(panel.scrollTop,75);assert.equal(panel.querySelector('.city-catalog').scrollLeft,1494);
+ assert.match(panel.innerHTML,/Дорога: обери ділянку/);
+ panel.querySelector('#tile-right').onclick();
+ assert.equal(panel.querySelector('.city-catalog').scrollLeft,1494);assert.equal(panel.scrollTop,75);
+ tab('life');assert.equal(panel.scrollTop,0);panel.scrollTop=350;
+ tab('build');assert.equal(panel.scrollTop,75);assert.equal(panel.querySelector('.city-catalog').scrollLeft,1494);
+ tab('life');assert.equal(panel.scrollTop,350);
+ root.querySelector('#city-panel-close').onclick();tab('life');assert.equal(panel.scrollTop,350);
+ root.querySelector('#city-exit').onclick();f.city.open();root=f.root;tab('build');panel=root.querySelector('#city-panel');
+ assert.equal(panel.scrollTop,75);assert.equal(panel.querySelector('.city-catalog').scrollLeft,1494);
+ root.querySelector('#city-exit').onclick();
 });

@@ -46,11 +46,17 @@ export class MapGesture{
   if(phase.kind==='pan'){
    const dx=p.x-phase.point.x,dy=p.y-phase.point.y;
    if(Math.hypot(dx,dy)>6)this.suppressed=true;
-   if(this.suppressed)this.change(this.bounds({zoom:phase.camera.zoom,pan:{x:phase.camera.pan.x+dx,y:phase.camera.pan.y+dy}}));
+   if(this.suppressed){
+    this.change(this.bounds({zoom:phase.camera.zoom,pan:{x:phase.camera.pan.x+dx,y:phase.camera.pan.y+dy}}));
+    // Discard movement beyond the map edge so reversing responds immediately.
+    this.rebase();
+   }
   }else{
    const [a,b]=[...this.points.values()],middle={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
    const distance=Math.hypot(a.x-b.x,a.y-b.y);
    this.change(this.bounds(zoomAt(this.view(),phase.camera,phase.camera.zoom*distance/phase.distance,phase.point,middle)));
+   // Rebase at the actual zoom, including when a zoom/pan limit was reached.
+   this.rebase();
   }
  }
  up(id,p){
