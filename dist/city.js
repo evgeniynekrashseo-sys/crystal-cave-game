@@ -107,7 +107,7 @@ export function initCity(api){
   root.querySelector('#city-center').onclick=()=>mapControls.center();root.querySelector('#city-coast').onclick=()=>{togglePanel(null);focusCoast()};
   root.querySelectorAll('[data-city-tab]').forEach(b=>b.onclick=()=>togglePanel(tab===b.dataset.cityTab?null:b.dataset.cityTab));
   root.querySelector('#city-panel-close').onclick=()=>togglePanel(null);
-  root.querySelector('#city-research').onclick=()=>{const goal=cityGoal(c);if(goal?.test(c)){claimCityGoal(c);payCityCoins();persist();hud();notice('Нагороду за місію отримано!')}else togglePanel('life')};root.querySelector('#city-population').onclick=()=>togglePanel('life');
+  root.querySelector('#city-research').onclick=()=>{const goal=cityGoal(c);if(c.activeEvent)togglePanel('life');else if(goal?.test(c)){claimCityGoal(c);payCityCoins();persist();hud();notice('Нагороду за місію отримано!')}else togglePanel('life')};root.querySelector('#city-population').onclick=()=>togglePanel('life');
   canvas.onkeydown=e=>{
    const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
    if(d){e.preventDefault();selected={x:Math.max(0,Math.min(c.extent-1,selected.x+d[0])),y:Math.max(0,Math.min(c.extent-1,selected.y+d[1]))};panel();}
