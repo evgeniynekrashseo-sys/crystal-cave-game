@@ -1,6 +1,7 @@
 // Mount images once: changing a counter must not restart image decoding.
 const RESOURCES=[
  {id:'wood',name:'Деревина',src:'resource-wood-v16.png'},
+ {id:'stone',name:'Камінь',src:'icons/stone.svg'},
  {id:'food',name:'Їжа',src:'resource-food-v16.png'},
  {id:'gold',name:'Монети',src:'resource-coin-v16.png'}
 ];

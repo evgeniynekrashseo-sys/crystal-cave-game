@@ -3,19 +3,21 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import * as camera from '../dist/settlement-camera.js';
+import * as life from '../dist/settlement-life.js';
+import {VOYAGES} from '../dist/settlement-model.js';
 import {createMeadow,fillMeadow,GROUND_SIZE,GROUND_DENSITY} from '../dist/settlement-ground.js';
 const near=(a,b)=>assert(Math.abs(a-b)<1e-7,`${a} !== ${b}`);
 function context(){
  let matrix=[1,0,0,1,0,0];const stack=[],images=[],translations=[],scales=[];let strokes=0;
  const ctx={images,translations,scales,save(){stack.push([...matrix]);},restore(){matrix=stack.pop();},translate(x,y){translations.push([x,y]);matrix[4]+=matrix[0]*x+matrix[2]*y;matrix[5]+=matrix[1]*x+matrix[3]*y;},scale(x,y){scales.push([x,y]);matrix[0]*=x;matrix[1]*=x;matrix[2]*=y;matrix[3]*=y;},rotate(){},drawImage(image,...args){const [x,y,w,h]=args.length===2?[...args,image.width,image.height]:args.length===4?args:args.slice(4);const px=x+w/2,py=y+h;images.push({id:image.id,args,bottom:{x:matrix[0]*px+matrix[2]*py+matrix[4],y:matrix[1]*px+matrix[3]*py+matrix[5]},width:Math.abs(matrix[0]*w)});},createPattern(){return {setTransform(m){ctx.patternMatrix=m;}};},createLinearGradient(){return {addColorStop(){}};},createRadialGradient(){return {addColorStop(){}};},getImageData(x,y,w,h){const data=new Uint8ClampedArray(w*h*4);for(let i=3;i<data.length;i+=4)data[i]=255;return {data};},stroke(){strokes++;},get strokes(){return strokes;}};
- for(const name of ['clearRect','fillRect','beginPath','moveTo','lineTo','closePath','fill','ellipse','arc','quadraticCurveTo','strokeText','fillText'])ctx[name]=()=>{};
+ for(const name of ['clearRect','fillRect','beginPath','moveTo','lineTo','closePath','fill','ellipse','arc','quadraticCurveTo','strokeText','fillText','clip'])ctx[name]=()=>{};
  return ctx;
 }
 function renderer(){
  let id=0;
  const document={createElement:()=>({id:id++,width:0,height:0,getContext:()=>context()})};
  class Image{width=128;height=128;complete=true;naturalWidth=128;}
- const sandbox={Image,URL,document,...camera,createMeadow:()=>({}),fillMeadow};
+ const sandbox={Image,URL,document,...camera,...life,VOYAGES,createMeadow:()=>({}),fillMeadow};
  const source=readFileSync(new URL('../dist/settlement-renderer.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replaceAll('import.meta.url',JSON.stringify('https://unit.test/renderer.js')).replaceAll('export function','function');
  vm.runInNewContext(source+'\nthis.scene={drawSettlement,mapTile};',sandbox);return sandbox.scene;
 }

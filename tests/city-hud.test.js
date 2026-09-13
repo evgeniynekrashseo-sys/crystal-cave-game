@@ -11,18 +11,19 @@ test('city counters update without remounting resource or population images',()=
   querySelector(){return this.value}
  }
  const resources=new Node(),population=new Node();
- const nodes=Object.fromEntries(['wood','food','gold'].map(k=>[k,new Node()]));
+ const nodes=Object.fromEntries(['wood','stone','food','gold'].map(k=>[k,new Node()]));
  resources.querySelector=selector=>nodes[selector.match(/="(.*?)"/)[1]];
  const root={querySelector:selector=>selector==='#city-resources'?resources:population};
  const hud=mountCityHud(root,name=>`<img src="${name}.svg">`);
  const resourceMarkup=resources.innerHTML,populationMarkup=population.innerHTML;
- for(let i=0;i<30;i++)hud.update({wood:65+i+.4,food:55+i,gold:i},6,8);
+ for(let i=0;i<30;i++)hud.update({wood:65+i+.4,stone:45+i,food:55+i,gold:i},6,8);
  assert.equal(resources.writes,1);
  assert.equal(population.writes,1);
  assert.equal(resources.innerHTML,resourceMarkup);
  assert.equal(population.innerHTML,populationMarkup);
  assert.equal(nodes.wood.value.textContent,'94');
  assert.equal(nodes.food.attrs['aria-label'],'Їжа: 84');
+ assert.equal(nodes.stone.attrs['aria-label'],'Камінь: 74');
  assert.equal(nodes.gold.value.textContent,'29');
  assert.equal(population.value.textContent,'6 / 8');
  assert.match(resourceMarkup,/resource-wood-v16\.png/);

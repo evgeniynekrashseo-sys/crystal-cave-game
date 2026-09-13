@@ -44,7 +44,7 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
 
 #city-resources{
  position:absolute;z-index:8;left:10px;right:10px;top:calc(66px + env(safe-area-inset-top));height:54px;
- display:grid;grid-template-columns:repeat(3,1fr);padding:6px 9px 8px;border:1px solid #8aeafb;border-top:0;
+ display:grid;grid-template-columns:repeat(4,1fr);padding:6px 6px 8px;border:1px solid #8aeafb;border-top:0;
  border-radius:0 0 18px 18px;background:linear-gradient(145deg,#0a4160f4,#062942f2);color:white;
  box-shadow:inset 0 -1px 0 #ffffff17,0 8px 24px #01334d3b;
 }
@@ -54,6 +54,9 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
 .city-resource img.resource-art{width:37px;height:37px;filter:drop-shadow(0 2px 4px #001a24a0)}
 .city-resource b{font-size:17px;line-height:1;color:#fff;text-shadow:0 1px 3px #001828}
 .city-resource small{display:none}
+.city-resource{gap:4px}
+.city-resource img.resource-art{width:28px;height:28px}
+.city-resource b{font-size:14px;font-variant-numeric:tabular-nums}
 #city-vitals{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
 
 .city-map-tools{position:absolute;z-index:6;right:10px;top:calc(132px + env(safe-area-inset-top));display:grid;gap:6px;pointer-events:none}
@@ -63,6 +66,7 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
 }
 #settlement .city-map-tools img{width:20px;height:20px;filter:brightness(0) invert(1)}
 #city-zoom-value{padding:3px 0;border-radius:7px;background:#07344bc9;color:#efffff;text-align:center;font-size:10px;font-weight:700;user-select:none;pointer-events:none}
+#settlement #city-coast{position:absolute;z-index:6;right:10px;top:calc(340px + env(safe-area-inset-top));width:44px;padding:8px 3px;background:#07344be6;color:#e9ffff;border-color:#b9f8ff;font-size:11px}
 .city-map-label{position:absolute;z-index:1;left:16px;bottom:calc(185px + env(safe-area-inset-bottom));font-size:8px;font-weight:800;letter-spacing:2px;color:#1647547d;text-shadow:0 1px #fff8;pointer-events:none}
 
 .city-mission{
@@ -121,6 +125,17 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
 #city-panel article>button{display:block;margin:10px 0}
 .city-catalog{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;padding:8px 1px 13px;scroll-snap-type:x proximity}
 .city-catalog button{flex:0 0 140px;text-align:left;scroll-snap-align:start;background:#fff}
+#city-panel .city-catalog button.chosen small{color:#e8fcff}
+.city-selected-summary{padding:12px;border-radius:12px;background:#dcefe9;margin:8px 0}
+.city-contract{padding:10px 0;border-top:1px solid #bad8dc}
+.city-contract button{margin-top:7px;width:100%}
+.city-demolition{padding:10px;border:1px solid #d39e84;border-radius:12px;background:#fff3e8;margin-top:12px}
+#settlement .city-demolition button{margin:5px;color:#8b4031;border-color:#caa18b}
+.city-goal{padding:12px;border-radius:14px;background:#d9f0e7;margin-bottom:10px}
+#city-panel .city-goal>button{width:100%;margin-top:8px}
+.city-stocks{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0}
+.city-stocks span{padding:8px;border:1px solid #afd0d3;border-radius:10px;background:#eefcf8;font-size:11px}
+.city-stocks b{float:right;font-variant-numeric:tabular-nums}
 .city-action{padding-top:11px;border-top:1px solid #b6d5d3}
 .city-action>b{font-size:13px}
 .city-action>button{background:#008da8!important;color:#fff!important}
