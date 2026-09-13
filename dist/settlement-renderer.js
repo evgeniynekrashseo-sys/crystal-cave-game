@@ -1,5 +1,6 @@
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-const art=new Image();art.src=new URL('./settlement-ground-v16.png',import.meta.url).href;
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=17';
+import {createMeadow,fillMeadow} from './settlement-ground.js?v=17';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 
@@ -32,20 +33,10 @@ function sliceAtlas(image,names,target){
 }
 
 function prepare(){
- if(!grass&&art.complete&&art.naturalWidth){
-  const tile=document.createElement('canvas');tile.width=384;tile.height=192;
-  const g=tile.getContext('2d');
-  for(let x=0;x<2;x++)for(let y=0;y<2;y++){
-   g.save();g.translate(x?384:0,y?192:0);g.scale(x?-1:1,y?-1:1);
-   g.drawImage(art,40,25,210,105,0,0,192,96);g.restore();
-  }
-  grass=tile;
- }
+ if(!grass)grass=createMeadow(document);
  if(!preparedSprites&&atlas.complete&&atlas.naturalWidth){sliceAtlas(atlas,SPRITE_NAMES,sprites);preparedSprites=true;}
  if(!preparedDetails&&detailAtlas.complete&&detailAtlas.naturalWidth){sliceAtlas(detailAtlas,DETAIL_NAMES,details);preparedDetails=true;}
 }
-
-function unitFor(width){return Math.max(49,Math.min(58,width*.135));}
 
 function paintImage(ctx,image,x,y,width,{alpha=1,angle=0,flip=false}={}){
  if(!image)return;
@@ -57,22 +48,26 @@ function paintImage(ctx,image,x,y,width,{alpha=1,angle=0,flip=false}={}){
 
 function drawRiver(ctx,W,H,pan,zoom,time,reduced){
  if(!details.river)return;
- const width=Math.max(112,W*.29)*Math.max(.88,Math.min(1.12,zoom));
+ // A world-space stream, not a viewport decoration with a separate parallax speed.
+ const unit=unitFor(W),origin=originFor({width:W,height:H});
+ const width=unit*2.12;
  const height=width*details.river.height/details.river.width;
- const centerX=W-42+pan.x*.16;
+ const centerX=unit*3;
  const overlap=height*.76;
- const offset=((pan.y*.22)%overlap+overlap)%overlap-overlap;
- for(let y=offset;y<H+height;y+=overlap)paintImage(ctx,details.river,centerX,y+height,width,{flip:Math.floor(y/overlap)%2!==0});
- if(details['river-bend'])paintImage(ctx,details['river-bend'],centerX-4,H*.18+pan.y*.18,width*1.04,{alpha:.9});
- if(details.bridge)paintImage(ctx,details.bridge,centerX-4,H*.62+pan.y*.2,width*1.28);
+ const top=-(origin.y+pan.y)/zoom,bottom=(H-origin.y-pan.y)/zoom;
+ ctx.save();ctx.translate(origin.x+pan.x,origin.y+pan.y);ctx.scale(zoom,zoom);
+ for(let i=Math.floor((top-height)/overlap);i*overlap<bottom;i++)paintImage(ctx,details.river,centerX,i*overlap+height,width,{flip:Math.abs(i)%2!==0});
+ if(details['river-bend'])paintImage(ctx,details['river-bend'],centerX-4,-unit*4.5,width*1.04,{alpha:.9});
+ if(details.bridge)paintImage(ctx,details.bridge,centerX-4,unit*4*.56,width*1.28);
  if(!reduced){
   ctx.save();ctx.strokeStyle='#e9ffffb0';ctx.lineWidth=1.2;ctx.lineCap='round';
   for(let i=0;i<7;i++){
-   const y=(time*26+i*137+pan.y*.2)%(H+40)-20;
+   const y=(time*26+i*137)%1400-700;
    ctx.beginPath();ctx.moveTo(centerX-24+(i%3)*9,y);ctx.lineTo(centerX-7+(i%2)*7,y-3);ctx.stroke();
   }
   ctx.restore();
  }
+ ctx.restore();
 }
 
 function roadSprite(c,road){
@@ -88,12 +83,10 @@ function roadSprite(c,road){
 export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced}){
  prepare();
  const W=canvas.clientWidth,H=canvas.clientHeight,u=unitFor(W)*zoom;
- const project=(x,y)=>({x:W/2+(x-y)*u+pan.x,y:H*.49+(x+y-10)*u*.56+pan.y});
+ const view={width:W,height:H},camera={zoom,pan};
+ const project=(x,y)=>projectPoint(view,camera,x,y);
  ctx.clearRect(0,0,W,H);ctx.fillStyle='#aeca78';ctx.fillRect(0,0,W,H);
- if(grass){
-  ctx.save();ctx.translate(pan.x%384,pan.y%192);ctx.fillStyle=ctx.createPattern(grass,'repeat');
-  ctx.globalAlpha=.88;ctx.fillRect(-384,-192,W+768,H+384);ctx.restore();
- }
+ if(grass)fillMeadow(ctx,grass,view,camera,originFor(view));
  drawRiver(ctx,W,H,pan,zoom,time,reduced);
 
  const diamond=(x,y,color,stroke)=>{
@@ -103,14 +96,28 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1.5;ctx.shadowColor=stroke;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;}
  };
 
+ const foundation=(x,y)=>{
+  const points=[project(x+.035,y+.035),project(x+.965,y+.035),project(x+.965,y+.965),project(x+.035,y+.965)];
+  const center=project(x+.5,y+.5);
+  ctx.save();ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();
+  const color=ctx.createLinearGradient(center.x,center.y-u*.5,center.x,center.y+u*.5);
+  color.addColorStop(0,'#b1b580d9');color.addColorStop(1,'#c4b786e0');ctx.fillStyle=color;ctx.fill();
+  ctx.strokeStyle='#7a825455';ctx.lineWidth=Math.max(.7,zoom);ctx.stroke();
+  // Contact shadow sits within the plot, directly under the sprite's floor.
+  ctx.fillStyle='#38552b3b';ctx.beginPath();ctx.ellipse(center.x,center.y+u*.13,u*.72,u*.29,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+ };
+ for(const b of c.buildings)foundation(b.x,b.y);
+ foundation(4,2);
+
  // Starter footpaths create a readable village composition; built roads use the same detailed art.
  const starterPaths=[{x:4,y:3,img:'path-straight'},{x:4,y:4,img:'path-t'},{x:4,y:5,img:'path-cross'},{x:4,y:6,img:'path-t'},{x:3,y:5,img:'path-curve'},{x:5,y:5,img:'path-curve'}];
  for(const path of starterPaths){
-  const p=project(path.x+.5,path.y+.55);
+  const p=project(path.x+.98,path.y+.98);
   paintImage(ctx,details[path.img],p.x,p.y,u*1.82,{alpha:.78});
  }
  for(const road of c.roads){
-  const p=project(road.x+.5,road.y+.55);
+  const p=project(road.x+.98,road.y+.98);
   paintImage(ctx,roadSprite(c,road),p.x,p.y,u*1.9,{alpha:c.tech.includes('motor')?.93:.82});
  }
  if(tool)for(let x=0;x<c.extent;x++)for(let y=0;y<c.extent;y++)diamond(x,y,'#ffffff04','#e8ffff2e');
@@ -136,13 +143,15 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  if(!occupied(9,7))objects.push({x:9.1,y:7.35,kind:'tree',width:96,sway:true});
  if(!occupied(7,8))objects.push({x:7.6,y:8.45,detail:'flowers',width:46});
  if(!occupied(8,8))objects.push({x:8.45,y:8.15,detail:'grass',width:42});
- if(!c.buildings.some(b=>b.x===4&&b.y===2))objects.push({x:4,y:2,kind:'lab',width:148,lab:true});
+ if(!c.buildings.some(b=>b.x===4&&b.y===2))objects.push({x:4,y:2,kind:'lab',width:unitFor(W)*2.2,lab:true});
  const kind={house:'house',lumber:'lumber',farm:'farm',well:'well',quarry:'rock',ranch:'ranch',clinic:'clinic',granary:'granary',mine:'mine',smelter:'factory',factory:'factory',energy:'energy'};
- for(const b of c.buildings)objects.push({x:b.x,y:b.y,kind:kind[b.type],width:b.type==='farm'?118:b.type==='well'?78:114,b});
+ for(const b of c.buildings)objects.push({x:b.x,y:b.y,kind:kind[b.type],width:unitFor(W)*(b.type==='farm'?1.92:b.type==='well'?1.25:1.84),b});
  for(const a of c.agents)objects.push({x:a.x,y:a.y,kind:a.truck?'truck':'person',width:a.truck?62:30,a});
 
  const drawObject=obj=>{
-  const p=project(obj.x+.5,obj.y+.62);
+  // Buildings use the front corner of their floor; people/plants use their foot point.
+  const onPlot=!!(obj.b||obj.lab);
+  const p=project(obj.x+(onPlot ? .98 : .5),obj.y+(onPlot ? .98 : .62));
   if(obj.detail){paintImage(ctx,details[obj.detail],p.x,p.y,obj.width*zoom,{alpha:.96});return;}
   const moving=obj.a?.path.length;
   const frame=moving&&!reduced?Math.floor(time*5+obj.a.id)%2:0;
@@ -156,10 +165,9 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
    else if(obj.a?.state==='work')angle=Math.sin(time*3)*.024;
   }
   if(obj.b||obj.lab)hits.push({left:p.x-width/2,top:p.y-height,width,height,x:obj.x,y:obj.y,lab:obj.lab});
-  ctx.save();ctx.fillStyle='#294c282f';ctx.filter='blur(3px)';ctx.beginPath();ctx.ellipse(p.x+4*zoom,p.y-2*zoom,width*.34,width*.1,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  if(!obj.b&&!obj.lab){ctx.save();ctx.fillStyle='#294c2838';ctx.beginPath();ctx.ellipse(p.x,p.y-zoom,width*.27,width*.065,0,0,Math.PI*2);ctx.fill();ctx.restore();}
   if(selected&&Math.round(obj.x)===selected.x&&Math.round(obj.y)===selected.y){
-   ctx.save();ctx.strokeStyle='#55f5ff';ctx.lineWidth=3;ctx.shadowColor='#00eaff';ctx.shadowBlur=14;
-   ctx.beginPath();ctx.ellipse(p.x,p.y-2*zoom,width*.45,width*.15,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+   diamond(obj.x,obj.y,'#50eff509','#83f9ff');
   }
   ctx.save();ctx.translate(p.x,p.y-bob);ctx.rotate(angle);
   let alpha=1;
@@ -192,8 +200,5 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
 }
 
 export function mapTile(canvas,zoom,pan,x,y){
- const u=unitFor(canvas.clientWidth)*zoom;
- const a=(x-canvas.clientWidth/2-pan.x)/u;
- const b=(y-canvas.clientHeight*.49-pan.y)/(u*.56)+10;
- return{x:Math.floor((a+b)/2),y:Math.floor((b-a)/2)};
+ return tileAt({width:canvas.clientWidth,height:canvas.clientHeight},{zoom,pan},{x,y});
 }

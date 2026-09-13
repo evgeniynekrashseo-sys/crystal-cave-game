@@ -10,7 +10,8 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
  box-shadow:0 0 80px #000a,0 0 0 1px #74e5ef52;
 }
 #city-viewport{position:absolute;inset:0;z-index:0;overflow:hidden;background:#b8d579}
-#city-viewport canvas{width:100%;height:100%;display:block;touch-action:none}
+#city-viewport canvas{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;overscroll-behavior:none;cursor:grab}
+#city-viewport canvas:active{cursor:grabbing}
 
 #settlement header,#city-resources,.city-mission,#settlement nav,#city-sheet{backdrop-filter:blur(18px) saturate(1.18);-webkit-backdrop-filter:blur(18px) saturate(1.18)}
 #settlement header{
@@ -55,12 +56,13 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
 .city-resource small{display:none}
 #city-vitals{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
 
-.city-map-tools{position:absolute;z-index:6;right:10px;top:calc(132px + env(safe-area-inset-top));display:grid;gap:6px}
+.city-map-tools{position:absolute;z-index:6;right:10px;top:calc(132px + env(safe-area-inset-top));display:grid;gap:6px;pointer-events:none}
 #settlement .city-map-tools button{
- display:grid;place-items:center;width:44px;height:44px;padding:0;border-color:#ecffffae;
+ display:grid;place-items:center;width:44px;height:44px;padding:0;border-color:#ecffffae;pointer-events:auto;
  background:#07344bbf;box-shadow:inset 0 1px 0 #ffffff36,0 4px 12px #00213755;
 }
 #settlement .city-map-tools img{width:20px;height:20px;filter:brightness(0) invert(1)}
+#city-zoom-value{padding:3px 0;border-radius:7px;background:#07344bc9;color:#efffff;text-align:center;font-size:10px;font-weight:700;user-select:none;pointer-events:none}
 .city-map-label{position:absolute;z-index:1;left:16px;bottom:calc(185px + env(safe-area-inset-bottom));font-size:8px;font-weight:800;letter-spacing:2px;color:#1647547d;text-shadow:0 1px #fff8;pointer-events:none}
 
 .city-mission{
@@ -109,7 +111,7 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
 .panel-open #city-sheet{display:flex;flex-direction:column}
 .panel-open .city-mission,.panel-open #city-notice{display:none}
 #settlement #city-panel-close{align-self:flex-end;min-height:42px;margin:2px 7px -3px;border:0;background:none;color:#3d6879;font-size:11px}
-#city-panel{overflow-y:auto;overscroll-behavior:contain;padding:0 14px 18px}
+#city-panel{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;padding:0 14px 18px}
 #city-panel,.city-catalog{scrollbar-width:none}
 #city-panel::-webkit-scrollbar,.city-catalog::-webkit-scrollbar{display:none}
 #city-panel p{margin:8px 0;color:#3e6676;font-size:12px;line-height:1.55}
@@ -117,7 +119,7 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
 #city-panel article{padding:11px 0;border-bottom:1px solid #b9dbda}
 #city-panel article>b{font-size:15px;color:#0b3d57}
 #city-panel article>button{display:block;margin:10px 0}
-.city-catalog{display:flex;gap:8px;overflow-x:auto;padding:8px 1px 13px;scroll-snap-type:x proximity}
+.city-catalog{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;padding:8px 1px 13px;scroll-snap-type:x proximity}
 .city-catalog button{flex:0 0 140px;text-align:left;scroll-snap-align:start;background:#fff}
 .city-action{padding-top:11px;border-top:1px solid #b6d5d3}
 .city-action>b{font-size:13px}
