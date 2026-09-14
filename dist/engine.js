@@ -225,3 +225,16 @@ export function normalize(raw){
   d.recentPuzzles=Array.isArray(raw.recentPuzzles)?raw.recentPuzzles.filter(s=>typeof s==='string').slice(-3):[];
   return d;
 }
+
+export function experimentChallenge(level){
+ const precision=level%2===0;
+ return {precision,name:precision?'Точність синтезу':'Самостійне відкриття',
+ description:precision?'Заверши сортування, витративши не більше 120% контрольної кількості ходів.':'Заверши експеримент без підказок, скасування та резервної колби.',
+ bonus:20+Math.min(80,Math.floor(level/5)*10)};
+}
+export function experimentResult(level,{assisted,used,par}){
+ const efficient=Number.isFinite(used)&&Number.isFinite(par)&&used>=0&&par>0&&used<=Math.ceil(par*1.2);
+ const challenge=experimentChallenge(level);
+ const met=challenge.precision?efficient:!assisted;
+ return {stars:1+Number(!assisted)+Number(efficient),bonus:met?challenge.bonus:0,met,challenge};
+}

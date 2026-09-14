@@ -131,3 +131,19 @@
 @media(max-width:380px){#board{column-gap:8px}.tube-wrap,#game[data-density=dense] .tube-wrap{width:68px}.tube-wrap .tube,#game[data-density=dense] .tube{left:9px;width:50px}}
 @media(max-height:800px){.tube-wrap,#game[data-density=dense] .tube-wrap{height:220px}.glass-sprite{height:198px}.tube-wrap .tube,#game[data-density=dense] .tube{top:16px;height:174px}.tube-wrap .tube .token,#game[data-density=dense] .tube .token{height:36px;min-height:36px;flex-basis:36px;font-size:16px}}
 @media(max-width:600px){#board,#game[data-density=dense] #board{gap:16px 8px;max-width:100%}.tube-wrap,#game[data-density=dense] .tube-wrap{width:68px;height:216px}.glass-sprite{height:194px}.tube-wrap .tube,#game[data-density=dense] .tube{left:9px;top:15px;width:50px;height:170px}.tube-wrap .tube .token,#game[data-density=dense] .tube .token{height:35px;min-height:35px;flex-basis:35px;font-size:16px}}
+
+/* Experiment goals and rewards, outside the approved tube artwork. */
+#experiment-brief{margin:9px 12px 4px;padding:11px 13px;border:1px solid #8cc9c04d;border-radius:14px;background:linear-gradient(115deg,#153743ed,#09212bef);box-shadow:inset 0 1px 0 #e6fff91a,0 4px 14px #0003}
+#experiment-brief[hidden]{display:none}
+#experiment-brief>div{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#experiment-brief b{font-size:12px;color:#e7fff6}
+#experiment-brief span{font-size:11px;font-weight:700;color:#f5d78e;white-space:nowrap}
+#experiment-brief p{margin:5px 0 8px;color:#bbd7d3;font-size:11px;line-height:1.45;text-align:left}
+#experiment-brief progress{display:block;width:100%;height:4px;border:0;border-radius:4px;overflow:hidden;background:#ffffff14;accent-color:#8fe2c8}
+#experiment-brief progress::-webkit-progress-bar{background:#ffffff14}
+#experiment-brief progress::-webkit-progress-value{background:linear-gradient(90deg,#48b8b9,#b6ebbd);border-radius:4px}
+.experiment-stars{font-size:32px;letter-spacing:7px;color:#f5d78e;margin:16px 0 8px;text-shadow:0 2px 12px #dfa64238}
+#game .tools button,#game .world-nav button{touch-action:manipulation}
+#game .tools button:focus-visible,#game .world-nav button:focus-visible{outline:2px solid #b5f9df;outline-offset:3px}
+#game .tools button:active:not(:disabled){transform:translateY(2px)}
+@media(max-height:740px){#experiment-brief{padding:8px 11px}#experiment-brief p{font-size:10px;margin:4px 0 6px}}

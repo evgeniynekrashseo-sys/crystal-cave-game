@@ -1,8 +1,8 @@
-import {CITY_RESEARCH} from './city-research.js?v=23';
-import {mountCityHud} from './city-hud.js?v=23';
-import {drawSettlement,mapTile} from './settlement-renderer.js?v=23';
-import {bindMapControls,boundCamera,projectPoint,MIN_ZOOM,MAX_ZOOM} from './settlement-camera.js?v=23';
-import {SIZE,TYPES,TECH,LABELS,deliverDiscovery,terrain,normalizeCity,onChemistryWin,stats,step,build,canPlace,upgrade,upgradeCost,expand,research,affordable,demolish,demolitionRefund,VOYAGES,voyageError,dispatchVoyage,claimCityCoins,cityGoal,claimCityGoal,ensureCitySystems,cityEra,DISTRICTS,EXPEDITIONS,CITY_EVENTS,advanceCitySystems,resolveCityEvent,cityEventError,dispatchExpedition,expeditionError,districtSummary} from './settlement-model.js?v=23';
+import {CITY_RESEARCH} from './city-research.js?v=24';
+import {mountCityHud} from './city-hud.js?v=24';
+import {drawSettlement,mapTile} from './settlement-renderer.js?v=24';
+import {bindMapControls,boundCamera,projectPoint,MIN_ZOOM,MAX_ZOOM} from './settlement-camera.js?v=24';
+import {SIZE,TYPES,TECH,LABELS,deliverDiscovery,terrain,normalizeCity,onChemistryWin,stats,step,build,canPlace,upgrade,upgradeCost,expand,research,affordable,demolish,demolitionRefund,VOYAGES,voyageError,dispatchVoyage,claimCityCoins,cityGoal,claimCityGoal,ensureCitySystems,cityEra,DISTRICTS,EXPEDITIONS,CITY_EVENTS,advanceCitySystems,resolveCityEvent,cityEventError,dispatchExpedition,expeditionError,districtSummary} from './settlement-model.js?v=24';
 const KEY='chemlab_settlement_v2';
 export function initCity(api){
  let raw;try{raw=JSON.parse(localStorage.getItem(KEY))}catch{}
@@ -50,7 +50,15 @@ export function initCity(api){
   mission.querySelector('button').textContent=goal?.test(c)?'Забрати':'Завдання';
   for(const node of root.querySelectorAll('[data-city-stock]'))node.textContent=String(Math.floor(c.resources[node.dataset.cityStock]||0));
   for(const node of root.querySelectorAll('[data-voyage-time]')){const v=c.voyages.find(v=>v.x===selected.x&&v.y===selected.y);node.textContent=v?`${VOYAGES[v.kind].name} · повернення за ${Math.max(1,Math.ceil(VOYAGES[v.kind].duration-v.elapsed))} с`:'Корабель готовий до рейсу';}
+  for(const node of root.querySelectorAll('[data-expedition]'))node.disabled=!!expeditionError(c,building(),node.dataset.expedition);
   for(const node of root.querySelectorAll('[data-voyage]'))node.disabled=!!voyageError(c,building(),node.dataset.voyage);
+  const eventSpec=CITY_EVENTS.find(e=>e.id===c.activeEvent?.id);
+  const countdown=root.querySelector('[data-event-countdown]');
+  if(countdown&&eventSpec)countdown.textContent=String(Math.max(0,Math.ceil(eventSpec.duration-c.activeEvent.elapsed)));
+  const eventButton=root.querySelector('#city-event-resolve');
+  if(eventButton&&eventSpec)eventButton.disabled=!!cityEventError(c);
+  const reason=root.querySelector('[data-event-reason]');
+  if(reason&&eventSpec)reason.textContent=cityEventError(c)||'Готово до допомоги. Нагорода: 10 монет та ресурси.';
   const claim=root.querySelector('#city-goal-claim');if(claim)claim.disabled=!goal?.test(c);
   const selectedBuilding=building(),status=root.querySelector('[data-city-building-status]');
   if(status&&selectedBuilding)status.textContent=selectedBuilding.ready>c.seconds?'Будівництво триває':`Працівники: ${c.agents.filter(a=>a.job===selectedBuilding.id).length}/${TYPES[selectedBuilding.type].workers}`;
@@ -64,7 +72,7 @@ export function initCity(api){
   const goal=cityGoal(c),types={stone:'quarry',school:'school',ranch:'ranch',fishery:'fishery',voyage:'harbor'};
  target.insertAdjacentHTML('afterbegin',`${goal?`<article class="city-goal"><b>${goal.name}</b><p>${goal.hint}</p><small>Нагорода: ${goal.coins} монет · ${costText(goal.reward)}</small><button id="city-goal-claim" ${goal.test(c)?'':'disabled'}>Забрати нагороду</button>${types[goal.id]?`<button data-goal-build="${types[goal.id]}">Обрати: ${TYPES[types[goal.id]].name}</button>`:''}</article>`:''}<article><b>Запаси міста</b><div class="city-stocks">${Object.entries(LABELS).map(([id,name])=>`<span>${name}<b data-city-stock="${id}">${Math.floor(c.resources[id])}</b></span>`).join('')}</div><p>Освіта: ${stats(c).education}% · учнів: ${stats(c).students}. Продуктивність: +${Math.round(stats(c).education/2.5)}%.</p><p>Завершених морських рейсів: ${c.completedVoyages}</p><button id="city-show-coast">До моря</button></article>`);
   const districts=districtSummary(c);
-  target.insertAdjacentHTML('beforeend',`<article class="city-era"><b>Епоха: ${cityEra(c).name}</b><p>${cityEra(c).text}</p><div class="city-districts">${Object.entries(DISTRICTS).map(([id,d])=>`<span><b>${districts[id]}</b> ${d.name}</span>`).join('')}</div></article>${c.activeEvent?`<article class="city-event"><b>Подія: ${CITY_EVENTS.find(e=>e.id===c.activeEvent.id)?.name||'Криза'}</b><p>${CITY_EVENTS.find(e=>e.id===c.activeEvent.id)?.text||''}</p><small>Залишилось: ${Math.max(0,Math.ceil(CITY_EVENTS.find(e=>e.id===c.activeEvent.id).duration-c.activeEvent.elapsed))} с · Витрати: ${costText(CITY_EVENTS.find(e=>e.id===c.activeEvent.id).cost)}</small><p>${cityEventError(c)||'Готово до допомоги. Нагорода: 10 монет та ресурси.'}</p><button id="city-event-resolve" ${cityEventError(c)?'disabled':''}>Допомогти місту</button></article>`:''}<article><b>Експедиції</b><p>${c.expeditions.length?c.expeditions.map(e=>`${EXPEDITIONS[e.kind].name} · ${Math.max(1,Math.ceil(EXPEDITIONS[e.kind].duration-e.elapsed))} с`).join('<br>'):'Вільні команди вирушають із пристані або рибальні.'}</p></article>`);
+  target.insertAdjacentHTML('beforeend',`<article class="city-era"><b>Епоха: ${cityEra(c).name}</b><p>${cityEra(c).text}</p><div class="city-districts">${Object.entries(DISTRICTS).map(([id,d])=>`<span><b>${districts[id]}</b> ${d.name}</span>`).join('')}</div></article>${c.activeEvent?`<article class="city-event"><b>Подія: ${CITY_EVENTS.find(e=>e.id===c.activeEvent.id)?.name||'Криза'}</b><p>${CITY_EVENTS.find(e=>e.id===c.activeEvent.id)?.text||''}</p><small>Залишилось: <span data-event-countdown>${Math.max(0,Math.ceil(CITY_EVENTS.find(e=>e.id===c.activeEvent.id).duration-c.activeEvent.elapsed))}</span> с · Витрати: ${costText(CITY_EVENTS.find(e=>e.id===c.activeEvent.id).cost)}</small><p data-event-reason>${cityEventError(c)||'Готово до допомоги. Нагорода: 10 монет та ресурси.'}</p><button id="city-event-resolve" ${cityEventError(c)?'disabled':''}>Допомогти місту</button></article>`:''}<article><b>Експедиції</b><p>${c.expeditions.length?c.expeditions.map(e=>`${EXPEDITIONS[e.kind].name} · ${Math.max(1,Math.ceil(EXPEDITIONS[e.kind].duration-e.elapsed))} с`).join('<br>'):'Вільні команди вирушають із пристані або рибальні.'}</p></article>`);
  }
  if(tab==='build'&&b&&!tool){
   target.insertAdjacentHTML('beforeend',`${b.type==='harbor'?`<article><b>Морські контракти</b><p data-voyage-time></p>${Object.entries(VOYAGES).map(([id,v])=>`<div class="city-contract"><b>${v.name}</b><small>Вантаж: ${costText(v.cost)} · ${v.duration} с</small><small>Повернення: ${v.coins*b.level} монет · ${costText(Object.fromEntries(Object.entries(v.reward).map(([k,n])=>[k,n*b.level])))}</small><button data-voyage="${id}" ${voyageError(c,b,id)?'disabled':''}>Відправити корабель</button></div>`).join('')}</article>`:''}${['harbor','fishery'].includes(b.type)?`<article><b>Експедиції</b><p>Ризикована подорож відкриває ресурси та артефакти.</p>${Object.entries(EXPEDITIONS).map(([id,e])=>`<div class="city-contract"><b>${e.name}</b><small>${e.duration} с · ${costText(e.cost)} → ${costText(e.reward)} · ${e.coins} монет</small><button data-expedition="${id}" ${expeditionError(c,b,id)?'disabled':''}>Відправити команду</button></div>`).join('')}</article>`:''}`);
@@ -120,4 +128,4 @@ export function initCity(api){
  }
  window.addEventListener('pagehide',persist);return {open,discover(id){if(deliverDiscovery(c,id))persist();},won(level){onChemistryWin(c,level);persist()}};
 }
-import {renderBuildingPanel} from './city-building-panel.js?v=23';
+import {renderBuildingPanel} from './city-building-panel.js?v=24';
