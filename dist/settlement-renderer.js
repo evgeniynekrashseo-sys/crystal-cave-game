@@ -1,8 +1,8 @@
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=22';
-import {createMeadow,fillMeadow} from './settlement-ground.js?v=22';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection} from './settlement-life.js?v=22';
-import {VOYAGES} from './settlement-model.js?v=22';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=23';
+import {createMeadow,fillMeadow} from './settlement-ground.js?v=23';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection} from './settlement-life.js?v=23';
+import {VOYAGES} from './settlement-model.js?v=23';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./settlement-meadow-v18.png',import.meta.url).href;

@@ -126,7 +126,14 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
 .city-catalog{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;padding:8px 1px 13px;scroll-snap-type:x proximity}
 .city-catalog button{flex:0 0 140px;text-align:left;scroll-snap-align:start;background:#fff}
 #city-panel .city-catalog button.chosen small{color:#e8fcff}
-.city-selected-summary{padding:12px;border-radius:12px;background:#dcefe9;margin:8px 0}
+.city-building-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.city-building-heading>b{font-size:18px;color:#0b3d57}
+.city-building-level{flex-shrink:0;padding:5px 8px;border-radius:8px;background:#d2eee9;color:#165c6d;font-size:11px;font-weight:700}
+#city-panel .city-building-location{margin-top:3px;color:#557485}
+#city-panel .city-level-max{margin:10px 0 5px;color:#08705e;font-weight:700}
+#city-panel .city-build-picker{margin:0 0 8px}
+#city-panel .city-build-picker>summary{min-height:44px;padding:12px 0;color:#165c6d;font-weight:700}
+#city-panel .city-placement-hint{margin:6px 0 10px}
 .city-contract{padding:10px 0;border-top:1px solid #bad8dc}
 .city-contract button{margin-top:7px;width:100%}
 .city-demolition{padding:10px;border:1px solid #d39e84;border-radius:12px;background:#fff3e8;margin-top:12px}
@@ -142,8 +149,6 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
 .city-action{padding-top:11px;border-top:1px solid #b6d5d3}
 .city-action>b{font-size:13px}
 .city-action>button{background:#008da8!important;color:#fff!important}
-.city-coordinates{display:flex;justify-content:flex-end;gap:6px;margin-top:9px}
-.city-coordinates button{width:44px;padding:0}
 #city-panel .city-research-card{padding:14px 0 18px}
 #city-panel .city-research-card>b{font-size:18px}
 .city-research-balance{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #a9d8dc;border-radius:12px;background:#def3f2;color:#0b5367;font-size:12px;font-weight:700}
