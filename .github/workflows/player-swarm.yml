@@ -1,0 +1,31 @@
+name: ChemLab 10K Player Swarm
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+permissions:
+  contents: read
+  issues: write
+jobs:
+  swarm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test
+      - name: Simulate 10,000 players
+        run: npm run qa:swarm
+        env:
+          PLAYERS: 10000
+      - name: Upload QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chemlab-player-swarm
+          path: qa-output/
