@@ -1,6 +1,6 @@
 {
   "name": "chemlab",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "node dev-server.mjs",
@@ -8,4 +8,4 @@
     "qa:swarm": "node scripts/player-swarm.mjs",
     "qa:full": "npm test && npm run qa:swarm"
   }
-}\n
+}
