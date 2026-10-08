@@ -32,4 +32,4 @@ Web release candidate passed the checks below. Native projects are prepared, not
 - Automated backups validate JSON restoration, but native WebView download/import behavior requires real-device testing.
 - Android compilation requires Java 21 and Android SDK 36; iOS compilation requires macOS/Xcode. CI workflows are provided; a successful sync is not a successful native build.
 - Owner must confirm bundle ID, final seller/privacy declarations, developer accounts and signing identities before store upload. No paid services or store submissions have been initiated.
-- Post-deployment verification must check GitHub Actions and the public URL; local results alone do not establish successful publication.
+- Post-deployment: GitHub Pages and the 10K workflow passed for commit `4a02b46`; public game opens the city and new story navigation. iOS simulator compilation passed. First Android run stopped in SDK setup because the action requested Google's retired `tools` package; setup now explicitly requests `platform-tools`, with compilation still to be confirmed.
