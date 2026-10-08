@@ -190,3 +190,32 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
  #settlement nav button{min-height:55px}
 }
 @media(prefers-reduced-motion:reduce){#settlement *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+/* Valley Chronicles: restrained journal panels over the original isometric world. */
+#settlement nav{grid-template-columns:repeat(5,1fr)}
+#settlement nav button{min-width:0;padding:5px 3px;font-size:10px}
+#settlement nav [data-city-tab="story"]>span:first-child{font-size:26px;line-height:30px;color:#087d98}
+.chronicle-heading{padding:10px 5px 15px}
+.chronicle-heading>small{font-size:9px;letter-spacing:2px;color:#557780}
+.chronicle-heading h2{font:600 29px/1.2 Georgia,serif;margin:8px 0;color:#07364b}
+.chronicle-heading p{font-size:12px;line-height:1.6;color:#466b70}
+#city-panel .story-card{border-color:#c49c584f;background:linear-gradient(145deg,#fffef4,#e9f5f2);box-shadow:0 6px 16px #1c494312}
+.story-person{display:flex;gap:12px;align-items:center;border-bottom:1px solid #18454d1c;padding-bottom:12px}
+.story-avatar{width:65px;height:78px;flex:none;display:block;background-image:url('settlement-chronicles-v25.png');background-size:400% 340%;background-position:var(--portrait-x) 0;filter:drop-shadow(0 3px 3px #19382b33)}
+.story-person small{display:block;letter-spacing:.8px;margin-top:4px}
+#city-panel h3{font:600 20px/1.3 Georgia,serif;margin:14px 0 8px;color:#07364b}
+.story-hint{border-left:2px solid #c6a75a;padding:8px 10px;background:#e6eedba0}
+.story-paths{display:grid;gap:8px;margin-top:12px}
+#settlement .story-paths button{text-align:left;padding:13px;min-height:76px}
+.story-paths span{display:block;font-weight:400;font-size:11px;line-height:1.5;margin-top:5px}
+#settlement .story-paths button.chosen{opacity:1;background:#174e59;color:#e8fff6}
+.artifact-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+#settlement .artifact{display:flex;flex-direction:column;align-items:center;min-height:184px;padding:10px;background:#f8fbf3;border-color:#b5ccc5}
+#settlement .artifact:disabled{opacity:.65}
+#settlement .artifact.collected{opacity:1;border-color:#ba9958;background:#fff8df}
+.artifact b{font-size:11px;line-height:1.4;text-align:center;margin:5px 0}
+.artifact span{font-weight:400;font-size:10px;line-height:1.4}
+.relic-art{display:block;width:84px;height:84px;background-image:url('settlement-chronicles-v25.png');background-size:400% 400%}
+.relic-compass{background-position:0 66.66%}.relic-seed{background-position:33.33% 66.66%}.relic-prism{background-position:66.66% 66.66%}.relic-map{background-position:100% 66.66%}.relic-heart{background-position:0 100%}.relic-beacon{background-position:33.33% 100%}
+.story-history{padding:16px;font-size:12px;line-height:1.8}
+@media(min-width:760px){#settlement{width:min(100vw,1100px)}#city-sheet{left:auto;right:12px;width:370px;max-height:68vh}#settlement header,#city-resources{right:auto;width:390px}#settlement nav{left:50%;right:auto;width:420px;transform:translateX(-50%)}.city-mission{left:20px;right:auto;width:390px}}
+@media(prefers-reduced-motion:reduce){#settlement *{scroll-behavior:auto!important;transition:none!important}}

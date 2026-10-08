@@ -1,8 +1,9 @@
+import {ARTIFACTS,artifactError} from './city-story.js?v=25';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=24';
-import {createMeadow,fillMeadow} from './settlement-ground.js?v=24';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection} from './settlement-life.js?v=24';
-import {VOYAGES} from './settlement-model.js?v=24';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=25';
+import {createMeadow,fillMeadow} from './settlement-ground.js?v=25';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=25';
+import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE} from './settlement-model.js?v=25';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./settlement-meadow-v18.png',import.meta.url).href;
@@ -11,14 +12,16 @@ const SPRITE_NAMES=['house','lab','farm','well','tree','rock','lumber','ranch','
 const DETAIL_NAMES=['river','bridge','water','river-bend','path-straight','path-curve','path-t','path-cross','flowers','reeds','grass','berries','fence','scaffold','cargo','lantern'];
 const lifeAtlas=new Image();lifeAtlas.src=new URL('./settlement-life-v21.png',import.meta.url).href;
 const LIFE_NAMES=['school','harbor','fishery','ship','cow','pig','sheep','chicken','pen','willow','wildflowers','orchard','woman','pupil','fisherman','gull'];
-const sprites={},details={},life={};let preparedLife=false;
+const chronicleAtlas=new Image();chronicleAtlas.src=new URL('./settlement-chronicles-v25.png',import.meta.url).href;
+const CHRONICLE_NAMES=['scientist','engineer','botanist','captain','observatory','greenhouse','lighthouse','market','compass','seed','prism','map','heart','beacon','park','streetlamp'];
+const sprites={},details={},life={},chronicle={};let preparedChronicle=false;let preparedLife=false;
 let grass,preparedMeadow=false,preparedSprites=false,preparedDetails=false;
 
-function sliceAtlas(image,names,target){
+function sliceAtlas(image,names,target,rows=null){
  for(let i=0;i<names.length;i++){
   const col=i%4,row=Math.floor(i/4);
-  const x=Math.round(col*image.width/4),y=Math.round(row*image.height/4);
-  const width=Math.round((col+1)*image.width/4)-x,height=Math.round((row+1)*image.height/4)-y;
+  const x=Math.round(col*image.width/4),y=Math.round((rows?rows[row][0]:row/4)*image.height);
+  const width=Math.round((col+1)*image.width/4)-x,height=Math.round((rows?rows[row][1]:(row+1)/4)*image.height)-y;
   const cell=document.createElement('canvas');cell.width=width;cell.height=height;
   const cellCtx=cell.getContext('2d',{willReadFrequently:true});
   cellCtx.drawImage(image,x,y,width,height,0,0,width,height);
@@ -43,6 +46,7 @@ function prepare(){
  if(!preparedSprites&&atlas.complete&&atlas.naturalWidth){sliceAtlas(atlas,SPRITE_NAMES,sprites);preparedSprites=true;}
  if(!preparedDetails&&detailAtlas.complete&&detailAtlas.naturalWidth){sliceAtlas(detailAtlas,DETAIL_NAMES,details);preparedDetails=true;}
  if(!preparedLife&&lifeAtlas.complete&&lifeAtlas.naturalWidth){sliceAtlas(lifeAtlas,LIFE_NAMES,life);preparedLife=true;}
+ if(!preparedChronicle&&chronicleAtlas.complete&&chronicleAtlas.naturalWidth){sliceAtlas(chronicleAtlas,CHRONICLE_NAMES,chronicle,[[0,.3],[.292,.541],[.54,.76],[.757,1]]);preparedChronicle=true;}
 }
 
 function paintImage(ctx,image,x,y,width,{alpha=1,angle=0,flip=false}={}){
@@ -52,44 +56,51 @@ function paintImage(ctx,image,x,y,width,{alpha=1,angle=0,flip=false}={}){
 }
 
 function drawRiver(ctx,W,H,pan,zoom,time,reduced){
- if(!details.river)return;
- // A world-space stream, not a viewport decoration with a separate parallax speed.
- const unit=unitFor(W),origin=originFor({width:W,height:H});
- const width=unit*2.12;
- const height=width*details.river.height/details.river.width;
- const centerX=unit*3;
- const overlap=height*.76;
- const top=-(origin.y+pan.y)/zoom,bottom=(H-origin.y-pan.y)/zoom;
- ctx.save();ctx.translate(origin.x+pan.x,origin.y+pan.y);ctx.scale(zoom,zoom);
- // Feather the damp ground into the meadow in world space. Only water highlights animate.
- for(const side of [-1,1]){
-  const edge=centerX+side*width*.43,outer=edge+side*unit*.38;
-  const tone=ctx.createLinearGradient(Math.min(edge,outer),0,Math.max(edge,outer),0);
-  tone.addColorStop(side<0?0:1,'#83945b00');tone.addColorStop(side<0?1:0,'#6878446b');
-  ctx.fillStyle=tone;ctx.fillRect(Math.min(edge,outer),top,Math.abs(outer-edge),bottom-top);
+ const view={width:W,height:H},camera={zoom,pan},u=unitFor(W)*zoom;
+ const project=(x,y)=>projectPoint(view,camera,x,y);
+ const corners=(x,y)=>[project(x,y),project(x+1,y),project(x+1,y+1),project(x,y+1)];
+ const polygon=points=>{points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();};
+ // The water mask is identical to the simulation's river footprint.
+ ctx.save();ctx.beginPath();
+ for(let y=0;y<60;y++)for(let x=14;x<=15;x++)if(isRiverTile(x,y))polygon(corners(x,y));
+ ctx.fillStyle='#508e8f';ctx.fill();ctx.clip();
+ if(details.water){
+  const size=u*2.4,h=size*details.water.height/details.water.width;
+  const origin=project(14,0),ox=((origin.x%size)+size)%size,oy=((origin.y%h)+h)%h;
+  for(let y=oy-h;y<H+h;y+=h*.45)for(let x=ox-size;x<W+size;x+=size*.45)
+   paintImage(ctx,details.water,x+size/2,y+h,size,{alpha:.3});
  }
- for(let i=Math.floor((top-height)/overlap);i*overlap<bottom;i++)paintImage(ctx,details.river,centerX,i*overlap+height,width,{flip:Math.abs(i)%2!==0});
- if(details['river-bend'])paintImage(ctx,details['river-bend'],centerX-4,-unit*4.5,width*1.04,{alpha:.9});
- if(details.bridge)paintImage(ctx,details.bridge,centerX-4,unit*4*.56,width*1.28);
- // Sparse reeds break the straight bank silhouette; their positions never depend on time or pan.
- const spacing=unit*1.22;
- for(let i=Math.floor(top/spacing)-1;i*spacing<bottom+spacing;i++){
-  const hash=((i*37)%97+97)%97,side=hash%2?-1:1,y=i*spacing;
-  if(Math.abs(y-unit*4*.56)<unit*.65)continue;
-  paintImage(ctx,details[hash%3===0?'reeds':'grass'],centerX+side*width*(.42+(hash%5)*.012),y,unit*(.26+(hash%4)*.025),{alpha:.87,flip:side<0});
- }
- if(!reduced){
-  ctx.save();ctx.strokeStyle='#e9ffffb0';ctx.lineWidth=1.2;ctx.lineCap='round';
-  for(let i=0;i<7;i++){
-   const y=(time*26+i*137)%1400-700;
-   ctx.beginPath();ctx.moveTo(centerX-24+(i%3)*9,y);ctx.lineTo(centerX-7+(i%2)*7,y-3);ctx.stroke();
-  }
-  ctx.restore();
+ ctx.strokeStyle='#cce9d36e';ctx.lineWidth=Math.max(.8,zoom);ctx.lineCap='round';
+ for(let y=0;y<40;y++)for(let i=0;i<3;i++){
+  const offset=reduced?.35:(time*.18+i*.31)%1;
+  const p=project(14.13+i*.28,y+offset),q=project(14.13+i*.28,y+offset+.17);
+  ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
  }
  ctx.restore();
+ const edges=[{dx:0,dy:-1,a:0,b:1},{dx:1,dy:0,a:1,b:2},{dx:0,dy:1,a:2,b:3},{dx:-1,dy:0,a:3,b:0}];
+ for(let y=0;y<40;y++)for(let x=14;x<=15;x++){if(!isRiverTile(x,y))continue;
+  const points=corners(x,y);
+  for(const e of edges){if(y+e.dy<0||isRiverTile(x+e.dx,y+e.dy))continue;
+   const a=points[e.a],b=points[e.b];
+   ctx.save();ctx.lineCap='round';ctx.strokeStyle='#777d55';ctx.lineWidth=u*.1;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+   ctx.strokeStyle='#a4ac72';ctx.lineWidth=u*.035;ctx.stroke();ctx.restore();
+   if(y%3===0&&details.reeds)paintImage(ctx,details.reeds,(a.x+b.x)/2,(a.y+b.y)/2,u*.32);
+  }
+ }
+ // The atlas bridge contains a baked-in vertical river: it cannot be placed over
+ // this diagonal channel. Build the deck in world coordinates instead.
+ const bx=RIVER_BRIDGE.x,by=RIVER_BRIDGE.y;
+ for(let i=0;i<14;i++){
+  const x=bx-.18+i*.1,points=[project(x,by+.13),project(x+.098,by+.13),project(x+.098,by+.87),project(x,by+.87)];
+  ctx.beginPath();polygon(points);ctx.fillStyle=i%3===0?'#ba8750':i%3===1?'#d5a86b':'#c59860';ctx.fill();ctx.strokeStyle='#654a32';ctx.lineWidth=zoom*.7;ctx.stroke();
+ }
+ for(const side of [.13,.87]){
+  const start=project(bx-.2,by+side),end=project(bx+1.2,by+side);
+  for(const h of [.10,.21]){ctx.beginPath();ctx.moveTo(start.x,start.y-u*h);ctx.lineTo(end.x,end.y-u*h);ctx.strokeStyle='#704d2f';ctx.lineWidth=u*.04;ctx.stroke();}
+  for(let i=0;i<5;i++){const p=project(bx-.2+i*.35,by+side);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-u*.26);ctx.strokeStyle='#996b3e';ctx.lineWidth=u*.045;ctx.stroke();}
+ }
 }
-
-export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced}){
+export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced,previousAgents,alpha=1}){
  prepare();
  const W=canvas.clientWidth,H=canvas.clientHeight,u=unitFor(W)*zoom;
  const view={width:W,height:H},camera={zoom,pan};
@@ -135,7 +146,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  const objects=[],hits=[];
  const occupied=(x,y)=>c.buildings.some(b=>b.x===x&&b.y===y)||(x===4&&y===2)||c.roads.some(r=>r.x===x&&r.y===y);
  for(let x=0;x<c.extent;x++)for(let y=0;y<c.extent;y++){
-  if(occupied(x,y))continue;
+  if(occupied(x,y)||isRiverTile(x,y))continue;
   const hash=(x*37+y*53)%97;
   if((x<2||y<2||x>7||y>8)&&hash%7===0)objects.push({x,y,kind:hash%3===0?'willow':hash%3===1?'orchard':'tree',width:78+hash%28,sway:true});
   else if((x*11+y*3)%19===0)objects.push({x,y,kind:'rock',width:64});
@@ -154,9 +165,9 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  if(!occupied(7,8))objects.push({x:7.6,y:8.45,detail:'flowers',width:46});
  if(!occupied(8,8))objects.push({x:8.45,y:8.15,detail:'grass',width:42});
  if(!c.buildings.some(b=>b.x===4&&b.y===2))objects.push({x:4,y:2,kind:'lab',width:unitFor(W)*2.2,lab:true});
- const kind={house:'house',lumber:'lumber',farm:'farm',well:'well',quarry:'rock',ranch:'ranch',clinic:'clinic',granary:'granary',mine:'mine',smelter:'factory',factory:'factory',energy:'energy',school:'school',university:'school',market:'house',harbor:'harbor',fishery:'fishery'};
+ const kind={house:'house',lumber:'lumber',farm:'farm',well:'well',quarry:'rock',ranch:'ranch',clinic:'clinic',granary:'granary',mine:'mine',smelter:'factory',factory:'factory',energy:'energy',school:'school',university:'school',market:'market',observatory:'observatory',greenhouse:'greenhouse',lighthouse:'lighthouse',park:'park',harbor:'harbor',fishery:'fishery'};
  for(const b of c.buildings)objects.push({x:b.x,y:b.y,kind:kind[b.type],width:unitFor(W)*(b.type==='farm'?1.92:b.type==='well'?1.25:1.84),b});
- for(const a of c.agents){const job=c.buildings.find(b=>b.id===a.job);const kind=a.truck?'truck':job?.type==='fishery'?'fisherman':!a.job&&a.id%3===0&&c.buildings.some(b=>b.type==='school')?'pupil':a.id%3===1?'woman':'person';objects.push({x:a.x,y:a.y,kind,width:a.truck?62:kind==='pupil'?23:29,a});}
+ for(const a of c.agents){const job=c.buildings.find(b=>b.id===a.job);const kind=a.truck?'truck':['school','university','observatory'].includes(job?.type)?'scientist':job?.type==='greenhouse'?'botanist':['factory','smelter','energy'].includes(job?.type)?'engineer':job?.type==='harbor'?'captain':job?.type==='fishery'?'fisherman':!a.job&&a.id%3===0&&c.buildings.some(b=>b.type==='school')?'pupil':a.id%3===1?'woman':'person';const prev=previousAgents?.get(a.id)||a;objects.push({x:prev.x+(a.x-prev.x)*alpha,y:prev.y+(a.y-prev.y)*alpha,kind,width:unitFor(W)*(a.truck?.95:kind==='pupil'?.27:.34),a});}
  for(const b of c.buildings.filter(b=>['harbor','fishery'].includes(b.type))){
   const v=(c.voyages||[]).find(v=>v.x===b.x&&v.y===b.y);
   const point=v?boatPose(v,VOYAGES[v.kind].duration):{x:b.x+.65,y:-.7};
@@ -165,14 +176,18 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  for(let i=0;i<4;i++){const t=reduced?i:time*.08+i*1.7;objects.push({x:3+i+Math.sin(t)*2,y:-1.4-i*.65+Math.cos(t)*.4,kind:'gull',width:20,bird:true});}
 
 
+ // Story relics are permanent world points and can be found with mouse or touch.
+ if(c.story)for(const a of ARTIFACTS){if(a.x>=c.extent||a.y>=c.extent||c.story.artifacts.includes(a.id))continue;objects.push({x:a.x,y:a.y,kind:a.id,width:33,artifact:a.id,available:!artifactError(c,a.id)});}
+ if(!occupied(3,3))objects.push({x:3,y:3,kind:'park',width:40});
+ objects.push({x:4.35,y:4.4,kind:'streetlamp',width:19});
  const drawObject=obj=>{
   // Buildings use the front corner of their floor; people/plants use their foot point.
   const onPlot=!!(obj.b||obj.lab);
   const p=project(obj.x+(onPlot ? .98 : .5),obj.y+(onPlot ? .98 : .62));
   if(obj.detail){paintImage(ctx,details[obj.detail],p.x,p.y,obj.width*zoom,{alpha:.96});return;}
   const moving=obj.a?.path.length;
-  const frame=moving&&!reduced?Math.floor(time*5+obj.a.id)%2:0;
-  const image=life[obj.kind]||sprites[obj.kind==='person'&&frame?'worker':obj.kind];
+  const frame=0; // Preserve identity while walking; do not swap person/worker portraits.
+  const image=chronicle[obj.kind]||life[obj.kind]||sprites[obj.kind==='person'&&frame?'worker':obj.kind];
   if(!image)return;
   const width=obj.width*zoom,height=width*image.height/image.width;
   if(p.x+width/2<0||p.x-width/2>W||p.y+u*.5<0||p.y-height>H)return;
@@ -184,6 +199,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
    if(obj.a?.path.length)bob=Math.abs(Math.sin(time*10+obj.a.id))*.6*zoom;
    else if(obj.a?.state==='work')angle=Math.sin(time*3)*.024;
   }
+  if(obj.artifact){hits.push({left:p.x-Math.max(22,width/2),top:p.y-Math.max(44,height),width:Math.max(44,width),height:Math.max(44,height),artifact:obj.artifact,x:obj.x,y:obj.y});ctx.save();ctx.strokeStyle=obj.available?'#fff3b5':'#d4eff066';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(p.x,p.y,width*.7,width*.24,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
   if(obj.b||obj.lab)hits.push({left:p.x-width/2,top:p.y-height,width,height,x:obj.x,y:obj.y,lab:obj.lab});
   if(!obj.b&&!obj.lab){ctx.save();ctx.fillStyle='#294c2838';ctx.beginPath();ctx.ellipse(p.x,p.y-zoom,width*.27,width*.065,0,0,Math.PI*2);ctx.fill();ctx.restore();}
   if(selected&&onPlot&&Math.round(obj.x)===selected.x&&Math.round(obj.y)===selected.y){
@@ -197,7 +213,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   if(obj.boat&&obj.returning)ctx.scale(-1,1);
   if(obj.a){
    const dest=obj.a.path[0],direction=dest?(dest.x-obj.a.x)-(dest.y-obj.a.y):1;
-   if(life[obj.kind]?direction<0:(direction<0)!==!!frame)ctx.scale(-1,1);
+   if((life[obj.kind]||chronicle[obj.kind])?direction<0:(direction<0)!==!!frame)ctx.scale(-1,1);
   }
   if(obj.b?.type==='ranch'){ctx.drawImage(image,-width*.29,-height*.78-u*.26,width*.65,height*.65);}else ctx.drawImage(image,-width/2,-height,width,height);ctx.restore();
   if(obj.b&&['ranch','farm'].includes(obj.b.type)){
@@ -208,10 +224,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   }
   if(obj.b&&obj.b.level>=2){
    const b=obj.b;
-   paintImage(ctx,details.lantern,p.x-width*.34,p.y-u*.025,u*.22);
-   if(b.level>=3){const extra=b.type==='farm'||b.type==='ranch'?'granary':b.type==='harbor'?'lumber':b.type==='school'?'school':'house';paintImage(ctx,life[extra]||sprites[extra],p.x+width*.29,p.y-u*.04,u*.61);}
-   if(b.level>=4){paintImage(ctx,details.cargo,p.x-width*.32,p.y+u*.025,u*.38);ctx.save();ctx.strokeStyle='#8fdbd7';ctx.lineWidth=u*.028;ctx.beginPath();ctx.moveTo(p.x-width*.4,p.y-u*.03);ctx.lineTo(p.x+width*.36,p.y+u*.06);ctx.stroke();ctx.restore();}
-   if(b.level>=5)paintImage(ctx,c.tech.includes('battery')?sprites.energy:details['fence'],p.x-width*.29,p.y-u*.04,u*.44);
+   // Upgrade level is state, not an extra miniature building on the same plot.
    ctx.save();ctx.font=`800 ${Math.max(9,10*zoom)}px system-ui`;ctx.textAlign='center';ctx.fillStyle='#063e55';ctx.strokeStyle='#f5fff0';ctx.lineWidth=3;const label=['','I','II','III','IV','V'][b.level];ctx.strokeText(label,p.x,p.y-u*.06);ctx.fillText(label,p.x,p.y-u*.06);ctx.restore();
   }
 
@@ -233,6 +246,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
 
  if(selected&&!objects.some(o=>o.b&&o.x===selected.x&&o.y===selected.y))diamond(selected.x,selected.y,'#50eff518','#83f9ff');
  objects.sort((a,b)=>a.x+a.y-b.x-b.y).forEach(drawObject);
+ drawAtmosphere(ctx,view,project,u,c,time,reduced);
  return hits;
 }
 

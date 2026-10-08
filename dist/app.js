@@ -1,10 +1,12 @@
-import {missionsFor,createMission,formulaMove,settleMission} from './mission.js?v=24';
-import {LiquidRenderer,bubblingSound} from './liquid.js?v=24';
-import {initCity} from './city.js?v=24';
-import {initExpansion} from './expansion.js?v=24';
-import {tint,NAMES} from './progression.js?v=24';
-import {experimentChallenge,experimentResult,clone,collectCompleted,completionReward,levelOutcome,createCertifiedLevel,budget,normalize,mechanicBlock,moveWithMechanics} from './engine.js?v=24';
+import {readPreferences,PREF_KEY,makeBackup,restoreBackup} from './preferences.js?v=25';
+import {missionsFor,createMission,formulaMove,settleMission,REACTION_MODES,conditionReady,missionTier} from './mission.js?v=25';
+import {LiquidRenderer,bubblingSound} from './liquid.js?v=25';
+import {initCity} from './city.js?v=25';
+import {initExpansion} from './expansion.js?v=25';
+import {tint,NAMES} from './progression.js?v=25';
+import {experimentChallenge,experimentResult,clone,collectCompleted,completionReward,levelOutcome,createCertifiedLevel,budget,normalize,mechanicBlock,moveWithMechanics} from './engine.js?v=25';
 const $=id=>document.getElementById(id);let save;try{save=normalize(JSON.parse(localStorage.getItem('chemlab_v50')))}catch{save=normalize(null)}
+const prefs=readPreferences();let reactionMode='none';
 const liquid=new LiquidRenderer();
 let settlement;let world;let missionQueue=[],missionIndex=-1,missionClaimed=false,missionRewards=[];
 const activeMission=()=>missionIndex>=0?missionQueue[missionIndex]:null;let sortingUsed=0;let levelRun,puzzle,waveIndex=0,tubes,moves,history=[],selected=-1,assisted=false,reserve=false,locked=false,ended=false,completedLevel=false,seed=0,sound=true,ctx,storageWarn=false,mechanicState={frozenTurns:0,catalystClaimed:false,completed:0,crossFrozenTurns:0,crossFrozenTube:-1};
@@ -90,6 +92,7 @@ async function refillWave(){
  return true;
 }
 function render(){
+ document.querySelectorAll('#city-button,#lab-button').forEach(el=>el.hidden=!prefs.cityEnabled);
  const complete=mechanicState.completed||0;
  $('gold').textContent=save.gold;
  $('level').textContent=String(save.level).padStart(2,'0');
@@ -123,9 +126,9 @@ function render(){
   brief.hidden=!!activeMission()||ended;
  }
  const quest=activeMission(),card=$('formula-quest');card.hidden=!quest&&!missionQueue.length;
- if(quest){$('objective').textContent='Збери склад речовини у колбі 01, потім очисть решту колб';card.innerHTML=`<b>${quest.name} · ${quest.formula}</b><span>${missionClaimed?'Склад зібрано. Заверши очищення колб.':quest.atoms.map(a=>a).join(' + ')+' → колба 01'}</span><small>${quest.benefit}</small><details><summary>Хімічна довідка</summary><p>${quest.science}</p></details>`;}
- else {$('objective').textContent='Збери по 4 однакові елементи у колбах';card.innerHTML=missionQueue.length?`<b>Замовлення міста</b><span>Після сортування: ${missionQueue.map(q=>q.formula).join(' · ')}</span><small>Синтезуй речовини, щоб покращити поселення</small>`:'';}
-
+ if(quest){$('objective').textContent='Збери склад речовини у колбі 01, потім очисть решту колб';card.innerHTML=`<b>${quest.name} · ${quest.formula}</b><span>${missionClaimed?'Склад зібрано. Заверши очищення колб.':quest.atoms.map(a=>a).join(' + ')+' → колба 01'}</span><small>${quest.benefit}</small>${quest.condition?`<div class="reaction-console"><b>${missionTier(save.level)} · ${REACTION_MODES[quest.condition].name}</b><span>Налаштуй реактор перед додаванням атомів. Режими — умовні правила гри.</span><div>${Object.entries(REACTION_MODES).filter(([id])=>id!=='none').map(([id,m])=>`<button data-reaction-mode="${id}" aria-pressed="${reactionMode===id}" class="${reactionMode===id?'chosen':''}">${m.icon} ${m.name}</button>`).join('')}</div></div>`:''}<details><summary>Хімічна довідка</summary><p>${quest.science}</p></details>`;}
+ else {$('objective').textContent='Збери по 4 однакові елементи у колбах';card.innerHTML=missionQueue.length?`<b>${prefs.cityEnabled?'Замовлення міста':'Дослідницький цикл'}</b><span>Після сортування: ${missionQueue.map(q=>q.formula).join(' · ')}</span><small>Синтезуй речовини, щоб покращити поселення</small>`:'';}
+ card.querySelectorAll('[data-reaction-mode]').forEach(button=>button.onclick=()=>{if(locked)return;reactionMode=button.dataset.reactionMode;render();say(conditionReady(quest,reactionMode)?'Реактор готовий. Збирай формулу.':'Звір режим із завданням.');});
 }
 $('board').addEventListener('click',async e=>{
  const button=e.target.closest('[data-tube]');
@@ -202,12 +205,13 @@ if(outcome==='wave'){
  else say([synthesisNotice,mechanicNotice].filter(Boolean).join(' · ')||'Добре! Продовжуй збирати однакові елементи');
 });
 function beginMission(index){
- missionIndex=index;missionClaimed=false;const stage=createMission(activeMission(),save.level,save.discovered);tubes=stage.tubes;moves=stage.moves;selected=-1;history=[];ended=false;locked=false;render();say(`Замовлення міста: ${activeMission().formula}. У колбу 01 можна додавати різні потрібні елементи, по одному шару.`);
+ missionIndex=index;missionClaimed=false;reactionMode='none';const stage=createMission(activeMission(),save.level,save.discovered);tubes=stage.tubes;moves=stage.moves;selected=-1;history=[];ended=false;locked=false;render();say(`Замовлення міста: ${activeMission().formula}. У колбу 01 можна додавати різні потрібні елементи, по одному шару.`);
 }
 async function missionClick(b){
  const quest=activeMission();
  if(selected<0){if(b===0){say('Колба 01 — реактор формули. Обери реагент в іншій колбі.');return;}if(tubes[b].length){selected=b;render();}return;}
  if(selected===b){selected=-1;render();return;}
+ if(b===0&&!conditionReady(quest,reactionMode)){say('Для цієї формули обери режим: '+REACTION_MODES[quest.condition].name);return;}
  const a=selected,next=formulaMove(tubes,a,b,quest);
  if(!next){say(b===0?'Цього елемента вже достатньо або його немає у формулі.':'Переливай на такий самий елемент або у вільну колбу.');return;}
  locked=true;history.push({tubes:clone(tubes),moves,gold:save.gold,waveIndex,mechanicState:{...mechanicState},missionIndex,missionClaimed,missionRewards:[...missionRewards]});
@@ -244,11 +248,15 @@ $('hint').onclick=()=>{if(locked||ended)return;assisted=true;for(let a=0;a<tubes
 $('reserve').onclick=()=>{if(reserve||locked||ended||activeMission())return;reserve=true;assisted=true;tubes.push([]);selected=-1;render();say('Резервна колба готова · використано допомогу');};
 $('restart').onclick=()=>{if(locked)return;modal('<h2>Почати заново?</h2><p>Поточні ходи буде скинуто. Монети та відкриття збережуться.</p><button class="primary" id="same">Та сама комбінація</button><button class="secondary" id="new">Нова комбінація</button>');$('same').onclick=()=>start(true);$('new').onclick=()=>start();};
 $('collection').onclick=()=>world.atlas();
-$('settings').onclick=()=>{modal(`<h2>Лабораторія</h2><p>Збери 4 однакові символи в одній колбі. Завершена речовина синтезується, зникає та приносить монети. Переноситься верхня група однакових символів. Перемога без допомоги дає кристал майстерності.</p><button class="secondary" id="sound">Звук: ${sound?'увімкнено':'вимкнено'}</button><p>Оформлення колб · ${save.nug} кристалів</p><div class="skins">${[['default',0,'Класичне скло'],['neon',3,'Неонове скло'],['violet',6,'Фіолетове скло'],['gold',10,'Золоте скло']].map(([s,n,title])=>`<button data-skin="${s}" ${save.nug<n?'disabled':''}>${title} ${n?'· '+n+' ✦':''}</button>`).join('')}</div><p>Рекордна серія: ${save.bestStreak} · Рахунок: ${save.score}<br>Прогрес зберігається на цьому пристрої</p>`);$('sound').onclick=()=>{sound=!sound;$('sound').textContent=`Звук: ${sound?'увімкнено':'вимкнено'}`;try{localStorage.setItem('chemlab_sound',String(sound))}catch{}};document.querySelectorAll('[data-skin]').forEach(b=>{if(b.tagName==='BUTTON')b.onclick=()=>{const s=b.dataset.skin;$('game').dataset.skin=s;try{localStorage.setItem('chemlab_cosmetic',s)}catch{};b.textContent+=' ✓';}});};
+$('settings').onclick=()=>{modal(`<h2>Лабораторія</h2><p>Збери 4 однакові символи в одній колбі. Завершена речовина синтезується, зникає та приносить монети. Переноситься верхня група однакових символів. Перемога без допомоги дає кристал майстерності.</p><button class="secondary" id="sound">Звук: ${sound?'увімкнено':'вимкнено'}</button><button class="secondary" id="city-toggle" role="switch" aria-checked="${prefs.cityEnabled}">Місто: ${prefs.cityEnabled?'увімкнено':'вимкнено'}</button><p class="fine">Коли місто вимкнено, виробництво на паузі. Будівлі, персонажі, артефакти та квести зберігаються. Формули доступні в обох режимах.</p><button class="secondary" id="calm-toggle" role="switch" aria-checked="${prefs.calm}">Спокійна анімація міста: ${prefs.calm?'так':'ні'}</button><button class="secondary" id="backup-export">Завантажити копію прогресу</button><label class="backup-import">Відновити копію<input id="backup-import" type="file" accept="application/json,.json"></label><p id="backup-status" role="status"></p><a href="privacy.html" target="_blank" rel="noopener">Приватність і підтримка</a><p>Оформлення колб · ${save.nug} кристалів</p><div class="skins">${[['default',0,'Класичне скло'],['neon',3,'Неонове скло'],['violet',6,'Фіолетове скло'],['gold',10,'Золоте скло']].map(([s,n,title])=>`<button data-skin="${s}" ${save.nug<n?'disabled':''}>${title} ${n?'· '+n+' ✦':''}</button>`).join('')}</div><p>Рекордна серія: ${save.bestStreak} · Рахунок: ${save.score}<br>Прогрес зберігається на цьому пристрої</p>`);$('city-toggle').onclick=()=>{prefs.cityEnabled=!prefs.cityEnabled;try{localStorage.setItem(PREF_KEY,JSON.stringify(prefs))}catch{say('Не вдалося зберегти налаштування.')}render();$('settings').click()};
+ $('calm-toggle').onclick=()=>{prefs.calm=!prefs.calm;try{localStorage.setItem(PREF_KEY,JSON.stringify(prefs))}catch{}$('settings').click()};
+ $('backup-export').onclick=()=>{const blob=new Blob([JSON.stringify(makeBackup(localStorage),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ChemLab-progress.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+ $('backup-import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>4000000)throw Error('Файл завеликий.');const data=JSON.parse(await file.text());if(!confirm('Замінити поточний прогрес даними з цієї копії?'))return;restoreBackup(data,localStorage);location.reload()}catch(error){$('backup-status').textContent=error.message||'Не вдалося відновити копію.'}};
+ $('sound').onclick=()=>{sound=!sound;$('sound').textContent=`Звук: ${sound?'увімкнено':'вимкнено'}`;try{localStorage.setItem('chemlab_sound',String(sound))}catch{}};document.querySelectorAll('[data-skin]').forEach(b=>{if(b.tagName==='BUTTON')b.onclick=()=>{const s=b.dataset.skin;$('game').dataset.skin=s;try{localStorage.setItem('chemlab_cosmetic',s)}catch{};b.textContent+=' ✓';}});};
 try{sound=localStorage.getItem('chemlab_sound')!=='false';const s=localStorage.getItem('chemlab_cosmetic');const thresholds={default:0,neon:3,violet:6,gold:10};if(s in thresholds&&save.nug>=thresholds[s])$('game').dataset.skin=s}catch{}
 world=initExpansion({core:()=>save,persist,render,modal,say,tone,attempt:()=>({ended,locked})});
-settlement=initCity({core:()=>save,canOpen:()=>!locked,render,trade(amount){save.gold+=amount;history=[];persist();render()}});
+settlement=initCity({enabled:()=>prefs.cityEnabled,calm:()=>prefs.calm,core:()=>save,canOpen:()=>!locked,render,trade(amount){save.gold+=amount;history=[];persist();render()}});
 $('city-button').onclick=settlement.open;
 $('lab-button').onclick=settlement.open;
 function showTutorial(){let seen=false;try{seen=localStorage.getItem('chemlab_tutorial_v1')==='1'}catch{}if(seen)return;modal(`<div class="eyebrow">ЛАСКАВО ПРОСИМО ДО CHEMLAB</div><div class="tutorial-orb">⚗</div><h2>Твоя ціль — місто відкриттів</h2><p>Сортуй елементи у пробірках, збирай по 4 однакові шари та запускай синтез. Завершені групи зникають і дають монети.</p><div class="tutorial-steps"><div><b>1</b><span>Торкнись пробірки, щоб взяти верхній шар.</span></div><div><b>2</b><span>Перелий його на такий самий елемент або в порожню колбу.</span></div><div><b>3</b><span>Відкривай елементи на карті, проводь реакції та розвивай Місто.</span></div></div><p class="fine">Реакції позначені як наукові формули; деякі ефекти — ігрова симуляція для безпечного навчання.</p><button class="primary" id="tutorial-go">Почати перший експеримент →</button>`);$('tutorial-go').onclick=()=>{try{localStorage.setItem('chemlab_tutorial_v1','1')}catch{}$('modal').close();say('Підказка: спочатку знайди колбу з вільним місцем або таким самим верхнім елементом')};}
-start();showTutorial();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js?v=24').catch(()=>{});
+start();showTutorial();if('serviceWorker'in navigator&&!window.Capacitor?.isNativePlatform?.())navigator.serviceWorker.register('./sw.js?v=25').catch(()=>{});

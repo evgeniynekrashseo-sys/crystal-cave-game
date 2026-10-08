@@ -1,10 +1,11 @@
+import * as story from '../dist/city-story.js';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import * as camera from '../dist/settlement-camera.js';
 import * as life from '../dist/settlement-life.js';
-import {VOYAGES} from '../dist/settlement-model.js';
+import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE} from '../dist/settlement-model.js';
 import {createMeadow,fillMeadow,GROUND_SIZE,GROUND_DENSITY} from '../dist/settlement-ground.js';
 const near=(a,b)=>assert(Math.abs(a-b)<1e-7,`${a} !== ${b}`);
 function context(){
@@ -17,7 +18,7 @@ function renderer(){
  let id=0;
  const document={createElement:()=>({id:id++,width:0,height:0,getContext:()=>context()})};
  class Image{width=128;height=128;complete=true;naturalWidth=128;}
- const sandbox={Image,URL,document,...camera,...life,VOYAGES,createMeadow:()=>({}),fillMeadow};
+ const sandbox={...story,Image,URL,document,...camera,...life,VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,createMeadow:()=>({}),fillMeadow};
  const source=readFileSync(new URL('../dist/settlement-renderer.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replaceAll('import.meta.url',JSON.stringify('https://unit.test/renderer.js')).replaceAll('export function','function');
  vm.runInNewContext(source+'\nthis.scene={drawSettlement,mapTile};',sandbox);return sandbox.scene;
 }
@@ -29,9 +30,10 @@ test('river and bridge use exactly the same world-camera transform as buildings'
  const scene=renderer(),first=context(),second=context(),a={zoom:1,pan:{x:0,y:0}},b={zoom:1.8,pan:{x:-150,y:100}};
  scene.drawSettlement(first,canvas,sceneCity,{...a,selected:null,tool:null,time:0,reduced:true});
  scene.drawSettlement(second,canvas,sceneCity,{...b,selected:null,tool:null,time:0,reduced:true});
- // Sprite 35 is the bridge (16 building cells, then detail cell 1, two canvases per cell).
- const before=first.images.find(i=>i.id===35),after=second.images.find(i=>i.id===35);assert(before&&after);
- const o=camera.originFor(view);near(after.bottom.x,o.x+(before.bottom.x-o.x)*b.zoom+b.pan.x);near(after.bottom.y,o.y+(before.bottom.y-o.y)*b.zoom+b.pan.y);near(after.width,before.width*b.zoom);
+ // The old atlas bridge bakes in an unrelated river and must never be used.
+ assert(!first.images.some(i=>i.id===35));assert(!second.images.some(i=>i.id===35));
+ const before=camera.projectPoint(view,a,RIVER_BRIDGE.x+.5,RIVER_BRIDGE.y+.5),after=camera.projectPoint(view,b,RIVER_BRIDGE.x+.5,RIVER_BRIDGE.y+.5);
+ const o=camera.originFor(view);near(after.x,o.x+(before.x-o.x)*b.zoom+b.pan.x);near(after.y,o.y+(before.y-o.y)*b.zoom+b.pan.y);
 });
 test('building floors are anchored to the front of their own grid square, not floating over its centre',()=>{
  const scene=renderer(),ctx=context(),c={zoom:1.7,pan:{x:78,y:-44}};
@@ -39,6 +41,14 @@ test('building floors are anchored to the front of their own grid square, not fl
  const house=hits.find(h=>!h.lab),front=camera.projectPoint(view,c,3.98,4.98);assert(house);
  near(house.left+house.width/2,front.x);near(house.top+house.height,front.y);assert(house.width<camera.unitFor(view.width)*c.zoom*2);
  const picked=scene.mapTile(canvas,c.zoom,c.pan,...Object.values(camera.projectPoint(view,c,3.5,4.5)));assert.equal(picked.x,3);assert.equal(picked.y,4);
+});
+test('upgrades never draw toy-sized houses or power stations over real buildings',()=>{
+ const scene=renderer();for(const type of ['house','lumber','well','quarry']){
+  const low=context(),high=context();const c={...sceneCity,tech:['battery'],buildings:[{id:1,type,x:3,y:4,level:1}]};
+  const options={zoom:2.4,pan:{x:0,y:0},selected:null,tool:null,time:0,reduced:true};
+  scene.drawSettlement(low,canvas,c,options);scene.drawSettlement(high,canvas,{...c,buildings:[{...c.buildings[0],level:5}]},options);
+  assert.equal(high.images.length,low.images.length,type+' must not add miniature buildings');
+ }
 });
 test('meadow is drawn at native 4x density with individual blades and follows the world camera',()=>{
  const ctx=context(),tile=createMeadow({createElement:()=>({getContext:()=>ctx})});

@@ -1,5 +1,5 @@
 // Presentation-only shallow surface simulation. Never changes puzzle state.
-import {ORDER,tint} from './progression.js?v=24';
+import {ORDER,tint} from './progression.js?v=25';
 
 export function surface(size=14){
   return {y:Array(size).fill(0),v:Array(size).fill(0)};
@@ -137,7 +137,7 @@ export class LiquidRenderer{
 
   tick(now){
     this.raf=0;
-    if(document.hidden)return;
+    if(document.hidden||document.getElementById?.('game')?.hidden)return;
     if(this.last&&now-this.last<30){this.start();return;}
     const dt=Math.min(.04,(now-(this.last||now-16))/1000);
     this.last=now;

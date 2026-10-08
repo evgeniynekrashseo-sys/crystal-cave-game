@@ -1,3 +1,5 @@
+import * as story from '../dist/city-story.js';
+import {SUBSTANCES} from '../dist/mission.js';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -20,7 +22,7 @@ function fixture(){
  const ids=new Map(),body=new Element(),storage=new Map(),window=new Element();let root,renders=0,current;
  body.append=e=>root=e;
  const document={body,hidden:false,createElement:()=>new Element(),getElementById:id=>{if(!ids.has(id))ids.set(id,new Element());return ids.get(id);}};
- const deps={...model,...camera,CITY_RESEARCH:{},mountCityHud:()=>({update(){}}),mapTile:(canvas,zoom,pan,x,y)=>camera.tileAt({width:canvas.clientWidth,height:canvas.clientHeight},{zoom,pan},{x,y}),drawSettlement(ctx,canvas,c,options){current=structuredClone(options);const p=camera.projectPoint({width:canvas.clientWidth,height:canvas.clientHeight},options,3.5,4.5);return [{left:p.x-25,top:p.y-30,width:50,height:40,x:3,y:4}];}};
+ const deps={...story,SUBSTANCES,...model,...camera,CITY_RESEARCH:{},mountCityHud:()=>({update(){}}),mapTile:(canvas,zoom,pan,x,y)=>camera.tileAt({width:canvas.clientWidth,height:canvas.clientHeight},{zoom,pan},{x,y}),drawSettlement(ctx,canvas,c,options){current=structuredClone(options);const p=camera.projectPoint({width:canvas.clientWidth,height:canvas.clientHeight},options,3.5,4.5);return [{left:p.x-25,top:p.y-30,width:50,height:40,x:3,y:4}];}};
  const sandbox={...deps,renderBuildingPanel,document,window,performance:{now:()=>1000},devicePixelRatio:2,matchMedia:()=>({matches:true}),requestAnimationFrame:()=>1,cancelAnimationFrame(){},setTimeout:()=>1,clearTimeout(){},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)}};
  const source=readFileSync(new URL('../dist/city.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace('export function initCity','function initCity');
  vm.runInNewContext(source+'\nthis.createCity=initCity;',sandbox);

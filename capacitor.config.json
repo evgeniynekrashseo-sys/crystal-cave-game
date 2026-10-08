@@ -1,0 +1,9 @@
+{
+  "appId": "com.digitaldavinci.chemlab",
+  "appName": "ChemLab",
+  "webDir": "dist",
+  "backgroundColor": "#091d26",
+  "server": {"androidScheme": "https"},
+  "ios": {"contentInset": "never"},
+  "android": {"allowMixedContent": false}
+}

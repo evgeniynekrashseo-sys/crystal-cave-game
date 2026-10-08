@@ -147,3 +147,13 @@
 #game .tools button:focus-visible,#game .world-nav button:focus-visible{outline:2px solid #b5f9df;outline-offset:3px}
 #game .tools button:active:not(:disabled){transform:translateY(2px)}
 @media(max-height:740px){#experiment-brief{padding:8px 11px}#experiment-brief p{font-size:10px;margin:4px 0 6px}}
+/* Chronicle update keeps the approved glass and liquid layers intact. */
+[hidden]{display:none!important}
+.reaction-console{padding:12px;margin:10px 0;border:1px solid #65d9c755;border-radius:14px;background:#0e303d}
+.reaction-console>span{display:block;font-size:11px;line-height:1.5;color:#bbd5d7;margin:6px 0}
+.reaction-console>div{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.reaction-console button{min-height:44px;border:1px solid #77bfc655;background:#113c46;color:#d9fbf0;border-radius:10px;font-size:11px}
+.reaction-console button.chosen{background:#246354;border-color:#b9f7b9;box-shadow:0 0 12px #7df0bf22}
+.backup-import{display:block;margin:10px 0;padding:12px;border:1px solid #83cbd15c;border-radius:12px;font-size:13px}
+.backup-import input{max-width:100%;display:block;margin-top:10px;font-size:12px}
+#backup-status{color:#efcb87;font-size:12px}

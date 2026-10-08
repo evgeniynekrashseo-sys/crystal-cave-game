@@ -1,11 +1,22 @@
 {
   "name": "chemlab",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "node dev-server.mjs",
     "test": "node --test tests/*.test.js",
     "qa:swarm": "node scripts/player-swarm.mjs",
-    "qa:full": "npm test && npm run qa:swarm"
+    "qa:full": "npm test && npm run qa:swarm",
+    "native:sync": "cap sync",
+    "native:android": "cap open android",
+    "native:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/ios": "8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3"
   }
 }

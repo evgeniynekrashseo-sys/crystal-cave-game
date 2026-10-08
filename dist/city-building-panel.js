@@ -1,4 +1,4 @@
-import {TYPES,TECH,terrain,canPlace,upgradeCost,affordable} from './settlement-model.js?v=24';
+import {TYPES,TECH,terrain,canPlace,upgradeCost,affordable} from './settlement-model.js?v=25';
 
 // One building, one description. Keep optional construction out of the way.
 export function renderBuildingPanel(c,{selected,tool},costText){

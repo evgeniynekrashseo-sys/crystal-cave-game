@@ -26,3 +26,9 @@ See [MONETIZATION_ROADMAP.md](MONETIZATION_ROADMAP.md). Purchases and ads are no
 
 ## Art
 `dist/lab.webp` generated using built-in imagegen for this project. Prompt: portrait premium stylized 3D fantasy laboratory, midnight navy and teal, brass details, cyan apparatus at far edges, arched window, dark central space for interactive tubes, dark stone workbench, no text/UI/central foreground tubes.
+
+## Valley Chronicles — v25 / native 1.1
+
+The production game is https://evgeniynekrashseo-sys.github.io/crystal-cave-game/ . The older Sites publication is not the deployment target.
+
+Adds 12 story quests, four named characters, three permanent city paths, six collectible world artifacts, four new buildings, 12 formula quests with symbolic reactor modes, daylight/weather/lighting, and stable resident identity. All original glass/liquid art is retained. Settings include city enable/disable, calm city animation and JSON backup/restore. Native Capacitor Android/iOS projects, icons and build-validation CI are included; see `docs/mobile/RELEASE.md` for the remaining signing/store requirements.

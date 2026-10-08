@@ -49,3 +49,21 @@ export function drawSelection(ctx,p,width,u,time,reduced){
  ctx.shadowBlur=0;ctx.fillStyle='#063e56';ctx.strokeStyle='#a9faff';
  ctx.beginPath();ctx.moveTo(p.x,p.y-u*1.9);ctx.lineTo(p.x-u*.07,p.y-u*2.02);ctx.lineTo(p.x+u*.07,p.y-u*2.02);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
 }
+
+export function lightCycle(seconds,reduced=false){const phase=((seconds%480)+480)%480/480;return reduced?{night:0,warm:0,label:'День'}:{night:Math.max(0,Math.sin((phase-.4)*Math.PI*2))*.2,warm:Math.max(0,Math.sin(phase*Math.PI*2))*.07,label:phase<.38?'День':phase<.55?'Вечір':phase<.86?'Ніч':'Світанок'};}
+export function drawAtmosphere(ctx,view,project,u,c,time,reduced){
+ const {night,warm}=lightCycle(c.seconds||0,reduced);ctx.save();
+ if(night){ctx.fillStyle=`rgba(18,31,74,${night})`;ctx.fillRect(0,0,view.width,view.height);}
+ if(warm){ctx.fillStyle=`rgba(255,181,88,${warm})`;ctx.fillRect(0,0,view.width,view.height);}
+ // Soft light pools remain fixed to real world locations during pan and zoom.
+ for(const b of c.buildings){if(b.ready>c.seconds)continue;const p=project(b.x+.7,b.y+.8);if(p.x<-u||p.x>view.width+u||p.y<-u||p.y>view.height+u)continue;
+  if(night>.02||['energy','lighthouse','observatory'].includes(b.type)){const r=u*.65,g=ctx.createRadialGradient(p.x,p.y-u*.2,0,p.x,p.y-u*.2,r);g.addColorStop(0,`rgba(255,208,116,${.08+night})`);g.addColorStop(1,'rgba(255,208,116,0)');ctx.fillStyle=g;ctx.fillRect(p.x-r,p.y-u*.2-r,r*2,r*2);}
+  if(b.type==='lighthouse'&&!reduced){const angle=time*.2,origin=project(b.x+.8,b.y+.8);ctx.fillStyle='#fff5ba24';ctx.beginPath();ctx.moveTo(origin.x,origin.y-u*1.8);ctx.lineTo(origin.x+Math.cos(angle-.1)*u*5,origin.y-u*1.8+Math.sin(angle-.1)*u*2);ctx.lineTo(origin.x+Math.cos(angle+.1)*u*5,origin.y-u*1.8+Math.sin(angle+.1)*u*2);ctx.closePath();ctx.fill();}
+ }
+ if(!reduced){
+  // Drifting pollen/fireflies; bounded particle count, independent of population.
+  for(let i=0;i<18;i++){const p=project(1+(i*3.71)%c.extent,1+(i*2.39)%c.extent);const x=p.x+Math.sin(time*.3+i)*u*.2,y=p.y-u*.4+Math.cos(time*.5+i)*u*.2;ctx.fillStyle=night>.08?`rgba(244,249,174,${.25+.3*Math.sin(time+i)**2})`:'#fffbd559';ctx.beginPath();ctx.arc(x,y,Math.max(.7,u*.016),0,Math.PI*2);ctx.fill();}
+  if(Math.floor((c.seconds||0)/160)%3===2){ctx.strokeStyle='#dbf5fa38';ctx.lineWidth=.8;for(let i=0;i<42;i++){const x=(i*137+time*28)%view.width,y=(i*91+time*150)%view.height;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-3,y+10);ctx.stroke();}}
+ }
+ ctx.restore();
+}
