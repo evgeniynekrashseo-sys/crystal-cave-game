@@ -1,5 +1,5 @@
-import {normalizeStory,storyProduction} from './city-story.js?v=25';
-import {SUBSTANCES} from './mission.js?v=25';
+import {normalizeStory,storyProduction} from './city-story.js?v=26';
+import {SUBSTANCES} from './mission.js?v=26';
 // Deterministic simulation shared by the map renderer and regression tests.
 export const SIZE=20;
 export const LABELS={wood:'Деревина',stone:'Камінь',food:'Їжа',ore:'Руда',metal:'Метал',goods:'Товари',power:'Енергія',research:'Дослідження'};

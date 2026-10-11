@@ -1,9 +1,10 @@
-import {ARTIFACTS,artifactError} from './city-story.js?v=25';
+import {drawNaturalRiver} from './settlement-river.js?v=26';
+import {ARTIFACTS,artifactError} from './city-story.js?v=26';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=25';
-import {createMeadow,fillMeadow} from './settlement-ground.js?v=25';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=25';
-import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE} from './settlement-model.js?v=25';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=26';
+import {createMeadow,fillMeadow} from './settlement-ground.js?v=26';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=26';
+import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE} from './settlement-model.js?v=26';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./settlement-meadow-v18.png',import.meta.url).href;
@@ -56,49 +57,8 @@ function paintImage(ctx,image,x,y,width,{alpha=1,angle=0,flip=false}={}){
 }
 
 function drawRiver(ctx,W,H,pan,zoom,time,reduced){
- const view={width:W,height:H},camera={zoom,pan},u=unitFor(W)*zoom;
- const project=(x,y)=>projectPoint(view,camera,x,y);
- const corners=(x,y)=>[project(x,y),project(x+1,y),project(x+1,y+1),project(x,y+1)];
- const polygon=points=>{points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();};
- // The water mask is identical to the simulation's river footprint.
- ctx.save();ctx.beginPath();
- for(let y=0;y<60;y++)for(let x=14;x<=15;x++)if(isRiverTile(x,y))polygon(corners(x,y));
- ctx.fillStyle='#508e8f';ctx.fill();ctx.clip();
- if(details.water){
-  const size=u*2.4,h=size*details.water.height/details.water.width;
-  const origin=project(14,0),ox=((origin.x%size)+size)%size,oy=((origin.y%h)+h)%h;
-  for(let y=oy-h;y<H+h;y+=h*.45)for(let x=ox-size;x<W+size;x+=size*.45)
-   paintImage(ctx,details.water,x+size/2,y+h,size,{alpha:.3});
- }
- ctx.strokeStyle='#cce9d36e';ctx.lineWidth=Math.max(.8,zoom);ctx.lineCap='round';
- for(let y=0;y<40;y++)for(let i=0;i<3;i++){
-  const offset=reduced?.35:(time*.18+i*.31)%1;
-  const p=project(14.13+i*.28,y+offset),q=project(14.13+i*.28,y+offset+.17);
-  ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
- }
- ctx.restore();
- const edges=[{dx:0,dy:-1,a:0,b:1},{dx:1,dy:0,a:1,b:2},{dx:0,dy:1,a:2,b:3},{dx:-1,dy:0,a:3,b:0}];
- for(let y=0;y<40;y++)for(let x=14;x<=15;x++){if(!isRiverTile(x,y))continue;
-  const points=corners(x,y);
-  for(const e of edges){if(y+e.dy<0||isRiverTile(x+e.dx,y+e.dy))continue;
-   const a=points[e.a],b=points[e.b];
-   ctx.save();ctx.lineCap='round';ctx.strokeStyle='#777d55';ctx.lineWidth=u*.1;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-   ctx.strokeStyle='#a4ac72';ctx.lineWidth=u*.035;ctx.stroke();ctx.restore();
-   if(y%3===0&&details.reeds)paintImage(ctx,details.reeds,(a.x+b.x)/2,(a.y+b.y)/2,u*.32);
-  }
- }
- // The atlas bridge contains a baked-in vertical river: it cannot be placed over
- // this diagonal channel. Build the deck in world coordinates instead.
- const bx=RIVER_BRIDGE.x,by=RIVER_BRIDGE.y;
- for(let i=0;i<14;i++){
-  const x=bx-.18+i*.1,points=[project(x,by+.13),project(x+.098,by+.13),project(x+.098,by+.87),project(x,by+.87)];
-  ctx.beginPath();polygon(points);ctx.fillStyle=i%3===0?'#ba8750':i%3===1?'#d5a86b':'#c59860';ctx.fill();ctx.strokeStyle='#654a32';ctx.lineWidth=zoom*.7;ctx.stroke();
- }
- for(const side of [.13,.87]){
-  const start=project(bx-.2,by+side),end=project(bx+1.2,by+side);
-  for(const h of [.10,.21]){ctx.beginPath();ctx.moveTo(start.x,start.y-u*h);ctx.lineTo(end.x,end.y-u*h);ctx.strokeStyle='#704d2f';ctx.lineWidth=u*.04;ctx.stroke();}
-  for(let i=0;i<5;i++){const p=project(bx-.2+i*.35,by+side);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-u*.26);ctx.strokeStyle='#996b3e';ctx.lineWidth=u*.045;ctx.stroke();}
- }
+ const view={width:W,height:H},camera={zoom,pan};
+ drawNaturalRiver(ctx,(x,y)=>projectPoint(view,camera,x,y),unitFor(W)*zoom,time,reduced,details.water);
 }
 export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced,previousAgents,alpha=1}){
  prepare();

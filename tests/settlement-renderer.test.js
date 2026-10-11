@@ -1,4 +1,5 @@
 import * as story from '../dist/city-story.js';
+import {drawNaturalRiver} from '../dist/settlement-river.js';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -18,7 +19,7 @@ function renderer(){
  let id=0;
  const document={createElement:()=>({id:id++,width:0,height:0,getContext:()=>context()})};
  class Image{width=128;height=128;complete=true;naturalWidth=128;}
- const sandbox={...story,Image,URL,document,...camera,...life,VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,createMeadow:()=>({}),fillMeadow};
+ const sandbox={...story,drawNaturalRiver,Image,URL,document,...camera,...life,VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,createMeadow:()=>({}),fillMeadow};
  const source=readFileSync(new URL('../dist/settlement-renderer.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replaceAll('import.meta.url',JSON.stringify('https://unit.test/renderer.js')).replaceAll('export function','function');
  vm.runInNewContext(source+'\nthis.scene={drawSettlement,mapTile};',sandbox);return sandbox.scene;
 }
