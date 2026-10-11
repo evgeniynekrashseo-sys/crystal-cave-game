@@ -12,10 +12,20 @@ This is a test release, not a signed store submission or final art approval.
 
 ## Evidence
 
-- Previous 86 unit tests passed after renderer integration; two additional tests cover full-map river containment and continuous bank widening.
+- All 88 unit tests passed, including full-map river containment and continuous bank widening. The current 10,000-session solver CI run also passed.
 - Chromium browser checks at 375, 768 and 1440 pixels passed: city reward, relic, development path, city toggle and JSON backup; no JavaScript or failed-request errors observed.
 - River/bridge screenshot inspected in the running renderer. Natural materials improve the rejected canal, but repeated bank patches and overall scene realism still need art iteration. No claim of visual parity with the reference.
-- The previous native CI run 37765727127 passed both Android and iOS. The revised build must pass its own CI run before its artifacts are handed off.
+- Offline Chromium reload passed: city opened and the new river atlas loaded from the release cache.
+- Native CI run 38138038601 produced the Android debug APK / unsigned release AAB and iOS simulator app for commit b0f74e37aa724d0fd18c5ea9d6193823cab8d82d.
+
+## Test package handoff
+
+- Web: https://evgeniynekrashseo-sys.github.io/crystal-cave-game/?release=26
+- Builds: https://github.com/evgeniynekrashseo-sys/crystal-cave-game/actions/runs/38138038601
+- Android archive: artifact 11701552217 (`chemlab-android-unsigned`, includes APK and AAB).
+- iOS simulator archive: artifact 11701262601 (`chemlab-ios-simulator`).
+
+GitHub artifact download requires repository access and is subject to retention. These packages are for testing; use `docs/mobile/RELEASE.md` for signing and submission handoff.
 
 ## Release gates still open
 
