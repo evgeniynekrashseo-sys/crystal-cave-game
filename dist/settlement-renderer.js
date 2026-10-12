@@ -2,8 +2,8 @@ import {drawNaturalRiver} from './settlement-river.js?v=27';
 import {ARTIFACTS,artifactError} from './city-story.js?v=27';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
 import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=27';
-import {createMeadow,fillMeadow} from './settlement-ground.js?v=27';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=29';
+import {createMeadow,fillMeadow} from './settlement-ground.js?v=33';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=33';
 import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE} from './settlement-model.js?v=27';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
@@ -22,6 +22,14 @@ const INFRA_NAMES=['lab','well','granary','clinic','smelter','energy','ranch','u
 const coastal={},infrastructure={};let preparedCoastal=false,preparedInfrastructure=false;
 const sprites={},details={},life={},chronicle={};let preparedChronicle=false;let preparedLife=false;
 let grass,preparedMeadow=false,preparedSprites=false,preparedDetails=false;
+const shadowMasks=new WeakMap();
+function castShadow(ctx,image,p,width){
+ if(!image)return;
+ let mask=shadowMasks.get(image);
+ if(!mask){mask=document.createElement('canvas');mask.width=image.width;mask.height=image.height;const g=mask.getContext('2d');g.drawImage(image,0,0);g.globalCompositeOperation='source-in';g.fillStyle='#202a23';g.fillRect(0,0,mask.width,mask.height);shadowMasks.set(image,mask);}
+ const height=width*image.height/image.width;
+ ctx.save();ctx.globalAlpha=.23;ctx.transform(1,0,-.64,-.32,p.x,p.y);ctx.drawImage(mask,-width/2,-height,width,height);ctx.restore();
+}
 
 function sliceAtlas(image,names,target,rows=null){
  for(let i=0;i<names.length;i++){
@@ -72,7 +80,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  const W=canvas.clientWidth,H=canvas.clientHeight,u=unitFor(W)*zoom;
  const view={width:W,height:H},camera={zoom,pan};
  const project=(x,y)=>projectPoint(view,camera,x,y);
- ctx.clearRect(0,0,W,H);ctx.fillStyle='#aeca78';ctx.fillRect(0,0,W,H);
+ ctx.clearRect(0,0,W,H);ctx.fillStyle='#69734a';ctx.fillRect(0,0,W,H);
  if(grass)fillMeadow(ctx,grass,view,camera,originFor(view));
  drawSea(ctx,project,u,time,reduced,view);
  ctx.save();ctx.beginPath();[project(-40,0),project(60,0),project(60,60),project(-40,60)].forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.clip();
@@ -140,16 +148,20 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   const hash=(x*37+y*53)%97;
   if((x<2||y<2||x>7||y>8)&&hash%5===0)objects.push({x,y,kind:hash%4===0?'spruce-group':'spruce',width:unitFor(W)*(hash%4===0?1.6:1.15),sway:true});
   else if((x*11+y*3)%19===0)objects.push({x,y,kind:'granite',width:unitFor(W)*1.1});
-  else if(hash%13===0)objects.push({x:x+.12,y:y+.15,detail:'flowers',width:u*(.36+hash%4*.045),sway:true});
-  else if(hash%23===0)objects.push({x:x+.2,y:y+.15,detail:'grass',width:u*.42});
-  else if(hash%31===0)objects.push({x:x+.1,y:y+.1,detail:'berries',width:u*.46});
+  else if(hash%13===0)objects.push({x:x+.12,y:y+.15,detail:'flowers',width:unitFor(W)*(.36+hash%4*.045),sway:true});
+  else if(hash%23===0)objects.push({x:x+.2,y:y+.15,detail:'grass',width:unitFor(W)*.42});
+  else if(hash%31===0)objects.push({x:x+.1,y:y+.1,detail:'berries',width:unitFor(W)*.46});
   // World-anchored low vegetation: varied ground cover with stable positions.
   // Keep the central settlement readable and avoid paved or flooded cells.
-  if(hash%7===0)objects.push({x:x+.12+(hash%3)*.13,y:y+.19,detail:'grass',width:u*(.22+(hash%4)*.035)});
-  if(hash%17===0)objects.push({x:x+.35,y:y+.36,detail:'flowers',width:u*.27});
+  if(hash%7===0)objects.push({x:x+.12+(hash%3)*.13,y:y+.19,detail:'grass',width:unitFor(W)*(.22+(hash%4)*.035)});
+  if(hash%17===0)objects.push({x:x+.35,y:y+.36,detail:'flowers',width:unitFor(W)*.27});
  }
  // Cliff pieces sit on the actual ocean edge. Do not cover developed shore plots.
- for(let x=0;x<c.extent;x++)if(!occupied(x,0)&&x%2===0)objects.push({x:x-.12,y:-.23,kind:'cliff',width:unitFor(W)*1.35,cliff:true});
+ // Overlapping, varied rock clusters form a continuous coastal edge.
+ for(let x=-2;x<c.extent+3;x+=.52){
+  const y=-.10-.12*(1+Math.sin(x*.73))-.055*(1+Math.sin(x*2.31));
+  objects.push({x:x-.5,y:y-.62,kind:'granite',width:unitFor(W)*(.75+.18*Math.sin(x*4.7)),shore:true});
+ }
  // Hand-placed accents around the starting settlement keep the first screen richly detailed.
  objects.push(
   {x:2.2,y:2.4,detail:'flowers',width:48},{x:6.2,y:2.1,detail:'grass',width:42},
@@ -244,6 +256,13 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  };
 
  if(selected&&!objects.some(o=>o.b&&o.x===selected.x&&o.y===selected.y))diamond(selected.x,selected.y,'#50eff518','#83f9ff');
+ for(const obj of objects){
+  if(!(obj.b||obj.lab||obj.kind==='spruce'||obj.kind==='spruce-group'))continue;
+  const onPlot=!!(obj.b||obj.lab),p=project(obj.x+(onPlot?.98:.5),obj.y+(onPlot?.98:.62));
+  const image=obj.b?.ready>c.seconds?infrastructure['building-site']:obj.b?.type==='house'&&obj.b.level>=3?coastal.longhouse:coastal[obj.kind]||infrastructure[obj.kind]||life[obj.kind]||sprites[obj.kind];
+  if(p.x<-u*3||p.x>W+u*3||p.y<-u*3||p.y>H+u*3)continue;
+  castShadow(ctx,image,p,obj.width*zoom);
+ }
  objects.sort((a,b)=>a.x+a.y-b.x-b.y).forEach(drawObject);
  drawAtmosphere(ctx,view,project,u,c,time,reduced);
  return hits;
@@ -252,3 +271,4 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
 export function mapTile(canvas,zoom,pan,x,y){
  return tileAt({width:canvas.clientWidth,height:canvas.clientHeight},{zoom,pan},{x,y});
 }
+

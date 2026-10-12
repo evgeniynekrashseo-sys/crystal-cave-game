@@ -70,8 +70,8 @@ test('city goals are ordered, reward once and stay claimed after reload',()=>{
 
 test('the shore boundary stays fixed while sea highlights animate',()=>{
  const frames=[];const project=(x,y)=>({x:(x-y)*58,y:(x+y)*32});
- for(const time of [0,100]){const points=[];const ctx={save(){},restore(){},beginPath(){},moveTo(x,y){points.push([x,y]);},lineTo(x,y){points.push([x,y]);},closePath(){},fill(){},stroke(){},quadraticCurveTo(){},createLinearGradient(){return{addColorStop(){}};}};
- drawSea(ctx,project,58,time,false,{width:430,height:936});frames.push(points.slice(-2));}
+ for(const time of [0,100]){const points=[];const ctx={save(){},restore(){},beginPath(){},moveTo(x,y){points.push([x,y]);},lineTo(x,y){points.push([x,y]);},closePath(){},fill(){},stroke(){},quadraticCurveTo(){},ellipse(){},createLinearGradient(){return{addColorStop(){}};}};
+ drawSea(ctx,project,58,time,false,{width:430,height:936});frames.push(points.slice(0,303));}
  assert.deepEqual(frames[0],frames[1]);
 });
 
@@ -82,3 +82,4 @@ test('eras, districts, expeditions and crises create a connected strategic loop'
  assert.equal(dispatchExpedition(c,harbor.id,'quarry'),'');const stone=c.resources.stone;advanceCitySystems(c,40);assert(c.resources.stone>stone);assert.equal(c.completedExpeditions,1);assert.equal(claimCityCoins(c),12);
  c.seconds=90;advanceCitySystems(c,0);assert(c.activeEvent);c.tech=[];assert.equal(resolveCityEvent(c),false);c.tech=['water','preserve','steel'];assert.equal(resolveCityEvent(c),true);assert.equal(c.activeEvent,null);
 });
+

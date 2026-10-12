@@ -1,17 +1,24 @@
-// World-space life and infrastructure. Animation never changes map or shore coordinates.
+// Shore relief is deterministic and stays outside the buildable y >= 0 cells.
+const shoreY=x=>-.10-.12*(1+Math.sin(x*.73))-.055*(1+Math.sin(x*2.31));
 export function drawSea(ctx,project,u,time,reduced,view){
- const corners=[project(-40,-40),project(60,-40),project(60,0),project(-40,0)];
- const shallow=project(5,-1),deep=project(5,-14),water=ctx.createLinearGradient(shallow.x,shallow.y,deep.x,deep.y);
- water.addColorStop(0,'#839b9c');water.addColorStop(.32,'#587887');water.addColorStop(1,'#344e5e');
- ctx.save();ctx.beginPath();corners.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.fillStyle=water;ctx.fill();
- for(let x=-15;x<40;x++)for(let y=-15;y<0;y++){
-  const p=project(x+.4,y+.5);if(p.x<-u||p.x>view.width+u||p.y<-u||p.y>view.height+u)continue;
-  const phase=reduced?0:time*.7+x*.9+y*.5;
-  ctx.strokeStyle=`rgba(206,250,255,${.12+.09*(1+Math.sin(phase))})`;ctx.lineWidth=Math.max(.7,u*.012);
-  ctx.beginPath();ctx.moveTo(p.x-u*.19,p.y);ctx.quadraticCurveTo(p.x,p.y+Math.sin(phase)*u*.025,p.x+u*.2,p.y-u*.035);ctx.stroke();
+ const coast=Array.from({length:301},(_,i)=>{const x=-40+i/3;return{x,y:shoreY(x)}});
+ const trace=(offset=0)=>{ctx.beginPath();coast.forEach((s,i)=>{const p=project(s.x,s.y-offset);ctx[i?'lineTo':'moveTo'](p.x,p.y)});};
+ const shallow=project(5,-.5),deep=project(5,-12),water=ctx.createLinearGradient(shallow.x,shallow.y,deep.x,deep.y);
+ water.addColorStop(0,'#718885');water.addColorStop(.18,'#526c70');water.addColorStop(1,'#2d4858');
+ ctx.save();trace();for(const p of [project(60,-40),project(-40,-40)])ctx.lineTo(p.x,p.y);ctx.closePath();ctx.fillStyle=water;ctx.fill();
+ // Continuous eroded bank, with rock facets and wet stone at its foot.
+ trace(-.04);ctx.lineJoin='round';ctx.lineWidth=u*.27;ctx.strokeStyle='#777363';ctx.stroke();
+ trace(.09);ctx.lineWidth=u*.13;ctx.strokeStyle='#4d5650';ctx.stroke();
+// Fine wet gravel follows the continuous shore without regular polygon wedges.
+ const t=reduced?0:time*.32;
+ trace(.25+Math.sin(t)*.025);ctx.lineWidth=u*.045;ctx.strokeStyle='rgba(219,233,219,.35)';ctx.stroke();
+ for(let i=0;i<170;i++){
+  const x=-14+(i*2.731)%50,y=-.6-(i*1.379)%16,p=project(x,y);
+  if(p.x<-u||p.x>view.width+u||p.y<-u||p.y>view.height+u)continue;
+  const phase=t+i*1.83;
+  ctx.strokeStyle=`rgba(207,222,217,${.035+.045*(1+Math.sin(phase))})`;ctx.lineWidth=Math.max(.6,u*.012);
+  ctx.beginPath();ctx.ellipse(p.x,p.y,u*(.2+(i%5)*.05),u*.055,-.08,0,Math.PI);ctx.stroke();
  }
- const a=project(-40,0),b=project(60,0);ctx.lineCap='round';ctx.lineWidth=u*.19;ctx.strokeStyle='#85816b';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
- ctx.lineWidth=u*.045;ctx.strokeStyle=reduced?'#dbffffa0':`rgba(230,255,255,${.5+.22*Math.sin(time*.6)})`;ctx.stroke();
  ctx.restore();
 }
 
@@ -80,3 +87,4 @@ export function drawAtmosphere(ctx,view,project,u,c,time,reduced){
  }
  ctx.restore();
 }
+

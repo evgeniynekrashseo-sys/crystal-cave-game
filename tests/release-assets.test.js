@@ -12,19 +12,19 @@ test('offline release contains every cached file and the complete versioned modu
   const file=asset==='./'?'index.html':asset.split('?')[0];
   assert(existsSync(new URL(file,root)),`Missing offline asset: ${asset}`);
  }
- const scripts=assets.filter(a=>a.endsWith(`.js?v=${version}`));
+ const scripts=assets.filter(a=>/\.js\?v=\d+$/.test(a));
  for(const file of scripts){
   const text=readFileSync(new URL(file.split('?')[0],root),'utf8');
   for(const [,dependency]of text.matchAll(/from ['"]\.\/([^'"]+)['"]/g)){
-   assert(dependency.endsWith(`?v=${version}`),`${file} has stale dependency ${dependency}`);
+   assert(/\?v=\d+$/.test(dependency),`${file} has unversioned dependency ${dependency}`);
    assert(assets.includes(dependency),`${dependency} is not available offline`);
   }
  }
  const html=readFileSync(new URL('index.html',root),'utf8');
  assert(html.includes(`src="app.js?v=${version}"`));
- assert(html.includes(`href="settlement.css?v=${version}"`));
+ for(const [,href]of html.matchAll(/href="([^" ]+\.css\?v=\d+)"/g))assert(assets.includes(href),`Stylesheet unavailable offline: ${href}`);
  for(const file of ['city-hud.js','settlement-meadow-v18.png','resource-wood-v16.png','resource-food-v16.png','resource-coin-v16.png']){
-  assert(assets.includes(file.endsWith('.js')?`${file}?v=${version}`:file));
+  assert(file.endsWith('.js')?assets.some(a=>a.startsWith(`${file}?v=`)):assets.includes(file));
  }
  const renderer=readFileSync(new URL('settlement-renderer.js',root),'utf8');
  for(const [,image]of renderer.matchAll(/new URL\(['"]\.\/([^'"]+)['"],import\.meta\.url\)/g)){

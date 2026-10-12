@@ -5,13 +5,21 @@ export function createMeadow(document,texture){
  if(texture?.complete&&texture.naturalWidth>=1024&&texture.naturalHeight>=1024){
   // Use every source pixel. The material stays at four image pixels per world pixel.
   const tile=document.createElement('canvas');tile.width=texture.naturalWidth;tile.height=texture.naturalHeight;
-  const g=tile.getContext('2d');g.drawImage(texture,0,0);
+  const g=tile.getContext('2d',{willReadFrequently:true});g.drawImage(texture,0,0);
+  // Low-contrast olive turf: detail belongs below the architecture, not above it.
+  const image=g.getImageData(0,0,tile.width,tile.height),pixels=image.data;
+  for(let i=0;i<pixels.length;i+=4){
+   const light=pixels[i]*.2126+pixels[i+1]*.7152+pixels[i+2]*.0722;
+   const detail=(light-125)*.23;
+   pixels[i]=103+detail;pixels[i+1]=113+detail;pixels[i+2]=67+detail*.8;
+  }
+  g.putImageData(image,0,0);
   return tile;
  }
  const tile=document.createElement('canvas');tile.width=tile.height=GROUND_SIZE*GROUND_DENSITY;
  const g=tile.getContext('2d');g.scale(GROUND_DENSITY,GROUND_DENSITY);
  let seed=62137;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
- g.fillStyle='#b5cd78';g.fillRect(0,0,GROUND_SIZE,GROUND_SIZE);
+ g.fillStyle='#69734a';g.fillRect(0,0,GROUND_SIZE,GROUND_SIZE);
  // Seamless broad tones, then thousands of individually drawn blades and seed heads.
  for(let i=0;i<58;i++){
   const x=random()*GROUND_SIZE,y=random()*GROUND_SIZE,r=18+random()*62;
@@ -23,7 +31,7 @@ export function createMeadow(document,texture){
    g.fillStyle=grad;g.fillRect(x+dx-r,y+dy-r,r*2,r*2);
   }
  }
- const greens=['#7c9d4e','#90ad59','#a7bd64','#c6d78c','#d4d798','#98b364'];
+ const greens=['#657447','#748052','#80895b','#8c946b','#969772','#778451'];
  for(let i=0;i<11500;i++){
   const x=random()*GROUND_SIZE,y=random()*GROUND_SIZE,length=.8+random()*2.6,bend=(random()-.5)*2.1;
   g.strokeStyle=greens[Math.floor(random()*greens.length)];g.lineWidth=.3+random()*.4;
@@ -40,3 +48,4 @@ export function fillMeadow(ctx,tile,view,camera,origin){
  ctx.save();ctx.translate(x,y);ctx.scale(camera.zoom,camera.zoom);ctx.fillStyle=pattern;
  ctx.fillRect(-x/camera.zoom,-y/camera.zoom,view.width/camera.zoom,view.height/camera.zoom);ctx.restore();
 }
+
