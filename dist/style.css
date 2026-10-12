@@ -157,3 +157,30 @@
 .backup-import{display:block;margin:10px 0;padding:12px;border:1px solid #83cbd15c;border-radius:12px;font-size:13px}
 .backup-import input{max-width:100%;display:block;margin-top:10px;font-size:12px}
 #backup-status{color:#efcb87;font-size:12px}
+
+/* The laboratory board stays visible while goals live in an accessible drawer. */
+.level-sheet{position:relative;z-index:15;margin:14px 0 0;flex:none}
+.level-sheet>summary{list-style:none;display:flex;align-items:center;gap:12px;min-height:62px;padding:9px 13px;border:1px solid #88c9be66;border-radius:16px;background:linear-gradient(115deg,#12323ce8,#0b212be8);box-shadow:0 7px 20px #0006;cursor:pointer;touch-action:manipulation}
+.level-sheet>summary::-webkit-details-marker{display:none}
+.level-sheet>summary:focus-visible{outline:2px solid #cbffe9;outline-offset:3px}
+.level-sheet-title{flex:1;min-width:0;margin:0;font-size:14px;font-weight:800;color:#e7f8f2;white-space:nowrap}
+.level-sheet-title>b{color:#9ce7d1;font-size:19px}
+.level-sheet-title small{display:block;overflow:hidden;text-overflow:ellipsis;color:#b9d4cf;font-size:10px;font-weight:500;margin-top:2px}
+.level-sheet-count{text-align:center;flex:none;min-width:40px;white-space:nowrap}
+.level-sheet-count b{display:block;color:#edf9f2;font-size:16px;line-height:1.2}
+.level-sheet-count small{display:block;color:#a9c7c2;font-size:9px}
+.level-sheet-chevron{font-size:22px;color:#9ce7d1;line-height:1;transition:transform .2s}
+.level-sheet[open] .level-sheet-chevron{transform:rotate(180deg)}
+.level-sheet-content{position:absolute;top:calc(100% + 5px);left:0;right:0;max-height:min(55svh,520px);overflow:auto;overscroll-behavior:contain;padding:17px 14px 15px;border:1px solid #88c9be80;border-radius:16px;background:#091f29f7;box-shadow:0 16px 45px #000c;backdrop-filter:blur(16px)}
+.level-sheet-content>.eyebrow{text-align:left;font-size:9px}
+.level-sheet-content>p{font-size:12px;color:#d2e7e0;margin:7px 0;line-height:1.45}
+.level-sheet-content .level-modifier{justify-content:flex-start;margin:9px 0 11px;min-height:0}
+.level-sheet-content #experiment-brief{margin:9px 0;padding:10px 12px}
+.level-sheet-content #formula-quest{display:grid;gap:5px;margin:8px 0;padding:11px 12px;border:1px solid #77bdb184;border-radius:12px;background:#10323a;color:#d9ede7;font-size:11px}
+#formula-quest>b{font-size:13px;color:#b2efd9}
+#formula-quest>small{color:#b7d0cb;font-size:10px;line-height:1.4}
+#formula-quest details{margin-top:6px;color:#b7d0cb}
+#formula-quest summary{cursor:pointer;color:#d6f5e5}
+.level-sheet-content .world-hud{margin:13px 0 0;gap:8px}
+.level-sheet-content .world-hud button{min-height:42px;flex:1;text-align:center}
+@media(max-width:380px){#game{padding-inline:13px}.level-sheet>summary{gap:7px;padding-inline:10px}.level-sheet-title{font-size:12px}.level-sheet-title>b{font-size:16px}.level-sheet-count{min-width:34px}.level-sheet-count b{font-size:14px}}

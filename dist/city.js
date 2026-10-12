@@ -1,10 +1,10 @@
-import {currentStory,ensureStory,storyPanel,choosePath,claimStory,collectArtifact,artifactError} from './city-story.js?v=26';
-import {SUBSTANCES} from './mission.js?v=26';
-import {CITY_RESEARCH} from './city-research.js?v=26';
-import {mountCityHud} from './city-hud.js?v=26';
-import {drawSettlement,mapTile} from './settlement-renderer.js?v=26';
-import {bindMapControls,boundCamera,projectPoint,MIN_ZOOM,MAX_ZOOM} from './settlement-camera.js?v=26';
-import {SIZE,TYPES,TECH,LABELS,deliverDiscovery,terrain,normalizeCity,onChemistryWin,stats,step,build,canPlace,upgrade,upgradeCost,expand,research,affordable,demolish,demolitionRefund,VOYAGES,voyageError,dispatchVoyage,claimCityCoins,cityGoal,claimCityGoal,ensureCitySystems,cityEra,DISTRICTS,EXPEDITIONS,CITY_EVENTS,advanceCitySystems,resolveCityEvent,cityEventError,dispatchExpedition,expeditionError,districtSummary} from './settlement-model.js?v=26';
+import {currentStory,ensureStory,storyPanel,choosePath,claimStory,collectArtifact,artifactError} from './city-story.js?v=27';
+import {SUBSTANCES} from './mission.js?v=27';
+import {CITY_RESEARCH} from './city-research.js?v=27';
+import {mountCityHud} from './city-hud.js?v=27';
+import {drawSettlement,mapTile} from './settlement-renderer.js?v=27';
+import {bindMapControls,boundCamera,projectPoint,MIN_ZOOM,MAX_ZOOM} from './settlement-camera.js?v=27';
+import {SIZE,TYPES,TECH,LABELS,deliverDiscovery,terrain,normalizeCity,onChemistryWin,stats,step,build,canPlace,upgrade,upgradeCost,expand,research,affordable,demolish,demolitionRefund,VOYAGES,voyageError,dispatchVoyage,claimCityCoins,cityGoal,claimCityGoal,ensureCitySystems,cityEra,DISTRICTS,EXPEDITIONS,CITY_EVENTS,advanceCitySystems,resolveCityEvent,cityEventError,dispatchExpedition,expeditionError,districtSummary} from './settlement-model.js?v=27';
 const KEY='chemlab_settlement_v2';
 export function initCity(api){
  let raw;try{raw=JSON.parse(localStorage.getItem(KEY))}catch{}
@@ -136,4 +136,4 @@ export function initCity(api){
  }
  window.addEventListener('pagehide',persist);return {open,close,discover(id){if(deliverDiscovery(c,id))persist();},won(level){if(api.enabled?.()!==false){onChemistryWin(c,level);persist()}}};
 }
-import {renderBuildingPanel} from './city-building-panel.js?v=26';
+import {renderBuildingPanel} from './city-building-panel.js?v=27';

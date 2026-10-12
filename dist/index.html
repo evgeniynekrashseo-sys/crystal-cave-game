@@ -19,8 +19,8 @@
   <link rel="preload" as="image" href="icons/build.svg">
   <link rel="preload" as="image" href="icons/discoveries.svg">
   <link rel="preload" as="image" href="icons/city.svg">
-  <link rel="stylesheet" href="style.css?v=26">
-  <link rel="stylesheet" href="settlement.css?v=26">
+  <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="settlement.css?v=27">
   <title>ChemLab — лабораторія відкриттів</title>
 </head>
 <body>
@@ -31,23 +31,26 @@
       <div class="brand">CHEM<span>LAB</span><small>ЛАБОРАТОРІЯ ВІДКРИТТІВ</small></div>
       <button class="currency" id="collection" aria-label="Баланс монет"><span>✦</span> <b id="gold">0</b></button>
     </header>
-    <section class="heading">
-      <div class="eyebrow" id="chapter">РОЗДІЛ I · ПЕРШЕ СВІТЛО</div>
-      <h1>Експеримент <span id="level">01</span></h1>
-      <p id="objective">Синтезуй однакові елементи · відкривай реакційні пари</p>
-    </section>
-    <div class="world-hud">
-      <button id="research-button">✧ <span id="research-label">Дослідження O</span></button>
-      <button id="city-button">⌂ <span>Місто</span></button>
-      <span>◈ <b id="crystal-count">0</b></span>
-    </div>
-    <div class="status">
-      <div><i class="dot"></i> <span id="completed">0 / 3</span> зібрано</div>
-      <div><b id="moves">0</b> ходів</div>
-    </div>
-    <div class="level-modifier" id="level-modifier" aria-label="Особливості рівня"></div>
-    <aside id="experiment-brief" aria-label="Додаткова ціль експерименту"></aside>
-    <aside id="formula-quest" hidden aria-live="polite"></aside>
+    <details class="level-sheet" id="level-sheet">
+      <summary>
+        <h1 class="level-sheet-title">Експеримент <b id="level">01</b><small id="goal-summary">Цілі та винагороди</small></h1>
+        <span class="level-sheet-count"><b id="completed">0 / 3</b><small>зібрано</small></span>
+        <span class="level-sheet-count"><b id="moves">0</b><small>ходів</small></span>
+        <span class="level-sheet-chevron" aria-hidden="true">⌄</span>
+      </summary>
+      <div class="level-sheet-content">
+        <div class="eyebrow" id="chapter">РОЗДІЛ I · ПЕРШЕ СВІТЛО</div>
+        <p id="objective">Синтезуй однакові елементи · відкривай реакційні пари</p>
+        <div class="level-modifier" id="level-modifier" aria-label="Особливості рівня"></div>
+        <aside id="experiment-brief" aria-label="Додаткова ціль експерименту"></aside>
+        <aside id="formula-quest" hidden aria-live="polite"></aside>
+        <div class="world-hud">
+          <button id="research-button">✧ <span id="research-label">Дослідження O</span></button>
+          <button id="city-button">⌂ <span>Місто</span></button>
+          <span>◈ <b id="crystal-count">0</b></span>
+        </div>
+      </div>
+    </details>
     <section id="board" aria-label="Ігрові колби"></section>
     <div id="feedback" role="status" aria-live="polite">Торкнись колби, потім обери, куди перелити</div>
     <div class="tools">
@@ -70,6 +73,6 @@
     <div id="modalbody"></div>
     <button class="secondary" id="close">Закрити</button>
   </dialog>
-  <script type="module" src="app.js?v=26"></script>
+  <script type="module" src="app.js?v=27"></script>
 </body>
 </html>

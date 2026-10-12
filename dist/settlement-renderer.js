@@ -1,10 +1,10 @@
-import {drawNaturalRiver} from './settlement-river.js?v=26';
-import {ARTIFACTS,artifactError} from './city-story.js?v=26';
+import {drawNaturalRiver} from './settlement-river.js?v=27';
+import {ARTIFACTS,artifactError} from './city-story.js?v=27';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=26';
-import {createMeadow,fillMeadow} from './settlement-ground.js?v=26';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=26';
-import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE} from './settlement-model.js?v=26';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=27';
+import {createMeadow,fillMeadow} from './settlement-ground.js?v=27';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=27';
+import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE} from './settlement-model.js?v=27';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./settlement-meadow-v18.png',import.meta.url).href;
@@ -15,6 +15,11 @@ const lifeAtlas=new Image();lifeAtlas.src=new URL('./settlement-life-v21.png',im
 const LIFE_NAMES=['school','harbor','fishery','ship','cow','pig','sheep','chicken','pen','willow','wildflowers','orchard','woman','pupil','fisherman','gull'];
 const chronicleAtlas=new Image();chronicleAtlas.src=new URL('./settlement-chronicles-v25.png',import.meta.url).href;
 const CHRONICLE_NAMES=['scientist','engineer','botanist','captain','observatory','greenhouse','lighthouse','market','compass','seed','prism','map','heart','beacon','park','streetlamp'];
+const coastalAtlas=new Image();coastalAtlas.src=new URL('./coastal-settlement-v27.png',import.meta.url).href;
+const infrastructureAtlas=new Image();infrastructureAtlas.src=new URL('./coastal-infrastructure-v27.png',import.meta.url).href;
+const COAST_NAMES=['house','longhouse','lumber','farm','quarry','school','market','workshop','spruce','spruce-group','granite','shrubs','cliff','pier','scaffold','fishery'];
+const INFRA_NAMES=['lab','well','granary','clinic','smelter','energy','ranch','university','harbor','lighthouse','observatory','greenhouse','park','mine','produce','building-site'];
+const coastal={},infrastructure={};let preparedCoastal=false,preparedInfrastructure=false;
 const sprites={},details={},life={},chronicle={};let preparedChronicle=false;let preparedLife=false;
 let grass,preparedMeadow=false,preparedSprites=false,preparedDetails=false;
 
@@ -48,6 +53,8 @@ function prepare(){
  if(!preparedDetails&&detailAtlas.complete&&detailAtlas.naturalWidth){sliceAtlas(detailAtlas,DETAIL_NAMES,details);preparedDetails=true;}
  if(!preparedLife&&lifeAtlas.complete&&lifeAtlas.naturalWidth){sliceAtlas(lifeAtlas,LIFE_NAMES,life);preparedLife=true;}
  if(!preparedChronicle&&chronicleAtlas.complete&&chronicleAtlas.naturalWidth){sliceAtlas(chronicleAtlas,CHRONICLE_NAMES,chronicle,[[0,.3],[.292,.541],[.54,.76],[.757,1]]);preparedChronicle=true;}
+ if(!preparedCoastal&&coastalAtlas.complete&&coastalAtlas.naturalWidth){sliceAtlas(coastalAtlas,COAST_NAMES,coastal);preparedCoastal=true;}
+ if(!preparedInfrastructure&&infrastructureAtlas.complete&&infrastructureAtlas.naturalWidth){sliceAtlas(infrastructureAtlas,INFRA_NAMES,infrastructure);preparedInfrastructure=true;}
 }
 
 function paintImage(ctx,image,x,y,width,{alpha=1,angle=0,flip=false}={}){
@@ -83,8 +90,8 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   const center=project(x+.5,y+.5);
   ctx.save();ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();
   const color=ctx.createLinearGradient(center.x,center.y-u*.5,center.x,center.y+u*.5);
-  color.addColorStop(0,'#b1b580d9');color.addColorStop(1,'#c4b786e0');ctx.fillStyle=color;ctx.fill();
-  ctx.strokeStyle='#7a825455';ctx.lineWidth=Math.max(.7,zoom);ctx.stroke();
+  color.addColorStop(0,'#847f65a8');color.addColorStop(1,'#ac9a76b8');ctx.fillStyle=color;ctx.fill();
+  ctx.strokeStyle='#605c4633';ctx.lineWidth=Math.max(.7,zoom);ctx.stroke();
   // Fixed tiny gravel/earth marks make each plot a material surface, not a flat overlay.
   let seed=((x+1)*73856093^(y+1)*19349663)>>>0;
   const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
@@ -108,24 +115,26 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  for(let x=0;x<c.extent;x++)for(let y=0;y<c.extent;y++){
   if(occupied(x,y)||isRiverTile(x,y))continue;
   const hash=(x*37+y*53)%97;
-  if((x<2||y<2||x>7||y>8)&&hash%7===0)objects.push({x,y,kind:hash%3===0?'willow':hash%3===1?'orchard':'tree',width:78+hash%28,sway:true});
-  else if((x*11+y*3)%19===0)objects.push({x,y,kind:'rock',width:64});
+  if((x<2||y<2||x>7||y>8)&&hash%5===0)objects.push({x,y,kind:hash%4===0?'spruce-group':'spruce',width:unitFor(W)*(hash%4===0?1.6:1.15),sway:true});
+  else if((x*11+y*3)%19===0)objects.push({x,y,kind:'granite',width:unitFor(W)*1.1});
   else if(hash%13===0)objects.push({x:x+.12,y:y+.15,kind:'wildflowers',width:34+hash%18,sway:true});
   else if(hash%23===0)objects.push({x:x+.2,y:y+.15,detail:'grass',width:38});
   else if(hash%31===0)objects.push({x:x+.1,y:y+.1,detail:'berries',width:46});
  }
+ // Cliff pieces sit on the actual ocean edge. Do not cover developed shore plots.
+ for(let x=0;x<c.extent;x++)if(!occupied(x,0)&&x%2===0)objects.push({x:x-.12,y:-.23,kind:'cliff',width:unitFor(W)*1.35,cliff:true});
  // Hand-placed accents around the starting settlement keep the first screen richly detailed.
  objects.push(
   {x:2.2,y:2.4,detail:'flowers',width:48},{x:6.2,y:2.1,detail:'grass',width:42},
   {x:2.3,y:7.5,detail:'flowers',width:44},{x:6.8,y:6.9,detail:'berries',width:48},
   {x:4.25,y:3.65,detail:'lantern',width:28},{x:4.25,y:5.7,detail:'cargo',width:38}
  );
- if(!occupied(6,9))objects.push({x:6.45,y:9.1,kind:'tree',width:104,sway:true});
- if(!occupied(9,7))objects.push({x:9.1,y:7.35,kind:'tree',width:96,sway:true});
+ if(!occupied(6,9))objects.push({x:6.45,y:9.1,kind:'spruce',width:unitFor(W)*1.45,sway:true});
+ if(!occupied(9,7))objects.push({x:9.1,y:7.35,kind:'spruce',width:unitFor(W)*1.4,sway:true});
  if(!occupied(7,8))objects.push({x:7.6,y:8.45,detail:'flowers',width:46});
  if(!occupied(8,8))objects.push({x:8.45,y:8.15,detail:'grass',width:42});
  if(!c.buildings.some(b=>b.x===4&&b.y===2))objects.push({x:4,y:2,kind:'lab',width:unitFor(W)*2.2,lab:true});
- const kind={house:'house',lumber:'lumber',farm:'farm',well:'well',quarry:'rock',ranch:'ranch',clinic:'clinic',granary:'granary',mine:'mine',smelter:'factory',factory:'factory',energy:'energy',school:'school',university:'school',market:'market',observatory:'observatory',greenhouse:'greenhouse',lighthouse:'lighthouse',park:'park',harbor:'harbor',fishery:'fishery'};
+ const kind={house:'house',lumber:'lumber',farm:'farm',well:'well',quarry:'quarry',ranch:'ranch',clinic:'clinic',granary:'granary',mine:'mine',smelter:'smelter',factory:'workshop',energy:'energy',school:'school',university:'university',market:'market',observatory:'observatory',greenhouse:'greenhouse',lighthouse:'lighthouse',park:'park',harbor:'harbor',fishery:'fishery'};
  for(const b of c.buildings)objects.push({x:b.x,y:b.y,kind:kind[b.type],width:unitFor(W)*(b.type==='farm'?1.92:b.type==='well'?1.25:1.84),b});
  for(const a of c.agents){const job=c.buildings.find(b=>b.id===a.job);const kind=a.truck?'truck':['school','university','observatory'].includes(job?.type)?'scientist':job?.type==='greenhouse'?'botanist':['factory','smelter','energy'].includes(job?.type)?'engineer':job?.type==='harbor'?'captain':job?.type==='fishery'?'fisherman':!a.job&&a.id%3===0&&c.buildings.some(b=>b.type==='school')?'pupil':a.id%3===1?'woman':'person';const prev=previousAgents?.get(a.id)||a;objects.push({x:prev.x+(a.x-prev.x)*alpha,y:prev.y+(a.y-prev.y)*alpha,kind,width:unitFor(W)*(a.truck?.95:kind==='pupil'?.27:.34),a});}
  for(const b of c.buildings.filter(b=>['harbor','fishery'].includes(b.type))){
@@ -147,7 +156,8 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   if(obj.detail){paintImage(ctx,details[obj.detail],p.x,p.y,obj.width*zoom,{alpha:.96});return;}
   const moving=obj.a?.path.length;
   const frame=0; // Preserve identity while walking; do not swap person/worker portraits.
-  const image=chronicle[obj.kind]||life[obj.kind]||sprites[obj.kind==='person'&&frame?'worker':obj.kind];
+  const newBuilding=obj.b?.ready>c.seconds?infrastructure['building-site']:obj.b?.type==='house'&&obj.b.level>=3?coastal.longhouse:null;
+  const image=newBuilding||coastal[obj.kind]||infrastructure[obj.kind]||chronicle[obj.kind]||life[obj.kind]||sprites[obj.kind==='person'&&frame?'worker':obj.kind];
   if(!image)return;
   const width=obj.width*zoom,height=width*image.height/image.width;
   if(p.x+width/2<0||p.x-width/2>W||p.y+u*.5<0||p.y-height>H)return;
@@ -168,7 +178,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   }
   ctx.save();ctx.translate(p.x,p.y-bob);ctx.rotate(angle);
   let alpha=1;
-  if(obj.b?.ready>c.seconds)alpha=.48+.42*Math.max(0,1-(obj.b.ready-c.seconds)/8);
+  if(obj.b?.ready>c.seconds&&!newBuilding)alpha=.48+.42*Math.max(0,1-(obj.b.ready-c.seconds)/8);
   ctx.globalAlpha=alpha;
   if(obj.boat&&obj.returning)ctx.scale(-1,1);
   if(obj.a){
@@ -188,8 +198,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
    ctx.save();ctx.font=`800 ${Math.max(9,10*zoom)}px system-ui`;ctx.textAlign='center';ctx.fillStyle='#063e55';ctx.strokeStyle='#f5fff0';ctx.lineWidth=3;const label=['','I','II','III','IV','V'][b.level];ctx.strokeText(label,p.x,p.y-u*.06);ctx.fillText(label,p.x,p.y-u*.06);ctx.restore();
   }
 
-  if(obj.b?.ready>c.seconds&&details.scaffold){
-   paintImage(ctx,details.scaffold,p.x,p.y,width*.9,{alpha:.82});
+  if(obj.b?.ready>c.seconds){
    ctx.save();ctx.font=`700 ${10*zoom}px -apple-system,system-ui`;ctx.textAlign='center';
    ctx.fillStyle='#103b4a';ctx.strokeStyle='#f4ffef';ctx.lineWidth=3;
    const label=`${Math.max(1,Math.ceil(obj.b.ready-c.seconds))} с`;

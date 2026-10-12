@@ -1,10 +1,10 @@
-import {readPreferences,PREF_KEY,makeBackup,restoreBackup} from './preferences.js?v=26';
-import {missionsFor,createMission,formulaMove,settleMission,REACTION_MODES,conditionReady,missionTier} from './mission.js?v=26';
-import {LiquidRenderer,bubblingSound} from './liquid.js?v=26';
-import {initCity} from './city.js?v=26';
-import {initExpansion} from './expansion.js?v=26';
-import {tint,NAMES} from './progression.js?v=26';
-import {experimentChallenge,experimentResult,clone,collectCompleted,completionReward,levelOutcome,createCertifiedLevel,budget,normalize,mechanicBlock,moveWithMechanics} from './engine.js?v=26';
+import {readPreferences,PREF_KEY,makeBackup,restoreBackup} from './preferences.js?v=27';
+import {missionsFor,createMission,formulaMove,settleMission,REACTION_MODES,conditionReady,missionTier} from './mission.js?v=27';
+import {LiquidRenderer,bubblingSound} from './liquid.js?v=27';
+import {initCity} from './city.js?v=27';
+import {initExpansion} from './expansion.js?v=27';
+import {tint,NAMES} from './progression.js?v=27';
+import {experimentChallenge,experimentResult,clone,collectCompleted,completionReward,levelOutcome,createCertifiedLevel,budget,normalize,mechanicBlock,moveWithMechanics} from './engine.js?v=27';
 const $=id=>document.getElementById(id);let save;try{save=normalize(JSON.parse(localStorage.getItem('chemlab_v50')))}catch{save=normalize(null)}
 const prefs=readPreferences();let reactionMode='none';
 const liquid=new LiquidRenderer();
@@ -16,7 +16,7 @@ function tone(f=500){if(!sound)return;try{ctx??=new (window.AudioContext||window
 function gurgle(){if(!sound)return;try{ctx??=new (window.AudioContext||window.webkitAudioContext)();ctx.resume().catch(()=>{});bubblingSound(ctx)}catch{}}
 function newSeed(){return crypto.getRandomValues(new Uint32Array(1))[0]}
 function waveState(completed=mechanicState.completed||0){return{frozenTurns:puzzle.mechanics.frozen?.turns||0,catalystClaimed:false,completed,crossFrozenTurns:0,crossFrozenTube:-1};}
-function start(exact=false){if(locked)return;missionQueue=missionsFor(save.level,save.discovered);missionIndex=-1;missionClaimed=false;missionRewards=[];seed=exact?seed:newSeed();const symbols=world.symbols();if(!exact||!levelRun||levelRun.level!==save.level)levelRun=createCertifiedLevel(symbols,save.level,seed,exact?[]:save.recentPuzzles);waveIndex=0;puzzle=levelRun.waves[waveIndex];tubes=clone(puzzle.tubes);moves=levelRun.waves.reduce((sum,wave)=>sum+budget(wave,save.level),0);sortingUsed=0;history=[];selected=-1;assisted=false;reserve=false;ended=false;completedLevel=false;mechanicState={frozenTurns:puzzle.mechanics.frozen?.turns||0,catalystClaimed:false,completed:0,crossFrozenTurns:0,crossFrozenTube:-1};save.recentPuzzles=[...save.recentPuzzles.filter(k=>k!==levelRun.key),levelRun.key].slice(-3);persist();world.onStart();$('modal').close();render();say(storageWarn?'Збереження недоступне у цьому браузері':'Торкнись колби, потім обери, куди перелити');}
+function start(exact=false){if(locked)return;$('level-sheet').open=false;missionQueue=missionsFor(save.level,save.discovered);missionIndex=-1;missionClaimed=false;missionRewards=[];seed=exact?seed:newSeed();const symbols=world.symbols();if(!exact||!levelRun||levelRun.level!==save.level)levelRun=createCertifiedLevel(symbols,save.level,seed,exact?[]:save.recentPuzzles);waveIndex=0;puzzle=levelRun.waves[waveIndex];tubes=clone(puzzle.tubes);moves=levelRun.waves.reduce((sum,wave)=>sum+budget(wave,save.level),0);sortingUsed=0;history=[];selected=-1;assisted=false;reserve=false;ended=false;completedLevel=false;mechanicState={frozenTurns:puzzle.mechanics.frozen?.turns||0,catalystClaimed:false,completed:0,crossFrozenTurns:0,crossFrozenTube:-1};save.recentPuzzles=[...save.recentPuzzles.filter(k=>k!==levelRun.key),levelRun.key].slice(-3);persist();world.onStart();$('modal').close();render();say(storageWarn?'Збереження недоступне у цьому браузері':'Торкнись колби, потім обери, куди перелити');}
 function mechanicTags(){
  if(activeMission())return [`Місія ${missionIndex+1} / ${missionQueue.length}`,`Колба 01 · ${activeMission().formula}`];
  const tags=[`Складність ${'◆'.repeat(puzzle.profile.rank)}`];
@@ -120,6 +120,7 @@ function render(){
  const brief=$('experiment-brief');
  if(brief){
   const challenge=experimentChallenge(save.level);
+  $('goal-summary').textContent=activeMission()?`Замовлення · ${activeMission().formula}`:missionQueue.length?`Далі · ${missionQueue.map(q=>q.formula).join(' · ')}`:`Бонус · ${challenge.name}`;
   const target=Math.ceil(levelRun.waves.reduce((n,w)=>n+w.solution.length,0)*1.2);
   const detail=challenge.precision?`Сортування: ${sortingUsed} / ${target} ходів для бонусу`:assisted?'Допомогу використано. Основні нагороди залишаються доступними.':challenge.description;
   brief.innerHTML=`<div><b>${challenge.name}</b><span>+${challenge.bonus} монет</span></div><p>${detail}</p><progress max="${levelRun.totalGroups}" value="${complete}" aria-label="Зібрано груп"></progress>`;
@@ -205,7 +206,7 @@ if(outcome==='wave'){
  else say([synthesisNotice,mechanicNotice].filter(Boolean).join(' · ')||'Добре! Продовжуй збирати однакові елементи');
 });
 function beginMission(index){
- missionIndex=index;missionClaimed=false;reactionMode='none';const stage=createMission(activeMission(),save.level,save.discovered);tubes=stage.tubes;moves=stage.moves;selected=-1;history=[];ended=false;locked=false;render();say(`Замовлення міста: ${activeMission().formula}. У колбу 01 можна додавати різні потрібні елементи, по одному шару.`);
+ missionIndex=index;missionClaimed=false;reactionMode='none';const stage=createMission(activeMission(),save.level,save.discovered);tubes=stage.tubes;moves=stage.moves;selected=-1;history=[];ended=false;locked=false;$('level-sheet').open=true;render();say(`Замовлення міста: ${activeMission().formula}. У колбу 01 можна додавати різні потрібні елементи, по одному шару.`);
 }
 async function missionClick(b){
  const quest=activeMission();
@@ -259,4 +260,4 @@ settlement=initCity({enabled:()=>prefs.cityEnabled,calm:()=>prefs.calm,core:()=>
 $('city-button').onclick=settlement.open;
 $('lab-button').onclick=settlement.open;
 function showTutorial(){let seen=false;try{seen=localStorage.getItem('chemlab_tutorial_v1')==='1'}catch{}if(seen)return;modal(`<div class="eyebrow">ЛАСКАВО ПРОСИМО ДО CHEMLAB</div><div class="tutorial-orb">⚗</div><h2>Твоя ціль — місто відкриттів</h2><p>Сортуй елементи у пробірках, збирай по 4 однакові шари та запускай синтез. Завершені групи зникають і дають монети.</p><div class="tutorial-steps"><div><b>1</b><span>Торкнись пробірки, щоб взяти верхній шар.</span></div><div><b>2</b><span>Перелий його на такий самий елемент або в порожню колбу.</span></div><div><b>3</b><span>Відкривай елементи на карті, проводь реакції та розвивай Місто.</span></div></div><p class="fine">Реакції позначені як наукові формули; деякі ефекти — ігрова симуляція для безпечного навчання.</p><button class="primary" id="tutorial-go">Почати перший експеримент →</button>`);$('tutorial-go').onclick=()=>{try{localStorage.setItem('chemlab_tutorial_v1','1')}catch{}$('modal').close();say('Підказка: спочатку знайди колбу з вільним місцем або таким самим верхнім елементом')};}
-start();showTutorial();if('serviceWorker'in navigator&&!window.Capacitor?.isNativePlatform?.())navigator.serviceWorker.register('./sw.js?v=26').catch(()=>{});
+start();showTutorial();if('serviceWorker'in navigator&&!window.Capacitor?.isNativePlatform?.())navigator.serviceWorker.register('./sw.js?v=27').catch(()=>{});
