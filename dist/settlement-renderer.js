@@ -135,7 +135,10 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  if(!occupied(8,8))objects.push({x:8.45,y:8.15,detail:'grass',width:42});
  if(!c.buildings.some(b=>b.x===4&&b.y===2))objects.push({x:4,y:2,kind:'lab',width:unitFor(W)*2.2,lab:true});
  const kind={house:'house',lumber:'lumber',farm:'farm',well:'well',quarry:'quarry',ranch:'ranch',clinic:'clinic',granary:'granary',mine:'mine',smelter:'smelter',factory:'workshop',energy:'energy',school:'school',university:'university',market:'market',observatory:'observatory',greenhouse:'greenhouse',lighthouse:'lighthouse',park:'park',harbor:'harbor',fishery:'fishery'};
- for(const b of c.buildings)objects.push({x:b.x,y:b.y,kind:kind[b.type],width:unitFor(W)*(b.type==='farm'?1.92:b.type==='well'?1.25:1.84),b});
+ // Keep all structures on a common one-tile footprint scale. Oversized
+ // mixed-atlas sprites previously overlapped roads and neighboring roofs.
+ const buildingScale={house:1.46,lumber:1.48,farm:1.54,well:.94,quarry:1.38,ranch:1.48,clinic:1.46,granary:1.43,mine:1.42,smelter:1.46,factory:1.48,energy:1.42,school:1.5,university:1.53,market:1.48,observatory:1.45,greenhouse:1.48,lighthouse:1.5,park:1.25,harbor:1.5,fishery:1.42};
+ for(const b of c.buildings)objects.push({x:b.x,y:b.y,kind:kind[b.type],width:unitFor(W)*(buildingScale[b.type]??1.45),b});
  for(const a of c.agents){const job=c.buildings.find(b=>b.id===a.job);const kind=a.truck?'truck':['school','university','observatory'].includes(job?.type)?'scientist':job?.type==='greenhouse'?'botanist':['factory','smelter','energy'].includes(job?.type)?'engineer':job?.type==='harbor'?'captain':job?.type==='fishery'?'fisherman':!a.job&&a.id%3===0&&c.buildings.some(b=>b.type==='school')?'pupil':a.id%3===1?'woman':'person';const prev=previousAgents?.get(a.id)||a;objects.push({x:prev.x+(a.x-prev.x)*alpha,y:prev.y+(a.y-prev.y)*alpha,kind,width:unitFor(W)*(a.truck?.95:kind==='pupil'?.27:.34),a});}
  for(const b of c.buildings.filter(b=>['harbor','fishery'].includes(b.type))){
   const v=(c.voyages||[]).find(v=>v.x===b.x&&v.y===b.y);
