@@ -117,9 +117,13 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   const hash=(x*37+y*53)%97;
   if((x<2||y<2||x>7||y>8)&&hash%5===0)objects.push({x,y,kind:hash%4===0?'spruce-group':'spruce',width:unitFor(W)*(hash%4===0?1.6:1.15),sway:true});
   else if((x*11+y*3)%19===0)objects.push({x,y,kind:'granite',width:unitFor(W)*1.1});
-  else if(hash%13===0)objects.push({x:x+.12,y:y+.15,kind:'wildflowers',width:34+hash%18,sway:true});
-  else if(hash%23===0)objects.push({x:x+.2,y:y+.15,detail:'grass',width:38});
-  else if(hash%31===0)objects.push({x:x+.1,y:y+.1,detail:'berries',width:46});
+  else if(hash%13===0)objects.push({x:x+.12,y:y+.15,detail:'flowers',width:u*(.36+hash%4*.045),sway:true});
+  else if(hash%23===0)objects.push({x:x+.2,y:y+.15,detail:'grass',width:u*.42});
+  else if(hash%31===0)objects.push({x:x+.1,y:y+.1,detail:'berries',width:u*.46});
+  // World-anchored low vegetation: varied ground cover with stable positions.
+  // Keep the central settlement readable and avoid paved or flooded cells.
+  if(hash%7===0)objects.push({x:x+.12+(hash%3)*.13,y:y+.19,detail:'grass',width:u*(.22+(hash%4)*.035)});
+  if(hash%17===0)objects.push({x:x+.35,y:y+.36,detail:'flowers',width:u*.27});
  }
  // Cliff pieces sit on the actual ocean edge. Do not cover developed shore plots.
  for(let x=0;x<c.extent;x++)if(!occupied(x,0)&&x%2===0)objects.push({x:x-.12,y:-.23,kind:'cliff',width:unitFor(W)*1.35,cliff:true});
