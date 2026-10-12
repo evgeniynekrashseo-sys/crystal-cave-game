@@ -118,8 +118,13 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
    ctx.fillStyle=i%3?'#e3d8ab8c':'#747d555c';
    ctx.beginPath();ctx.ellipse(p.x,p.y,(.45+random()*.7)*zoom,(.25+random()*.4)*zoom,0,0,Math.PI*2);ctx.fill();
   }
-  // Contact shadow sits within the plot, directly under the sprite's floor.
-  ctx.fillStyle='#38552b3b';ctx.beginPath();ctx.ellipse(center.x,center.y+u*.13,u*.72,u*.29,0,0,Math.PI*2);ctx.fill();
+  // Soft, directional contact shadow follows the same sun direction for every
+  // building, while remaining inside its plot (no floating foundations).
+  const shadow=ctx.createRadialGradient(center.x+u*.10,center.y+u*.12,u*.05,center.x+u*.10,center.y+u*.12,u*.70);
+  shadow.addColorStop(0,'rgba(25,39,24,.34)');
+  shadow.addColorStop(.55,'rgba(32,49,27,.18)');
+  shadow.addColorStop(1,'rgba(32,49,27,0)');
+  ctx.fillStyle=shadow;ctx.beginPath();ctx.ellipse(center.x+u*.10,center.y+u*.12,u*.70,u*.31,0,0,Math.PI*2);ctx.fill();
   ctx.restore();
  };
  for(const b of c.buildings)foundation(b.x,b.y);
