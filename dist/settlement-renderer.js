@@ -78,6 +78,24 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  ctx.save();ctx.beginPath();[project(-40,0),project(60,0),project(60,60),project(-40,60)].forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.clip();
  drawRiver(ctx,W,H,pan,zoom,time,reduced);ctx.restore();
 
+ // Layered terrain color variation is tied to world cells, not screen pixels.
+ // Keep it underneath buildings and roads and clear of the sea/river.
+ const blocked=new Set([...c.buildings,...c.roads].map(o=>o.x+','+o.y));
+ ctx.save();
+ for(let x=0;x<c.extent;x++)for(let y=0;y<c.extent;y++){
+  if(blocked.has(x+','+y)||isRiverTile(x,y))continue;
+  const hash=((Math.imul(x+31,73856093)^Math.imul(y+47,19349663))>>>0);
+  if(hash%5>1)continue;
+  const p=project(x+.5,y+.5);
+  if(p.x<-u*2||p.x>W+u*2||p.y<-u*2||p.y>H+u*2)continue;
+  const radius=u*(.26+(hash%7)*.055);
+  const tint=hash%3===0?'rgba(69,99,42,0.15)':hash%3===1?'rgba(187,159,92,0.11)':'rgba(91,122,67,0.11)';
+  const gradient=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,radius);
+  gradient.addColorStop(0,tint);gradient.addColorStop(1,'rgba(80,95,55,0)');
+  ctx.fillStyle=gradient;ctx.beginPath();ctx.ellipse(p.x,p.y,radius,radius*.57,0,0,Math.PI*2);ctx.fill();
+ }
+ ctx.restore();
+
  const diamond=(x,y,color,stroke)=>{
   const pts=[project(x,y),project(x+1,y),project(x+1,y+1),project(x,y+1)];
   ctx.beginPath();pts.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();
