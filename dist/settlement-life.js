@@ -17,6 +17,19 @@ export function drawSea(ctx,project,u,time,reduced,view){
 
 export function drawRoadNetwork(ctx,c,project,u){
  const roads=new Set(c.roads.map(r=>`${r.x},${r.y}`));ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+ // Existing saves may contain buildings without a road directly in front.
+ // Draw short pedestrian access paths toward the nearest adjacent road
+ // without mutating simulation state or placing roads through structures.
+ const occupied=new Set(c.buildings.map(b=>`${b.x},${b.y}`));
+ for(const b of c.buildings){
+  const neighbors=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>({x:b.x+dx,y:b.y+dy,dx,dy}))
+   .filter(n=>roads.has(`${n.x},${n.y}`));
+  if(!neighbors.length)continue;
+  const target=neighbors[0],from=project(b.x+.5,b.y+.5),to=project(target.x+.5,target.y+.5);
+  ctx.strokeStyle='#66533e8a';ctx.lineWidth=u*.19;ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);ctx.stroke();
+  ctx.strokeStyle='#b8a17a';ctx.lineWidth=u*.13;ctx.stroke();
+ }
+
  // Every connection ends at the SAME projected midpoint as its neighbouring tile.
  for(const r of c.roads){
   const p=project(r.x+.5,r.y+.5),links=[[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dy])=>roads.has(`${r.x+dx},${r.y+dy}`));
