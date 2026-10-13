@@ -9,7 +9,7 @@ const KEY='chemlab_settlement_v2';
 export function initCity(api){
  let raw;try{raw=JSON.parse(localStorage.getItem(KEY))}catch{}
  const c=ensureCitySystems(normalizeCity(raw,api.core().level));ensureStory(c);if(api.enabled?.()!==false)onChemistryWin(c,api.core().level);
- let previousAgents=new Map();let lastLifeSignature;let root,canvas,ctx,raf,hudView,active=false,tab=null,tool=null,selected={x:4,y:5},zoom=1,pan={x:0,y:0},last=0,saveTime=0,uiTime=0,simTime=0,noticeTimer=0,pendingDemolition=false;
+ let previousAgents=new Map();let lastLifeSignature;let root,canvas,ctx,raf,hudView,active=false,tab=null,tool=null,selected={x:4,y:5},zoom=1,pan={x:0,y:0},last=0,lastPaint=0,saveTime=0,uiTime=0,simTime=0,noticeTimer=0,pendingDemolition=false;
  const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(c))}catch{notice('Браузер не дозволяє збереження. Залиш цю вкладку відкритою.')}};
  const icon=name=>`<img src="icons/${name}.svg" alt="" aria-hidden="true">`;
  const notice=msg=>{if(!root)return;const node=root.querySelector('#city-notice');node.textContent=msg;node.classList.add('show');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>node.classList.remove('show'),3400)};
