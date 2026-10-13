@@ -41,9 +41,16 @@ export function createMeadow(document,texture){
  return tile;
 }
 
+// Cache a GPU pattern per context and texture to avoid re-creating it every frame.
+const meadowPatterns=new WeakMap();
 export function fillMeadow(ctx,tile,view,camera,origin){
- const pattern=ctx.createPattern(tile,'repeat');if(!pattern)return;
- pattern.setTransform({a:1/GROUND_DENSITY,b:0,c:0,d:1/GROUND_DENSITY,e:0,f:0});
+ let cached=meadowPatterns.get(ctx);
+ if(!cached||cached.tile!==tile){
+  const pattern=ctx.createPattern(tile,'repeat');if(!pattern)return;
+  pattern.setTransform({a:1/GROUND_DENSITY,b:0,c:0,d:1/GROUND_DENSITY,e:0,f:0});
+  cached={tile,pattern};meadowPatterns.set(ctx,cached);
+ }
+ const {pattern}=cached;
  const x=origin.x+camera.pan.x,y=origin.y+camera.pan.y;
  ctx.save();ctx.translate(x,y);ctx.scale(camera.zoom,camera.zoom);ctx.fillStyle=pattern;
  ctx.fillRect(-x/camera.zoom,-y/camera.zoom,view.width/camera.zoom,view.height/camera.zoom);ctx.restore();
