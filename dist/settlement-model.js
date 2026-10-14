@@ -1,4 +1,4 @@
-import {constructionDuration,forestCover} from './world-design.js?v=39';
+import {constructionDuration,forestCover} from './world-design.js?v=40';
 import {normalizeStory,storyProduction} from './city-story.js?v=27';
 import {SUBSTANCES} from './mission.js?v=27';
 // Deterministic simulation shared by the map renderer and regression tests.
@@ -83,6 +83,7 @@ export function step(c,dt){
  for(const a of c.agents){const p=before.get(a.id);if(!p||p.job!==a.job)continue;
   const dx=a.x-p.x,dy=a.y-p.y,d=Math.hypot(dx,dy);
   a.distance=(a.distance||0)+d;
+  if(d>.0001)a.heading={x:dx/d,y:dy/d};
   if(Math.abs(dx-dy)>.0001)a.facing=Math.sign(dx-dy);
  }
 }

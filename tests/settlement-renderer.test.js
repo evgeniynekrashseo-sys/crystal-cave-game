@@ -1,3 +1,4 @@
+import {actorPose} from '../dist/settlement-motion.js';
 import * as story from '../dist/city-story.js';
 import * as world from '../dist/world-design.js';
 import {drawConstruction} from '../dist/settlement-construction.js';
@@ -21,7 +22,7 @@ function renderer(){
  let id=0;
  const document={createElement:()=>({id:id++,width:0,height:0,getContext:()=>context()})};
  class Image{width=128;height=128;complete=true;naturalWidth=128;}
- const sandbox={...world,...story,drawConstruction,drawNaturalRiver,Image,URL,document,...camera,...life,VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable,createMeadow:()=>({}),fillMeadow};
+ const sandbox={actorPose,...world,...story,drawConstruction,drawNaturalRiver,Image,URL,document,...camera,...life,VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable,createMeadow:()=>({}),fillMeadow};
  const source=readFileSync(new URL('../dist/settlement-renderer.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replaceAll('import.meta.url',JSON.stringify('https://unit.test/renderer.js')).replaceAll('export function','function');
  vm.runInNewContext(source+'\nthis.scene={drawSettlement,mapTile};',sandbox);return sandbox.scene;
 }

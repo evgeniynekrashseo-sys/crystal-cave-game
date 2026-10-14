@@ -1,12 +1,13 @@
-import {drawConstruction} from './settlement-construction.js?v=39';
+import {actorPose} from './settlement-motion.js?v=40';
+import {drawConstruction} from './settlement-construction.js?v=40';
 import {drawNaturalRiver} from './settlement-river.js?v=34';
-import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=39';
+import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=40';
 import {ARTIFACTS,artifactError} from './city-story.js?v=27';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=39';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=40';
 import {createMeadow,fillMeadow} from './settlement-ground.js?v=36';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=39';
-import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=39';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=40';
+import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=40';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./terrain-meadow-v36.webp',import.meta.url).href;
@@ -31,7 +32,11 @@ const worldPeople=new Image();worldPeople.src=new URL('./world-people-v34.webp',
 const architecture={},nature={},people={};let preparedWorld=false,preparedNature=false,preparedPeople=false;
 const functionAtlas=new Image();functionAtlas.src=new URL('./city-functions-v38.webp',import.meta.url).href;
 const functionsArt={};let preparedFunctions=false;
+const motionAtlas=new Image();motionAtlas.src=new URL('./city-motion-v40.webp',import.meta.url).href;
+const motionArt={};let preparedMotion=false;
 function objectArt(obj,time=0,reduced=true){
+ if(obj.pose&&(!['woman','pupil','scientist','engineer','botanist','captain'].includes(obj.kind)||obj.pose.chopping)&&motionArt[obj.pose.key])return motionArt[obj.pose.key];
+ if(obj.animal&&motionArt[obj.kind+obj.animal.frame])return motionArt[obj.kind+obj.animal.frame];
  if(obj.lab&&functionsArt.lab)return functionsArt.lab;
  if(obj.b){const type=obj.b.type,stage=architecturalStage(obj.b.level),key=['farm','park','ranch'].includes(type)?type+stage:type;if(functionsArt[key])return functionsArt[key];}
  const family=buildingFamily(obj.b?.type);
@@ -75,6 +80,14 @@ function sliceAtlas(image,names,target,rows=null){
 }
 
 function prepare(){
+ if(!preparedMotion&&motionAtlas.complete&&motionAtlas.naturalWidth){
+  const cropped={};sliceAtlas(motionAtlas,['walk','back','chop','truck','horse','sheep'].flatMap(k=>[0,1,2,3].map(n=>k+n)),cropped,[[0,.17],[.17,.337],[.337,.535],[.535,.68],[.68,.845],[.845,1]]);
+  for(const group of ['walk','back','chop','truck','horse','sheep']){
+   const frames=[0,1,2,3].map(i=>cropped[group+i]);if(frames.some(f=>!f))continue;
+   const w=Math.max(...frames.map(f=>f.width)),h=Math.max(...frames.map(f=>f.height));
+   frames.forEach((f,i)=>{const cell=document.createElement('canvas');cell.width=w;cell.height=h;cell.getContext('2d').drawImage(f,(w-f.width)/2,h-f.height);motionArt[group+i]=cell;});
+  }preparedMotion=true;
+ }
  if(!preparedFunctions&&functionAtlas.complete&&functionAtlas.naturalWidth){sliceAtlas(functionAtlas,['farm1','farm2','farm3','farm4','lumber','factory','lab','lab2','park1','park2','park3','park4','ranch1','ranch2','ranch3','ranch4'],functionsArt,[[0,.225],[.225,.495],[.495,.74],[.74,1]]);preparedFunctions=true;}
  if(!preparedWorld&&worldBuildings.complete&&worldBuildings.naturalWidth){sliceAtlas(worldBuildings,['home','craft','civic','barn'].flatMap(k=>[1,2,3,4].map(n=>k+n)),architecture);preparedWorld=true;}
  if(!preparedNature&&worldNature.complete&&worldNature.naturalWidth){sliceAtlas(worldNature,['spruce','oak','birch','shrubs','granite','bank','cliff','stump','grass','flowers','reeds','berries','deer','cow','sheep','horse'],nature,[[0,.31],[.31,.525],[.525,.73],[.73,1]]);preparedNature=true;}
@@ -186,6 +199,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   const hash=(x*37+y*53)%97;
   const region=regionAt(x,y);
   if(timberAvailable(c,x,y))objects.push({x:x+(landscapeSeed(x+19,y)-.5)*.45,y:y+(landscapeSeed(x,y+41)-.5)*.4,kind:hash%5===0?'oak':hash%5===1?'birch':'spruce',width:unitFor(W)*(hash%5<2?1.1:.77)*(.85+landscapeSeed(x+3,y+9)*.3),sway:true});
+  else if(c.felled?.[`${x},${y}`]>c.seconds)objects.push({x,y,kind:'stump',width:unitFor(W)*.26});
   else if((x*11+y*3)%19===0||region==='highlands'&&landscapeSeed(x+71,y)<.18)objects.push({x,y,kind:region==='highlands'&&hash%3===0?'cliff':'granite',width:unitFor(W)*1.1});
   else if(hash%13===0)objects.push({x:x+.12,y:y+.15,detail:'flowers',width:unitFor(W)*(.36+hash%4*.045),sway:true});
   else if(hash%23===0)objects.push({x:x+.2,y:y+.15,detail:'grass',width:unitFor(W)*.42});
@@ -226,10 +240,11 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  for(const b of c.buildings)objects.push({x:b.x,y:b.y,kind:kind[b.type],width:unitFor(W)*(buildingScale[b.type]??1.45),b});
  for(let x=1;x<c.extent;x++)for(let y=9;y<c.extent;y++){
   if(occupied(x,y)||isRiverTile(x,y)||landscapeSeed(x+17,y+19)>.012)continue;
-  const offset=reduced?0:Math.sin(time*.17+x)*.12;
-  objects.push({x:x+offset,y:y+.12,kind:regionAt(x,y)==='meadows'?'horse':'deer',width:unitFor(W)*.4});
+  const phase=reduced?0:time*.18+x,offset=Math.sin(phase)*.2,walking=!reduced&&Math.abs(Math.cos(phase))>.2;
+  const animal={frame:walking?Math.floor(time*4)%4:0,flip:Math.cos(phase)<0};
+  objects.push({x:x+offset,y:y+.12,kind:regionAt(x,y)==='meadows'?'horse':'sheep',width:unitFor(W)*.4,animal});
  }
- for(const a of c.agents){const job=c.buildings.find(b=>b.id===a.job);const kind=a.truck?'truck':['school','university','observatory'].includes(job?.type)?'scientist':job?.type==='greenhouse'?'botanist':['factory','smelter','energy'].includes(job?.type)?'engineer':job?.type==='harbor'?'captain':job?.type==='fishery'?'fisherman':!a.job&&a.id%3===0&&c.buildings.some(b=>b.type==='school')?'pupil':a.id%3===1?'woman':'person';const prev=previousAgents?.get(a.id)||a;objects.push({x:prev.x+(a.x-prev.x)*alpha,y:prev.y+(a.y-prev.y)*alpha,kind,width:unitFor(W)*(a.truck?.46:kind==='pupil'?.14:.18),a});}
+ for(const a of c.agents){const job=c.buildings.find(b=>b.id===a.job);const kind=a.truck?'truck':['school','university','observatory'].includes(job?.type)?'scientist':job?.type==='greenhouse'?'botanist':['factory','smelter','energy'].includes(job?.type)?'engineer':job?.type==='harbor'?'captain':job?.type==='fishery'?'fisherman':!a.job&&a.id%3===0&&c.buildings.some(b=>b.type==='school')?'pupil':a.id%3===1?'woman':'person';const prev=previousAgents?.get(a.id)||a,pose=actorPose(a,job,prev,alpha,reduced);if(pose.opacity<=.01)continue;objects.push({x:pose.x,y:pose.y,kind,width:unitFor(W)*(a.truck?.46:pose.chopping?.26:kind==='pupil'?.14:.18),a,pose});}
  for(const b of c.buildings.filter(b=>['harbor','fishery'].includes(b.type))){
   const v=(c.voyages||[]).find(v=>v.x===b.x&&v.y===b.y);
   const point=v?boatPose(v,VOYAGES[v.kind].duration):{x:b.x+.65,y:-.7};
@@ -265,8 +280,8 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
    if(obj.sway)angle=Math.sin(time*.9+obj.x)*.012;
    if(obj.boat){bob=Math.sin(time*1.8+obj.x)*zoom;angle=Math.sin(time*.9)*.025;}
    if(obj.bird){bob=Math.sin(time*4+obj.x)*zoom*1.7;angle=Math.sin(time*4)*.045;}
-   if(obj.a?.path.length&&!obj.a.truck)bob=Math.abs(Math.sin(time*10+obj.a.id))*.6*zoom;
-   else if((obj.a?.state==='work'||obj.a?.state==='рубання'))angle=Math.sin(time*3)*.024;
+   if(obj.a?.path.length&&!obj.a.truck)bob=Math.abs(Math.sin((obj.a.distance||0)*Math.PI*10))*.15*zoom;
+   else if(obj.a?.state==='work')angle=0;
   }
   if(obj.artifact){hits.push({left:p.x-Math.max(22,width/2),top:p.y-Math.max(44,height),width:Math.max(44,width),height:Math.max(44,height),artifact:obj.artifact,x:obj.x,y:obj.y});ctx.save();ctx.strokeStyle=obj.available?'#fff3b5':'#d4eff066';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(p.x,p.y,width*.7,width*.24,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
   if(obj.b||obj.lab)hits.push({left:p.x-width/2,top:p.y-height,width,height,x:obj.x,y:obj.y,lab:obj.lab});
@@ -276,10 +291,12 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
    if(onPlot)drawSelection(ctx,p,width,u,time,reduced);
   }
   ctx.save();ctx.translate(p.x,p.y-bob);ctx.rotate(angle);
-  let alpha=1;
+  let alpha=obj.pose?.opacity??1;
   ctx.globalAlpha=alpha;
   if(obj.boat&&obj.returning)ctx.scale(-1,1);
-  if(obj.a){
+  if(obj.pose){if(obj.pose.flip)ctx.scale(-1,1);}
+  else if(obj.animal){if(obj.animal.flip)ctx.scale(-1,1);}
+  else if(obj.a){
    const direction=obj.a.facing||1;
    if((life[obj.kind]||chronicle[obj.kind])?direction<0:(direction<0)!==!!frame)ctx.scale(-1,1);
   }
