@@ -7,8 +7,8 @@ const rich=()=>{const c=freshCity();for(const k in c.resources)c.resources[k]=50
 
 test('school needs a teacher, produces research and increases the real farm output',()=>{
  const plain=rich(),educated=rich();assert.equal(build(educated,'school',6,5),'');
- assert.equal(stats(educated).education,0);run(educated,8);assert.equal(stats(educated).education,20);assert(stats(educated).students>0);
- const before=educated.resources.research;run(educated,60);run(plain,68);
+ assert.equal(stats(educated).education,0);run(educated,41);assert.equal(stats(educated).education,20);assert(stats(educated).students>0);
+ const before=educated.resources.research;run(educated,60);run(plain,101);
  assert(educated.resources.research>before);assert(educated.resources.food>plain.resources.food-20);
  educated.buildings=educated.buildings.filter(b=>b.type!=='school');assert.equal(stats(educated).education,0);
 });
@@ -20,7 +20,7 @@ test('coastal fishing requires the shore and workers deliver actual food',()=>{
 });
 
 test('voyage cargo is charged once, survives reload and awards a single return',()=>{
- let c=rich();c.tech=['preserve'];assert.equal(build(c,'harbor',5,0),'');run(c,8);
+ let c=rich();c.tech=['preserve'];assert.equal(build(c,'harbor',5,0),'');run(c,76);
  const port=c.buildings.find(b=>b.type==='harbor'),stone=c.resources.stone;
  assert.equal(dispatchVoyage(c,port.id,'market'),'');const sent=JSON.stringify(c);assert(dispatchVoyage(c,port.id,'market'));assert.equal(JSON.stringify(c),sent);
  assert.match(demolish(c,port.x,port.y),/корабля/);run(c,20);c=normalizeCity(JSON.parse(JSON.stringify(c)));assert.equal(c.voyages.length,1);run(c,26);
@@ -65,7 +65,7 @@ test('animals stay in the paddock, boats stay at sea and reduced motion is stabl
 test('city goals are ordered, reward once and stay claimed after reload',()=>{
  const c=rich();assert.equal(cityGoal(c).id,'stone');assert.equal(claimCityGoal(c),false);
  let site;for(let x=0;x<10&&!site;x++)for(let y=0;y<10&&!site;y++)if(build(c,'quarry',x,y)==='')site={x,y};
- assert(site);run(c,8);assert(claimCityGoal(c));assert.equal(cityGoal(c).id,'school');assert.equal(claimCityCoins(c),10);
+ assert(site);run(c,76);assert(claimCityGoal(c));assert.equal(cityGoal(c).id,'school');assert.equal(claimCityCoins(c),10);
  assert(!claimCityGoal(c));const restored=normalizeCity(c);assert.equal(cityGoal(restored).id,'school');assert.equal(claimCityCoins(restored),0);
  const malformed=normalizeCity({...c,voyages:[{kind:'__proto__',x:5,y:0,elapsed:99}]});assert.equal(malformed.voyages.length,0);
 });
@@ -80,7 +80,7 @@ test('the shore boundary stays fixed while sea highlights animate',()=>{
 test('eras, districts, expeditions and crises create a connected strategic loop',()=>{
  const c=ensureCitySystems(rich());c.tech=['water','preserve','steel'];assert.equal(cityEra(c).id,'industry');
  const zones=districtSummary(c);assert.equal(Object.keys(zones).length,5);
- assert.equal(build(c,'harbor',5,0),'');run(c,8);const harbor=c.buildings.at(-1);
+ assert.equal(build(c,'harbor',5,0),'');run(c,76);const harbor=c.buildings.at(-1);
  assert.equal(dispatchExpedition(c,harbor.id,'quarry'),'');const stone=c.resources.stone;advanceCitySystems(c,40);assert(c.resources.stone>stone);assert.equal(c.completedExpeditions,1);assert.equal(claimCityCoins(c),12);
  c.seconds=90;advanceCitySystems(c,0);assert(c.activeEvent);c.tech=[];assert.equal(resolveCityEvent(c),false);c.tech=['water','preserve','steel'];assert.equal(resolveCityEvent(c),true);assert.equal(c.activeEvent,null);
 });

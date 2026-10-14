@@ -8,9 +8,9 @@ test('construction resumes at the same stage after save reload and legacy saves 
  assert.equal(build(c,'house',7,4),'');const b=c.buildings.at(-1);
  step(c,1);step(c,1);step(c,1);
  const restored=normalizeCity(JSON.parse(JSON.stringify(c))),saved=restored.buildings.at(-1);
- assert.equal(constructionState(saved,restored.seconds).progress,.5);
+ assert.equal(constructionState(saved,restored.seconds).progress,.15);
  assert.deepEqual(constructionState(saved,restored.seconds),constructionState(b,c.seconds));
- delete saved.started;assert.equal(constructionState(saved,restored.seconds).progress,.5);
+ saved.ready=restored.seconds+3;delete saved.started;assert.equal(constructionState(saved,restored.seconds).progress,.5);
  for(let i=0;i<3;i++)step(restored,1);
  assert.equal(constructionState(saved,restored.seconds).stage,'complete');
  assert.equal(upgrade(restored,saved.id),true);

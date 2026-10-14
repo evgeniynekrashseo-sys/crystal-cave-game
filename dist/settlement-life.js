@@ -47,7 +47,14 @@ export function drawRoadNetwork(ctx,c,project,u){
    if(roads.has(`${r.x-1},${r.y}`))l=0;if(roads.has(`${r.x+1},${r.y}`))rr=1;
    if(roads.has(`${r.x},${r.y-1}`))t=0;if(roads.has(`${r.x},${r.y+1}`))bb=1;
    const rect=(x1,y1,x2,y2)=>{const points=[[x1,y1],[x2,y1],[x2,y2],[x1,y2]].map(([x,y])=>project(r.x+x,r.y+y));ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.fill();};
-   rect(l,.5-radius,rr,.5+radius);rect(.5-radius,t,.5+radius,bb);
+   // Bevel exposed ends and corners in world space; only real neighboring road
+   // cells get full-width connectors. Shared boundaries remain identical.
+   const q=radius*.48,points=[[-q,-radius],[q,-radius],[radius,-q],[radius,q],[q,radius],[-q,radius],[-radius,q],[-radius,-q]].map(([x,y])=>project(r.x+.5+x,r.y+.5+y));
+   ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.fill();
+   if(l===0)rect(0,.5-radius,.5,.5+radius);
+   if(rr===1)rect(.5,.5-radius,1,.5+radius);
+   if(t===0)rect(.5-radius,0,.5+radius,.5);
+   if(bb===1)rect(.5-radius,.5,.5+radius,1);
   }
  }
  // Wheel tracks follow connected streets, never crossing buildings or lawns.

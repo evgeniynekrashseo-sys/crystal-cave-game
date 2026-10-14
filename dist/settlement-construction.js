@@ -1,4 +1,4 @@
-import {constructionState} from './world-design.js?v=36';
+import {constructionState} from './world-design.js?v=38';
 
 // Geometry uses the same camera and world footprint as the finished building.
 // No substitute miniature building and no screen-space animation of structural parts.
@@ -25,6 +25,16 @@ export function drawConstruction(ctx,b,seconds,project,u,image,previousImage,wid
   ctx.drawImage(sprite,front.x-width/2,front.y-h,width,h);ctx.restore();
  };
  ctx.save();
+ if(b.type==='farm'||b.type==='park'){
+  polygon([point(.12,.12),point(.88,.12),point(.88,.88),point(.12,.88)],b.type==='farm'?'#68533a':'#747650');
+  if(upgrading)paint(previousImage||image);
+  paint(image,progress);
+  const bar=point(.5,.5,.22),bw=u*.65;
+  ctx.fillStyle='#242a22e0';ctx.fillRect(bar.x-bw/2,bar.y,bw,u*.055);
+  ctx.fillStyle='#b2bd7a';ctx.fillRect(bar.x-bw/2,bar.y,bw*progress,u*.055);
+  ctx.restore();
+  return {left:front.x-width/2,top:front.y-width,width,height:width,x:b.x,y:b.y};
+ }
  if(upgrading)paint(previousImage||image);
  else{
   // Separate stone courses, with a real entrance gap facing the road/front.

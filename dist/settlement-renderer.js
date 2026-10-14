@@ -1,12 +1,12 @@
-import {drawConstruction} from './settlement-construction.js?v=36';
+import {drawConstruction} from './settlement-construction.js?v=38';
 import {drawNaturalRiver} from './settlement-river.js?v=34';
-import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover} from './world-design.js?v=36';
+import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=38';
 import {ARTIFACTS,artifactError} from './city-story.js?v=27';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=36';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=38';
 import {createMeadow,fillMeadow} from './settlement-ground.js?v=36';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=35';
-import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE} from './settlement-model.js?v=35';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=38';
+import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=38';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./terrain-meadow-v36.webp',import.meta.url).href;
@@ -29,7 +29,11 @@ const worldBuildings=new Image();worldBuildings.src=new URL('./world-buildings-v
 const worldNature=new Image();worldNature.src=new URL('./world-nature-v34.webp',import.meta.url).href;
 const worldPeople=new Image();worldPeople.src=new URL('./world-people-v34.webp',import.meta.url).href;
 const architecture={},nature={},people={};let preparedWorld=false,preparedNature=false,preparedPeople=false;
+const functionAtlas=new Image();functionAtlas.src=new URL('./city-functions-v38.webp',import.meta.url).href;
+const functionsArt={};let preparedFunctions=false;
 function objectArt(obj,time=0,reduced=true){
+ if(obj.lab&&functionsArt.lab)return functionsArt.lab;
+ if(obj.b){const type=obj.b.type,stage=architecturalStage(obj.b.level),key=['farm','park','ranch'].includes(type)?type+stage:type;if(functionsArt[key])return functionsArt[key];}
  const family=buildingFamily(obj.b?.type);
  if(family&&architecture[family+'1'])return architecture[family+architecturalStage(obj.b.level)];
  if(obj.lab&&architecture.civic3)return architecture.civic3;
@@ -71,6 +75,7 @@ function sliceAtlas(image,names,target,rows=null){
 }
 
 function prepare(){
+ if(!preparedFunctions&&functionAtlas.complete&&functionAtlas.naturalWidth){sliceAtlas(functionAtlas,['farm1','farm2','farm3','farm4','lumber','factory','lab','lab2','park1','park2','park3','park4','ranch1','ranch2','ranch3','ranch4'],functionsArt,[[0,.225],[.225,.495],[.495,.74],[.74,1]]);preparedFunctions=true;}
  if(!preparedWorld&&worldBuildings.complete&&worldBuildings.naturalWidth){sliceAtlas(worldBuildings,['home','craft','civic','barn'].flatMap(k=>[1,2,3,4].map(n=>k+n)),architecture);preparedWorld=true;}
  if(!preparedNature&&worldNature.complete&&worldNature.naturalWidth){sliceAtlas(worldNature,['spruce','oak','birch','shrubs','granite','bank','cliff','stump','grass','flowers','reeds','berries','deer','cow','sheep','horse'],nature,[[0,.31],[.31,.525],[.525,.73],[.73,1]]);preparedNature=true;}
  if(!preparedPeople&&worldPeople.complete&&worldPeople.naturalWidth){sliceAtlas(worldPeople,['worker','woman','scholar','farmer'].flatMap(k=>[0,1,2,3].map(n=>k+n)),people);preparedPeople=true;}
@@ -179,14 +184,14 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   if(occupied(x,y)||isRiverTile(x,y))continue;
   const hash=(x*37+y*53)%97;
   const region=regionAt(x,y);
-  if(forestCover(x,y))objects.push({x:x+(landscapeSeed(x+19,y)-.5)*.45,y:y+(landscapeSeed(x,y+41)-.5)*.4,kind:hash%5===0?'oak':hash%5===1?'birch':'spruce',width:unitFor(W)*(hash%5<2?1.1:.77)*(.85+landscapeSeed(x+3,y+9)*.3),sway:true});
+  if(timberAvailable(c,x,y))objects.push({x:x+(landscapeSeed(x+19,y)-.5)*.45,y:y+(landscapeSeed(x,y+41)-.5)*.4,kind:hash%5===0?'oak':hash%5===1?'birch':'spruce',width:unitFor(W)*(hash%5<2?1.1:.77)*(.85+landscapeSeed(x+3,y+9)*.3),sway:true});
   else if((x*11+y*3)%19===0||region==='highlands'&&landscapeSeed(x+71,y)<.18)objects.push({x,y,kind:region==='highlands'&&hash%3===0?'cliff':'granite',width:unitFor(W)*1.1});
   else if(hash%13===0)objects.push({x:x+.12,y:y+.15,detail:'flowers',width:unitFor(W)*(.36+hash%4*.045),sway:true});
   else if(hash%23===0)objects.push({x:x+.2,y:y+.15,detail:'grass',width:unitFor(W)*.42});
   else if(hash%31===0)objects.push({x:x+.1,y:y+.1,detail:'berries',width:unitFor(W)*.46});
   // Forests contain multiple ages and undergrowth instead of isolated specimen trees.
   // Clearing the occupied plot removes the whole grove consistently.
-  if(forestCover(x,y)){
+  if(timberAvailable(c,x,y)){
    if(landscapeSeed(x+83,y+17)<.55)objects.push({x:x-.23,y:y+.25,kind:'spruce',width:unitFor(W)*(.36+landscapeSeed(x+52,y)*.2),sway:true});
    if(landscapeSeed(x+91,y+27)<.65)objects.push({x:x+.28,y:y+.22,kind:'shrubs',width:unitFor(W)*.36,sway:true});
   }
@@ -205,7 +210,8 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  objects.push(
   {x:2.2,y:2.4,detail:'flowers',width:48},{x:6.2,y:2.1,detail:'grass',width:42},
   {x:2.3,y:7.5,detail:'flowers',width:44},{x:6.8,y:6.9,detail:'berries',width:48},
-  {x:4.25,y:3.65,detail:'lantern',width:28},{x:4.25,y:5.7,detail:'cargo',width:38}
+  ...(!occupied(4,3)?[{x:4.05,y:3.35,detail:'lantern',width:unitFor(W)*.18}]:[]),
+  ...(!occupied(4,6)?[{x:4.05,y:6.05,detail:'cargo',width:unitFor(W)*.28}]:[])
  );
  if(!occupied(6,9))objects.push({x:6.45,y:9.1,kind:'spruce',width:unitFor(W)*1.45,sway:true});
  if(!occupied(9,7))objects.push({x:9.1,y:7.35,kind:'spruce',width:unitFor(W)*1.4,sway:true});
@@ -232,9 +238,9 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
 
 
  // Story relics are permanent world points and can be found with mouse or touch.
- if(c.story)for(const a of ARTIFACTS){if(a.x>=c.extent||a.y>=c.extent||c.story.artifacts.includes(a.id))continue;objects.push({x:a.x,y:a.y,kind:a.id,width:33,artifact:a.id,available:!artifactError(c,a.id)});}
+ if(c.story)for(const a of ARTIFACTS){if(a.x>=c.extent||a.y>=c.extent||c.story.artifacts.includes(a.id)||occupied(a.x,a.y))continue;objects.push({x:a.x,y:a.y,kind:a.id,width:33,artifact:a.id,available:!artifactError(c,a.id)});}
  if(!occupied(3,3))objects.push({x:3,y:3,kind:'park',width:40});
- objects.push({x:4.35,y:4.4,kind:'streetlamp',width:19});
+ if(!occupied(4,4))objects.push({x:4.05,y:4.1,kind:'streetlamp',width:unitFor(W)*.13});
  const drawObject=obj=>{
   // Buildings use the front corner of their floor; people/plants use their foot point.
   const onPlot=!!(obj.b||obj.lab);
@@ -259,7 +265,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
    if(obj.boat){bob=Math.sin(time*1.8+obj.x)*zoom;angle=Math.sin(time*.9)*.025;}
    if(obj.bird){bob=Math.sin(time*4+obj.x)*zoom*1.7;angle=Math.sin(time*4)*.045;}
    if(obj.a?.path.length)bob=Math.abs(Math.sin(time*10+obj.a.id))*.6*zoom;
-   else if(obj.a?.state==='work')angle=Math.sin(time*3)*.024;
+   else if((obj.a?.state==='work'||obj.a?.state==='рубання'))angle=Math.sin(time*3)*.024;
   }
   if(obj.artifact){hits.push({left:p.x-Math.max(22,width/2),top:p.y-Math.max(44,height),width:Math.max(44,width),height:Math.max(44,height),artifact:obj.artifact,x:obj.x,y:obj.y});ctx.save();ctx.strokeStyle=obj.available?'#fff3b5':'#d4eff066';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(p.x,p.y,width*.7,width*.24,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
   if(obj.b||obj.lab)hits.push({left:p.x-width/2,top:p.y-height,width,height,x:obj.x,y:obj.y,lab:obj.lab});
@@ -276,10 +282,12 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
    const dest=obj.a.path[0],direction=dest?(dest.x-obj.a.x)-(dest.y-obj.a.y):1;
    if((life[obj.kind]||chronicle[obj.kind])?direction<0:(direction<0)!==!!frame)ctx.scale(-1,1);
   }
-  if(obj.b?.type==='ranch'){ctx.drawImage(image,-width*.29,-height*.78-u*.26,width*.65,height*.65);}else ctx.drawImage(image,-width/2,-height,width,height);ctx.restore();
-  if(obj.b&&['ranch','farm'].includes(obj.b.type)){
-   const b=obj.b;if(b.type==='ranch')paintImage(ctx,life.pen,p.x,p.y,u*1.8);
-   const count=b.type==='ranch'?Math.min(8,2+b.level+(c.tech.includes('veterinary')?1:0)):Math.min(4,b.level+1);
+  ctx.drawImage(image,-width/2,-height,width,height);ctx.restore();
+  // Ranch art already contains its stable, pen and livestock. A second oversized
+  // pen plus a whole herd used to cover adjacent buildings and the road.
+  if(obj.b?.type==='farm'){
+   const b=obj.b;
+   const count=Math.min(3,b.level+1);
    const animals=Array.from({length:count},(_,i)=>({...animalPose(b,i,time,reduced),index:i})).sort((a,b)=>a.x+a.y-b.x-b.y);
    for(const a of animals){const q=project(a.x,a.y),kind=b.type==='farm'?'chicken':a.kind;paintImage(ctx,nature[kind]||life[kind],q.x,q.y-a.bob*zoom,u*(kind==='cow'?.35:kind==='chicken'?.16:.28),{flip:a.flip,alpha:b.ready>c.seconds?.5:1});}
   }
@@ -314,7 +322,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   if(p.x<-u*3||p.x>W+u*3||p.y<-u*3||p.y>H+u*3)continue;
   castShadow(ctx,image,p,obj.width*zoom);
  }
- objects.sort((a,b)=>a.x+a.y-b.x-b.y).forEach(drawObject);
+ objects.sort((a,b)=>sceneDepth(a)-sceneDepth(b)).forEach(drawObject);
  drawAtmosphere(ctx,view,project,u,c,time,reduced);
  return hits;
 }

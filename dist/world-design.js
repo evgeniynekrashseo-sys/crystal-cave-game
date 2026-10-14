@@ -1,6 +1,9 @@
 // Shared art direction: stable footprints, architectural stages and regional scenery.
 export const architecturalStage=level=>Math.min(4,Math.max(1,level>=5?4:level>=3?3:level||1));
-export const buildingFamily=type=>({house:'home',lumber:'craft',factory:'craft',school:'civic',granary:'barn',farm:'barn'}[type]);
+export const buildingFamily=type=>({house:'home',school:'civic',granary:'barn'}[type]);
+export const constructionDuration=(type,level=1)=>Math.round(({house:20,lumber:25,farm:14,ranch:35,well:20,park:18,school:40,granary:25,quarry:25,mine:40,smelter:50,factory:60,energy:65,clinic:35,university:70,observatory:75,greenhouse:45,harbor:55,fishery:25,lighthouse:65}[type]||30)*(1+(level-1)*.4));
+// Sort using the rendered ground contact, not the origin of differently anchored sprites.
+export const sceneDepth=obj=>obj.x+obj.y+(obj.b||obj.lab?1.96:1.12);
 // Legacy saves predate start timestamps. Their original durations remain 6/8s.
 export function constructionState(b,seconds){
  const upgrading=b.level>1;

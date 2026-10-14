@@ -4,7 +4,7 @@ import {freshCity,normalizeCity,step,build,dispatchExpedition,dispatchVoyage,adv
 const setup=()=>{
  const c=freshCity();for(const k in c.resources)c.resources[k]=500;
  c.tech=['water','preserve','steel'];build(c,'harbor',5,0);
- for(let i=0;i<90;i++)step(c,.1);
+ for(let i=0;i<560;i++)step(c,.1);
  return c;
 };
 test('expedition progress and active crisis survive reload, rewards arrive once',()=>{
