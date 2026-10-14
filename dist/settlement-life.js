@@ -50,6 +50,17 @@ export function drawRoadNetwork(ctx,c,project,u){
    rect(l,.5-radius,rr,.5+radius);rect(.5-radius,t,.5+radius,bb);
   }
  }
+ // Wheel tracks follow connected streets, never crossing buildings or lawns.
+ // Their separation is in world coordinates, so it stays correct at every zoom.
+ if(!paved)for(const r of c.roads)for(const [dx,dy]of [[1,0],[0,1]]){
+  if(!roads.has(`${r.x+dx},${r.y+dy}`))continue;
+  for(const offset of [-.115,.115]){
+   const a=project(r.x+.5+dy*offset,r.y+.5+dx*offset);
+   const b=project(r.x+.5+dx+dy*offset,r.y+.5+dy+dx*offset);
+   ctx.strokeStyle='#6f614b38';ctx.lineWidth=Math.max(.65,u*.025);
+   ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+  }
+ }
  for(const r of c.roads){
   for(let i=0;i<27;i++){
    const x=.15+((i*37+r.x*13)%71)/100,y=.15+((i*23+r.y*17)%71)/100;

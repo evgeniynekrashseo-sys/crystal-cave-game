@@ -1,6 +1,13 @@
 // Shared art direction: stable footprints, architectural stages and regional scenery.
 export const architecturalStage=level=>Math.min(4,Math.max(1,level>=5?4:level>=3?3:level||1));
 export const buildingFamily=type=>({house:'home',lumber:'craft',factory:'craft',school:'civic',granary:'barn',farm:'barn'}[type]);
+// Legacy saves predate start timestamps. Their original durations remain 6/8s.
+export function constructionState(b,seconds){
+ const upgrading=b.level>1;
+ const start=Number.isFinite(b.started)?Math.min(b.started,b.ready):b.ready-(upgrading?8:6);
+ const progress=b.ready>seconds?Math.max(0,Math.min(1,(seconds-start)/Math.max(.001,b.ready-start))):1;
+ return {progress,upgrading,stage:progress<.25?'foundation':progress<.55?'frame':progress<1?'assembly':'complete'};
+}
 export function regionAt(x,y){
  if(y<2)return 'coast';
  if(x>=22&&y>=16)return 'highlands';

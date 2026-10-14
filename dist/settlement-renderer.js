@@ -1,11 +1,12 @@
+import {drawConstruction} from './settlement-construction.js?v=35';
 import {drawNaturalRiver} from './settlement-river.js?v=34';
-import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation} from './world-design.js?v=34';
+import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation} from './world-design.js?v=35';
 import {ARTIFACTS,artifactError} from './city-story.js?v=27';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=34';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=35';
 import {createMeadow,fillMeadow} from './settlement-ground.js?v=34';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=34';
-import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE} from './settlement-model.js?v=34';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=35';
+import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE} from './settlement-model.js?v=35';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./settlement-meadow-v18.png',import.meta.url).href;
@@ -29,7 +30,6 @@ const worldNature=new Image();worldNature.src=new URL('./world-nature-v34.webp',
 const worldPeople=new Image();worldPeople.src=new URL('./world-people-v34.webp',import.meta.url).href;
 const architecture={},nature={},people={};let preparedWorld=false,preparedNature=false,preparedPeople=false;
 function objectArt(obj,time=0,reduced=true){
- if(obj.constructing)return infrastructure['building-site'];
  const family=buildingFamily(obj.b?.type);
  if(family&&architecture[family+'1'])return architecture[family+architecturalStage(obj.b.level)];
  if(obj.lab&&architecture.civic3)return architecture.civic3;
@@ -143,14 +143,17 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   const points=[project(x+.035,y+.035),project(x+.965,y+.035),project(x+.965,y+.965),project(x+.035,y+.965)];
   const center=project(x+.5,y+.5);
   ctx.save();ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();
-  const color=ctx.createLinearGradient(center.x,center.y-u*.5,center.x,center.y+u*.5);
-  color.addColorStop(0,'#847f6520');color.addColorStop(1,'#ac9a7630');ctx.fillStyle=color;ctx.fill();
+  // Worn earth blends into the meadow; no rectangular plot carpet.
+  ctx.save();ctx.translate(center.x,center.y);ctx.scale(1,.56);
+  const color=ctx.createRadialGradient(0,0,u*.1,0,0,u*.76);
+  color.addColorStop(0,'#968265d9');color.addColorStop(.45,'#98846899');color.addColorStop(1,'#98846800');
+  ctx.fillStyle=color;ctx.fillRect(-u,-u,u*2,u*2);ctx.restore();
   // Fixed tiny gravel/earth marks make each plot a material surface, not a flat overlay.
   let seed=((x+1)*73856093^(y+1)*19349663)>>>0;
   const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
   for(let i=0;i<34;i++){
    const p=project(x+.08+random()*.84,y+.08+random()*.84);
-   ctx.fillStyle=i%3?'#d1c8a540':'#747d5530';
+   ctx.fillStyle=i%3?'#d1c3a151':'#5a554940';
    ctx.beginPath();ctx.ellipse(p.x,p.y,(.45+random()*.7)*zoom,(.25+random()*.4)*zoom,0,0,Math.PI*2);ctx.fill();
   }
   // Soft, directional contact shadow follows the same sun direction for every
@@ -233,11 +236,16 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   const moving=obj.a?.path.length;
   const frame=0;
   obj.constructing=obj.b?.ready>c.seconds;
-  const newBuilding=obj.constructing?infrastructure['building-site']:null;
   const image=objectArt(obj,time,reduced);
   if(!image)return;
   const width=obj.width*zoom,height=width*image.height/image.width;
   if(p.x+width/2<0||p.x-width/2>W||p.y+u*.5<0||p.y-height>H)return;
+  if(obj.constructing){
+   if(selected?.x===obj.x&&selected?.y===obj.y)diamond(obj.x,obj.y,'#c9bf8610','#d5c795');
+   const previous=objectArt({...obj,b:{...obj.b,level:Math.max(1,obj.b.level-1)}},time,reduced);
+   hits.push(drawConstruction(ctx,obj.b,c.seconds,project,u,image,previous,width));
+   return;
+  }
   let bob=0,angle=0;
   if(!reduced){
    if(obj.sway)angle=Math.sin(time*.9+obj.x)*.012;
@@ -255,7 +263,6 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   }
   ctx.save();ctx.translate(p.x,p.y-bob);ctx.rotate(angle);
   let alpha=1;
-  if(obj.b?.ready>c.seconds&&!newBuilding)alpha=.48+.42*Math.max(0,1-(obj.b.ready-c.seconds)/8);
   ctx.globalAlpha=alpha;
   if(obj.boat&&obj.returning)ctx.scale(-1,1);
   if(obj.a){
@@ -292,9 +299,10 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
 
  if(selected&&!objects.some(o=>o.b&&o.x===selected.x&&o.y===selected.y))diamond(selected.x,selected.y,'#50eff518','#83f9ff');
  for(const obj of objects){
-  if(!(obj.b||obj.lab||obj.kind==='spruce'||obj.kind==='spruce-group'))continue;
+  if(!(obj.b||obj.lab||['spruce','spruce-group','oak','birch'].includes(obj.kind)))continue;
   const onPlot=!!(obj.b||obj.lab),p=project(obj.x+(onPlot?.98:.5),obj.y+(onPlot?.98:.62));
   obj.constructing=obj.b?.ready>c.seconds;
+  if(obj.constructing&&obj.b.level===1)continue;
   const image=objectArt(obj,time,reduced);
   if(p.x<-u*3||p.x>W+u*3||p.y<-u*3||p.y>H+u*3)continue;
   castShadow(ctx,image,p,obj.width*zoom);

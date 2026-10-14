@@ -1,8 +1,22 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {architecturalStage,regionAt,elevation} from '../dist/world-design.js';
+import {architecturalStage,regionAt,elevation,constructionState} from '../dist/world-design.js';
 import {projectPoint,worldPoint,tileAt} from '../dist/settlement-camera.js';
-import {freshCity,normalizeCity,expand,SIZE} from '../dist/settlement-model.js';
+import {freshCity,normalizeCity,expand,SIZE,build,upgrade,step} from '../dist/settlement-model.js';
+test('construction resumes at the same stage after save reload and legacy saves finish normally',()=>{
+ const c=freshCity();c.seconds=100;c.resources.wood=900;c.resources.stone=900;
+ assert.equal(build(c,'house',7,4),'');const b=c.buildings.at(-1);
+ step(c,1);step(c,1);step(c,1);
+ const restored=normalizeCity(JSON.parse(JSON.stringify(c))),saved=restored.buildings.at(-1);
+ assert.equal(constructionState(saved,restored.seconds).progress,.5);
+ assert.deepEqual(constructionState(saved,restored.seconds),constructionState(b,c.seconds));
+ delete saved.started;assert.equal(constructionState(saved,restored.seconds).progress,.5);
+ for(let i=0;i<3;i++)step(restored,1);
+ assert.equal(constructionState(saved,restored.seconds).stage,'complete');
+ assert.equal(upgrade(restored,saved.id),true);
+ assert.equal(saved.started,restored.seconds);assert.equal(constructionState(saved,restored.seconds).upgrading,true);
+ assert.equal(upgrade(restored,saved.id),false);
+});
 test('architecture has four coherent stages and retains highest upgrade',()=>{
  assert.deepEqual([1,2,3,4,5].map(architecturalStage),[1,2,3,3,4]);
 });
