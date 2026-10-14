@@ -1,12 +1,12 @@
-import {drawConstruction} from './settlement-construction.js?v=38';
+import {drawConstruction} from './settlement-construction.js?v=39';
 import {drawNaturalRiver} from './settlement-river.js?v=34';
-import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=38';
+import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=39';
 import {ARTIFACTS,artifactError} from './city-story.js?v=27';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=38';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=39';
 import {createMeadow,fillMeadow} from './settlement-ground.js?v=36';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=38';
-import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=38';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=39';
+import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=39';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./terrain-meadow-v36.webp',import.meta.url).href;
@@ -39,7 +39,7 @@ function objectArt(obj,time=0,reduced=true){
  if(obj.lab&&architecture.civic3)return architecture.civic3;
  if(obj.a&&!obj.a.truck){
   const role=['woman','pupil'].includes(obj.kind)?'woman':['scientist','engineer','botanist','captain'].includes(obj.kind)?'scholar':obj.a.job?'worker':'farmer';
-  return people[role+(reduced||!obj.a.path.length?0:Math.floor(time*6+obj.a.id)%4)]||sprites.person;
+  return people[role+(reduced||!obj.a.path.length?0:Math.floor((obj.a.distance||0)*5)%4)]||sprites.person;
  }
  return nature[obj.kind]||coastal[obj.kind]||infrastructure[obj.kind]||chronicle[obj.kind]||life[obj.kind]||sprites[obj.kind];
 }
@@ -178,6 +178,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  drawRoadNetwork(ctx,c,project,u);
  if(tool)for(let x=0;x<c.extent;x++)for(let y=0;y<c.extent;y++)diamond(x,y,'#ffffff04','#e8ffff2e');
 
+ for(const p of c.loggingPlots||[])diamond(p.x,p.y,'#d5ae4620','#d5ae46');
  const objects=[],hits=[];
  const occupied=(x,y)=>c.buildings.some(b=>b.x===x&&b.y===y)||(x===4&&y===2)||c.roads.some(r=>r.x===x&&r.y===y);
  for(let x=0;x<c.extent;x++)for(let y=0;y<c.extent;y++){
@@ -228,7 +229,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   const offset=reduced?0:Math.sin(time*.17+x)*.12;
   objects.push({x:x+offset,y:y+.12,kind:regionAt(x,y)==='meadows'?'horse':'deer',width:unitFor(W)*.4});
  }
- for(const a of c.agents){const job=c.buildings.find(b=>b.id===a.job);const kind=a.truck?'truck':['school','university','observatory'].includes(job?.type)?'scientist':job?.type==='greenhouse'?'botanist':['factory','smelter','energy'].includes(job?.type)?'engineer':job?.type==='harbor'?'captain':job?.type==='fishery'?'fisherman':!a.job&&a.id%3===0&&c.buildings.some(b=>b.type==='school')?'pupil':a.id%3===1?'woman':'person';const prev=previousAgents?.get(a.id)||a;objects.push({x:prev.x+(a.x-prev.x)*alpha,y:prev.y+(a.y-prev.y)*alpha,kind,width:unitFor(W)*(a.truck?.95:kind==='pupil'?.14:.18),a});}
+ for(const a of c.agents){const job=c.buildings.find(b=>b.id===a.job);const kind=a.truck?'truck':['school','university','observatory'].includes(job?.type)?'scientist':job?.type==='greenhouse'?'botanist':['factory','smelter','energy'].includes(job?.type)?'engineer':job?.type==='harbor'?'captain':job?.type==='fishery'?'fisherman':!a.job&&a.id%3===0&&c.buildings.some(b=>b.type==='school')?'pupil':a.id%3===1?'woman':'person';const prev=previousAgents?.get(a.id)||a;objects.push({x:prev.x+(a.x-prev.x)*alpha,y:prev.y+(a.y-prev.y)*alpha,kind,width:unitFor(W)*(a.truck?.46:kind==='pupil'?.14:.18),a});}
  for(const b of c.buildings.filter(b=>['harbor','fishery'].includes(b.type))){
   const v=(c.voyages||[]).find(v=>v.x===b.x&&v.y===b.y);
   const point=v?boatPose(v,VOYAGES[v.kind].duration):{x:b.x+.65,y:-.7};
@@ -264,7 +265,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
    if(obj.sway)angle=Math.sin(time*.9+obj.x)*.012;
    if(obj.boat){bob=Math.sin(time*1.8+obj.x)*zoom;angle=Math.sin(time*.9)*.025;}
    if(obj.bird){bob=Math.sin(time*4+obj.x)*zoom*1.7;angle=Math.sin(time*4)*.045;}
-   if(obj.a?.path.length)bob=Math.abs(Math.sin(time*10+obj.a.id))*.6*zoom;
+   if(obj.a?.path.length&&!obj.a.truck)bob=Math.abs(Math.sin(time*10+obj.a.id))*.6*zoom;
    else if((obj.a?.state==='work'||obj.a?.state==='рубання'))angle=Math.sin(time*3)*.024;
   }
   if(obj.artifact){hits.push({left:p.x-Math.max(22,width/2),top:p.y-Math.max(44,height),width:Math.max(44,width),height:Math.max(44,height),artifact:obj.artifact,x:obj.x,y:obj.y});ctx.save();ctx.strokeStyle=obj.available?'#fff3b5':'#d4eff066';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(p.x,p.y,width*.7,width*.24,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
@@ -279,7 +280,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   ctx.globalAlpha=alpha;
   if(obj.boat&&obj.returning)ctx.scale(-1,1);
   if(obj.a){
-   const dest=obj.a.path[0],direction=dest?(dest.x-obj.a.x)-(dest.y-obj.a.y):1;
+   const direction=obj.a.facing||1;
    if((life[obj.kind]||chronicle[obj.kind])?direction<0:(direction<0)!==!!frame)ctx.scale(-1,1);
   }
   ctx.drawImage(image,-width/2,-height,width,height);ctx.restore();

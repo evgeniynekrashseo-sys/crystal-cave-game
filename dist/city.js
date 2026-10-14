@@ -1,11 +1,11 @@
 import {currentStory,ensureStory,storyPanel,choosePath,claimStory,collectArtifact,artifactError} from './city-story.js?v=27';
 import {SUBSTANCES} from './mission.js?v=27';
 import {CITY_RESEARCH} from './city-research.js?v=27';
-import {REGIONS} from './world-design.js?v=38';
+import {REGIONS} from './world-design.js?v=39';
 import {mountCityHud} from './city-hud.js?v=27';
-import {drawSettlement,mapTile} from './settlement-renderer.js?v=38';
-import {bindMapControls,boundCamera,projectPoint,MIN_ZOOM,MAX_ZOOM} from './settlement-camera.js?v=38';
-import {SIZE,TYPES,TECH,LABELS,deliverDiscovery,terrain,normalizeCity,onChemistryWin,stats,step,build,canPlace,upgrade,upgradeCost,expand,research,affordable,demolish,demolitionRefund,VOYAGES,voyageError,dispatchVoyage,claimCityCoins,cityGoal,claimCityGoal,ensureCitySystems,cityEra,DISTRICTS,EXPEDITIONS,CITY_EVENTS,advanceCitySystems,resolveCityEvent,cityEventError,dispatchExpedition,expeditionError,districtSummary} from './settlement-model.js?v=38';
+import {drawSettlement,mapTile} from './settlement-renderer.js?v=39';
+import {bindMapControls,boundCamera,projectPoint,MIN_ZOOM,MAX_ZOOM} from './settlement-camera.js?v=39';
+import {SIZE,TYPES,TECH,toggleLoggingPlot,upgradeRoad,LABELS,deliverDiscovery,terrain,normalizeCity,onChemistryWin,stats,step,build,canPlace,upgrade,upgradeCost,expand,research,affordable,demolish,demolitionRefund,VOYAGES,voyageError,dispatchVoyage,claimCityCoins,cityGoal,claimCityGoal,ensureCitySystems,cityEra,DISTRICTS,EXPEDITIONS,CITY_EVENTS,advanceCitySystems,resolveCityEvent,cityEventError,dispatchExpedition,expeditionError,districtSummary} from './settlement-model.js?v=39';
 const KEY='chemlab_settlement_v2';
 export function initCity(api){
  let raw;try{raw=JSON.parse(localStorage.getItem(KEY))}catch{}
@@ -90,7 +90,7 @@ export function initCity(api){
  target.querySelectorAll('[data-tool]').forEach(el=>el.onclick=()=>{tool=tool===el.dataset.tool?null:el.dataset.tool;pendingDemolition=false;if(TYPES[tool]?.coastal){selected={x:5,y:0};focusCoast();}panel()});target.querySelectorAll('[data-tech]').forEach(el=>el.onclick=()=>{if(research(c,el.dataset.tech,api.core().discovered)){persist();hud();panel();notice('Технологію впроваджено. Нові будівлі та ефекти доступні.')}});
   if(tab==='life')target.insertAdjacentHTML('afterbegin',`<article class="world-regions"><b>Атлас долини · ${c.extent*c.extent} / ${SIZE*SIZE} ділянок</b><p>Відкривай нові землі розвідкою. Обери регіон для переміщення камери.</p>${REGIONS.map(r=>`<button data-region="${r.id}" ${r.x>=c.extent||r.y>=c.extent?'disabled':''}>${r.name}<small>${r.text}</small></button>`).join('')}</article>`);
   target.querySelectorAll('[data-region]').forEach(button=>button.onclick=()=>{const r=REGIONS.find(r=>r.id===button.dataset.region);togglePanel(null);const v=view(),next={zoom:.85,pan:{x:0,y:0}},p=projectPoint(v,next,r.x,r.y);next.pan={x:v.width*.5-p.x,y:v.height*.5-p.y};changeCamera(boundCamera(v,next,c.extent));});
-  const bind=(id,fn)=>{const e=target.querySelector('#'+id);if(e)e.onclick=fn};bind('city-place',()=>{const error=build(c,tool,selected.x,selected.y);notice(error||'Будівництво розпочато.');if(!error){tool=null;togglePanel(null);}persist();hud();panel()});bind('city-upgrade',()=>{if(upgrade(c,b.id)){notice('Модернізація розпочата.');togglePanel(null);}persist();hud();panel()});bind('city-expand',()=>{notice(expand(c)?'Нові території розвідані. Обери регіон в атласі.':'Недостатньо ресурсів');persist();hud();panel()});bind('city-trade',()=>{if(c.resources.goods>=10){c.resources.goods-=10;api.trade(35);persist();notice('Доставлено 10 товарів. Лабораторія отримала 35 монет.');hud();panel()}});
+  const bind=(id,fn)=>{const e=target.querySelector('#'+id);if(e)e.onclick=fn};bind('city-logging',()=>{toggleLoggingPlot(c,selected.x,selected.y);persist();panel();});bind('city-road-upgrade',()=>{notice(upgradeRoad(c,selected.x,selected.y)?'Дорогу покращено':'Недостатньо каменю');persist();hud();panel();});bind('city-place',()=>{const error=build(c,tool,selected.x,selected.y);notice(error||'Будівництво розпочато.');if(!error){tool=null;togglePanel(null);}persist();hud();panel()});bind('city-upgrade',()=>{if(upgrade(c,b.id)){notice('Модернізація розпочата.');togglePanel(null);}persist();hud();panel()});bind('city-expand',()=>{notice(expand(c)?'Нові території розвідані. Обери регіон в атласі.':'Недостатньо ресурсів');persist();hud();panel()});bind('city-trade',()=>{if(c.resources.goods>=10){c.resources.goods-=10;api.trade(35);persist();notice('Доставлено 10 товарів. Лабораторія отримала 35 монет.');hud();panel()}});
  bind('city-demolish',()=>{pendingDemolition=true;panel()});bind('city-demolish-cancel',()=>{pendingDemolition=false;panel()});
  bind('city-demolish-confirm',()=>{if(!pendingDemolition)return;const error=demolish(c,selected.x,selected.y);pendingDemolition=false;notice(error||'Ділянку звільнено. Матеріали повернуто.');persist();hud();panel()});
  bind('city-goal-claim',()=>{if(claimCityGoal(c)){payCityCoins();persist();hud();panel();notice('Нагороду за місію отримано!')}});
@@ -139,6 +139,6 @@ export function initCity(api){
  }
  window.addEventListener('pagehide',persist);return {open,close,discover(id){if(deliverDiscovery(c,id))persist();},won(level){if(api.enabled?.()!==false){onChemistryWin(c,level);persist()}}};
 }
-import {renderBuildingPanel} from './city-building-panel.js?v=38';
+import {renderBuildingPanel} from './city-building-panel.js?v=39';
 
 

@@ -39,10 +39,23 @@ export function drawRoadNetwork(ctx,c,project,u){
 
  // A continuous world-space street surface, including intersections. Every layer
  // is completed across the whole network before the next; no per-tile end caps.
- const paved=c.tech.includes('motor');
+ const paved=false;
  for(const [radius,color]of [[.33,'#94876835'],[.29,'#97866a88'],[.25,paved?'#a09d8d':'#b1a080'],[.20,paved?'#aaa799':'#bcaa89']]){
   ctx.fillStyle=color;
   for(const r of c.roads){
+   const level=r.level||1;
+   ctx.fillStyle=radius===.25?(level===1?'#a38c68':level===2?'#817c70':'#8d8d87'):radius===.20?(level===1?'#b39b76':level===2?'#979083':'#aaa99f'):color;
+   const links=[[1,0],[-1,0],[0,1],[0,-1]].filter(([x,y])=>roads.has(`${r.x+x},${r.y+y}`));
+   if(links.length===2&&links[0][0]*links[1][0]+links[0][1]*links[1][1]===0){
+    const [a,b]=links,edges=[[],[]];
+    for(let i=0;i<=20;i++){
+     const t=i/20,s=1-t,x=.5+.5*(s*s*a[0]+t*t*b[0]),y=.5+.5*(s*s*a[1]+t*t*b[1]);
+     const dx=-s*a[0]+t*b[0],dy=-s*a[1]+t*b[1],len=Math.hypot(dx,dy);
+     edges[0].push(project(r.x+x-dy/len*radius,r.y+y+dx/len*radius));
+     edges[1].push(project(r.x+x+dy/len*radius,r.y+y-dx/len*radius));
+    }
+    const points=[...edges[0],...edges[1].reverse()];ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.fill();continue;
+   }
    let l=.5-radius,t=.5-radius,rr=.5+radius,bb=.5+radius;
    if(roads.has(`${r.x-1},${r.y}`))l=0;if(roads.has(`${r.x+1},${r.y}`))rr=1;
    if(roads.has(`${r.x},${r.y-1}`))t=0;if(roads.has(`${r.x},${r.y+1}`))bb=1;
@@ -59,7 +72,9 @@ export function drawRoadNetwork(ctx,c,project,u){
  }
  // Wheel tracks follow connected streets, never crossing buildings or lawns.
  // Their separation is in world coordinates, so it stays correct at every zoom.
- if(!paved)for(const r of c.roads)for(const [dx,dy]of [[1,0],[0,1]]){
+ if(!paved)for(const r of c.roads.filter(r=>(r.level||1)===1))for(const [dx,dy]of [[1,0],[0,1]]){
+  const links=[[1,0],[-1,0],[0,1],[0,-1]].filter(([x,y])=>roads.has(`${r.x+x},${r.y+y}`));
+  if(links.length===2&&links[0][0]*links[1][0]+links[0][1]*links[1][1]===0)continue;
   if(!roads.has(`${r.x+dx},${r.y+dy}`))continue;
   for(const offset of [-.115,.115]){
    const a=project(r.x+.5+dy*offset,r.y+.5+dx*offset);
@@ -69,6 +84,14 @@ export function drawRoadNetwork(ctx,c,project,u){
   }
  }
  for(const r of c.roads){
+  if((r.level||1)>1){
+   // Individual stone joints, inset in the centre so they never leak onto grass.
+   for(let row=0;row<5;row++)for(let col=0;col<5;col++){
+    const x=.34+col*.065+(row%2)*.02,y=.34+row*.065;
+    const ps=[[x,y],[x+.052,y],[x+.052,y+.05],[x,y+.05]].map(([x,y])=>project(r.x+x,r.y+y));
+    ctx.fillStyle=(row+col)%3?'#b6b0a277':'#5e5b5266';ctx.beginPath();ps.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.fill();
+   }
+  }
   for(let i=0;i<27;i++){
    const x=.15+((i*37+r.x*13)%71)/100,y=.15+((i*23+r.y*17)%71)/100;
    if(Math.abs(x-.5)>.22&&Math.abs(y-.5)>.22)continue;

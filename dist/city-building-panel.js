@@ -1,8 +1,11 @@
-import {TYPES,TECH,terrain,canPlace,upgradeCost,affordable} from './settlement-model.js?v=38';
+import {TYPES,TECH,loggingPlotAllowed,terrain,canPlace,upgradeCost,affordable} from './settlement-model.js?v=39';
 
 // One building, one description. Keep optional construction out of the way.
 export function renderBuildingPanel(c,{selected,tool},costText){
  const b=c.buildings.find(b=>b.x===selected.x&&b.y===selected.y);
+ const road=c.roads.find(r=>r.x===selected.x&&r.y===selected.y);
+ const logging=!tool&&loggingPlotAllowed(c,selected.x,selected.y);
+ const marked=c.loggingPlots?.some(p=>p.x===selected.x&&p.y===selected.y);
  const catalog=`<div class="city-catalog">${Object.entries(TYPES).map(([id,t])=>{
   const locked=t.tech&&!c.tech.includes(t.tech);
   return `<button data-tool="${id}" class="${tool===id?'chosen':''}" ${locked?'disabled':''}><b>${t.name}</b><small>${locked?'Дослідження: '+TECH.find(x=>x.id===t.tech).name:costText(t.cost)}</small></button>`;
@@ -21,5 +24,7 @@ export function renderBuildingPanel(c,{selected,tool},costText){
   ${b||tool?`<p>${TYPES[tool||b.type].desc}</p>`:''}
   ${tool?`<small class="city-placement-hint">${TYPES[tool].name}: обери ділянку на карті, потім підтвердь будівництво.</small>`:''}
   ${actions}
+  ${!tool&&road?`<p>Дорога: ${['','Ґрунтова','Бруківка','Кам’яна'][road.level||1]}</p>${(road.level||1)<3?`<button id="city-road-upgrade">Покращити дорогу · ${(road.level||1)===1?12:24} каменю</button>`:'<small>Максимальний рівень дороги</small>'}`:''}
+  ${logging?`<p>Вирубка лише на позначених ділянках. Одне дерево — 60 секунд роботи плюс дорога й обробка.</p><button id="city-logging">${marked?'Зупинити вирубку тут':'Позначити для лісорубів'}</button>`:''}
  </div>`;
 }
