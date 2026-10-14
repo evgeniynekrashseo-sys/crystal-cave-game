@@ -1,3 +1,4 @@
+import {entrancePath} from './settlement-layout.js?v=41';
 // Shore relief is deterministic and stays outside the buildable y >= 0 cells.
 const shoreY=x=>-.10-.12*(1+Math.sin(x*.73))-.055*(1+Math.sin(x*2.31));
 export function drawSea(ctx,project,u,time,reduced,view){
@@ -32,9 +33,11 @@ export function drawRoadNetwork(ctx,c,project,u){
   const neighbors=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>({x:b.x+dx,y:b.y+dy,dx,dy}))
    .filter(n=>roads.has(`${n.x},${n.y}`));
   if(!neighbors.length)continue;
-  const target=neighbors[0],from=project(b.x+.5,b.y+.5),to=project(target.x+.5,target.y+.5);
-  ctx.strokeStyle='#66533e8a';ctx.lineWidth=u*.19;ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);ctx.stroke();
-  ctx.strokeStyle='#b8a17a';ctx.lineWidth=u*.13;ctx.stroke();
+  const choices=neighbors.map(n=>entrancePath(b,{x:n.x+.5,y:n.y+.5}));
+  const length=ps=>ps.slice(1).reduce((n,p,i)=>n+Math.hypot(p.x-ps[i].x,p.y-ps[i].y),0);
+  choices.sort((a,b)=>length(a)-length(b));const points=choices[0].map(p=>project(p.x,p.y));
+  ctx.strokeStyle='#66533e50';ctx.lineWidth=u*.14;ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.stroke();
+  ctx.strokeStyle='#a79372aa';ctx.lineWidth=u*.08;ctx.stroke();
  }
 
  // A continuous world-space street surface, including intersections. Every layer

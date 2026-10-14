@@ -1,13 +1,13 @@
-import {actorPose} from './settlement-motion.js?v=40';
-import {drawConstruction} from './settlement-construction.js?v=40';
+import {actorPose} from './settlement-motion.js?v=41';
+import {drawConstruction} from './settlement-construction.js?v=41';
 import {drawNaturalRiver} from './settlement-river.js?v=34';
-import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=40';
+import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=41';
 import {ARTIFACTS,artifactError} from './city-story.js?v=27';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=40';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=41';
 import {createMeadow,fillMeadow} from './settlement-ground.js?v=36';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=40';
-import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=40';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=41';
+import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=41';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./terrain-meadow-v36.webp',import.meta.url).href;
@@ -159,14 +159,14 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1.5;ctx.shadowColor=stroke;ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;}
  };
 
- const foundation=(x,y)=>{
+ const foundation=(x,y,type)=>{
   const points=[project(x+.035,y+.035),project(x+.965,y+.035),project(x+.965,y+.965),project(x+.035,y+.965)];
   const center=project(x+.5,y+.5);
   ctx.save();ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();
   // Worn earth blends into the meadow; no rectangular plot carpet.
   ctx.save();ctx.translate(center.x,center.y);ctx.scale(1,.56);
   const color=ctx.createRadialGradient(0,0,u*.1,0,0,u*.76);
-  color.addColorStop(0,'#968265d9');color.addColorStop(.45,'#98846899');color.addColorStop(1,'#98846800');
+  color.addColorStop(0,type==='farm'?'#776348ef':'#968265d9');color.addColorStop(.45,type==='farm'?'#88704da0':'#98846899');color.addColorStop(1,'#98846800');
   ctx.fillStyle=color;ctx.fillRect(-u,-u,u*2,u*2);ctx.restore();
   // Fixed tiny gravel/earth marks make each plot a material surface, not a flat overlay.
   let seed=((x+1)*73856093^(y+1)*19349663)>>>0;
@@ -185,7 +185,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   ctx.fillStyle=shadow;ctx.beginPath();ctx.ellipse(center.x+u*.10,center.y+u*.12,u*.70,u*.31,0,0,Math.PI*2);ctx.fill();
   ctx.restore();
  };
- for(const b of c.buildings)foundation(b.x,b.y);
+ for(const b of c.buildings)foundation(b.x,b.y,b.type);
  foundation(4,2);
 
  drawRoadNetwork(ctx,c,project,u);
@@ -236,7 +236,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  const kind={house:'house',lumber:'lumber',farm:'farm',well:'well',quarry:'quarry',ranch:'ranch',clinic:'clinic',granary:'granary',mine:'mine',smelter:'smelter',factory:'workshop',energy:'energy',school:'school',university:'university',market:'market',observatory:'observatory',greenhouse:'greenhouse',lighthouse:'lighthouse',park:'park',harbor:'harbor',fishery:'fishery'};
  // Keep all structures on a common one-tile footprint scale. Oversized
  // mixed-atlas sprites previously overlapped roads and neighboring roofs.
- const buildingScale={house:1.46,lumber:1.48,farm:1.54,well:.94,quarry:1.38,ranch:1.48,clinic:1.46,granary:1.43,mine:1.42,smelter:1.46,factory:1.48,energy:1.42,school:1.5,university:1.53,market:1.48,observatory:1.45,greenhouse:1.48,lighthouse:1.5,park:1.25,harbor:1.5,fishery:1.42};
+ const buildingScale={house:1.34,lumber:1.44,farm:1.82,well:.94,quarry:1.38,ranch:1.60,clinic:1.46,granary:1.43,mine:1.42,smelter:1.46,factory:1.48,energy:1.42,school:1.5,university:1.53,market:1.48,observatory:1.45,greenhouse:1.48,lighthouse:1.5,park:1.25,harbor:1.5,fishery:1.42};
  for(const b of c.buildings)objects.push({x:b.x,y:b.y,kind:kind[b.type],width:unitFor(W)*(buildingScale[b.type]??1.45),b});
  for(let x=1;x<c.extent;x++)for(let y=9;y<c.extent;y++){
   if(occupied(x,y)||isRiverTile(x,y)||landscapeSeed(x+17,y+19)>.012)continue;
@@ -338,7 +338,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   if(obj.constructing&&obj.b.level===1)continue;
   const image=objectArt(obj,time,reduced);
   if(p.x<-u*3||p.x>W+u*3||p.y<-u*3||p.y>H+u*3)continue;
-  castShadow(ctx,image,p,obj.width*zoom);
+  if(obj.b?.type!=='farm')castShadow(ctx,image,p,obj.width*zoom);
  }
  objects.sort((a,b)=>sceneDepth(a)-sceneDepth(b)).forEach(drawObject);
  drawAtmosphere(ctx,view,project,u,c,time,reduced);

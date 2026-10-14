@@ -6,7 +6,7 @@ test('heading selects front/back and left/right, trucks have distinct view selec
   const p=actorPose({x:2,y:3,heading:{x,y},path:[{}],distance:1},null);
   assert.equal(p.back,back);assert.equal(p.right,right);
   const t=actorPose({x:2,y:3,heading:{x,y},truck:true,path:[]},null);
-  assert.equal(t.key,back?'truck1':'truck0');assert.equal(t.flip,!right);
+  assert.equal(t.key,back?'truck1':'truck0');assert.equal(t.flip,back?right:!right);
  }
 });
 test('indoor workers approach the entrance, disappear inside and leave; outdoor workers remain visible',()=>{
