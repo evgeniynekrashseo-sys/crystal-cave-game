@@ -1,0 +1,16 @@
+{
+  "version": 40,
+  "codeCommit": "9d1102276bd8a3931b0e5e4d6cc2fd5e4d7a220a",
+  "tests": 102,
+  "features": [
+    "directional worker and vehicle sprites",
+    "chopping action",
+    "indoor entry/exit visuals",
+    "horse and sheep frames"
+  ],
+  "remaining": [
+    "continuous vehicle steering",
+    "authored building doors",
+    "specialist directional frames"
+  ]
+}
