@@ -23,6 +23,12 @@ export const REGIONS=[
  {id:'highlands',name:'Височини',x:26,y:24,text:'Кам’янистий ландшафт і нові родовища'}
 ];
 export function landscapeSeed(x,y){let n=(Math.imul(x+101,73856093)^Math.imul(y+137,19349663));n=Math.imul(n^(n>>>16),0x7feb352d);n=Math.imul(n^(n>>>15),0x846ca68b);return ((n^(n>>>16))>>>0)/4294967296;}
+export function forestCover(x,y){
+ const region=regionAt(x,y);
+ if(!(region==='woodland'||region==='highlands'||x<2||y>8||x>7))return false;
+ const grove=.5+.5*Math.sin(x*.75+Math.sin(y*.55))*Math.cos(y*.62);
+ return landscapeSeed(x,y)<(region==='woodland'?.48+grove*.4:.12+grove*.5);
+}
 // Relief rises only in the new, previously inaccessible region. Old saves retain geometry.
 export function elevation(x,y){
  const ramp=Math.max(0,Math.min(1,(x-20)/6))*Math.max(0,Math.min(1,(y-14)/6));

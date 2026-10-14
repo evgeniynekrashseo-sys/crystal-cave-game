@@ -1,11 +1,24 @@
 // Native-density meadow: no enlarged photograph beneath sharp sprite artwork.
 // 2048-pixel tile keeps fine blades crisp when a 2x-density phone zooms in.
 export const GROUND_SIZE=512,GROUND_DENSITY=4;
-export function createMeadow(document,texture){
+export function createMeadow(document,texture,{natural=false}={}){
  if(texture?.complete&&texture.naturalWidth>=1024&&texture.naturalHeight>=1024){
   // Use every source pixel. The material stays at four image pixels per world pixel.
   const tile=document.createElement('canvas');tile.width=texture.naturalWidth;tile.height=texture.naturalHeight;
   const g=tile.getContext('2d',{willReadFrequently:true});g.drawImage(texture,0,0);
+  if(natural){
+   // Keep material hue differences while preventing fine gravel and grass from
+   // competing with people and buildings at mobile scale.
+   const material=g.getImageData(0,0,tile.width,tile.height),data=material.data;
+   for(let i=0;i<data.length;i+=4){data[i]=110+(data[i]-110)*.48;data[i+1]=113+(data[i+1]-113)*.48;data[i+2]=80+(data[i+2]-80)*.48;}
+   g.putImageData(material,0,0);
+   // Mirror-repeat the material at render preparation time: adjacent edges match
+   // exactly, while the original soil/grass colors and all source detail remain.
+   const seamless=document.createElement('canvas');seamless.width=tile.width*2;seamless.height=tile.height*2;
+   const s=seamless.getContext('2d');
+   for(const x of [0,1])for(const y of [0,1]){s.save();s.translate(x?tile.width*2:0,y?tile.height*2:0);s.scale(x?-1:1,y?-1:1);s.drawImage(tile,0,0);s.restore();}
+   return seamless;
+  }
   // Low-contrast olive turf: detail belongs below the architecture, not above it.
   const image=g.getImageData(0,0,tile.width,tile.height),pixels=image.data;
   for(let i=0;i<pixels.length;i+=4){
@@ -43,12 +56,12 @@ export function createMeadow(document,texture){
 
 // Cache a GPU pattern per context and texture to avoid re-creating it every frame.
 const meadowPatterns=new WeakMap();
-export function fillMeadow(ctx,tile,view,camera,origin){
+export function fillMeadow(ctx,tile,view,camera,origin,{natural=false}={}){
  let cached=meadowPatterns.get(ctx);
- if(!cached||cached.tile!==tile){
+ if(!cached||cached.tile!==tile||cached.natural!==natural){
   const pattern=ctx.createPattern(tile,'repeat');if(!pattern)return;
-  pattern.setTransform({a:1/GROUND_DENSITY,b:0,c:0,d:1/GROUND_DENSITY,e:0,f:0});
-  cached={tile,pattern};meadowPatterns.set(ctx,cached);
+  pattern.setTransform({a:1/GROUND_DENSITY,b:0,c:0,d:(natural?.56:1)/GROUND_DENSITY,e:0,f:0});
+  cached={tile,pattern,natural};meadowPatterns.set(ctx,cached);
  }
  const {pattern}=cached;
  const x=origin.x+camera.pan.x,y=origin.y+camera.pan.y;

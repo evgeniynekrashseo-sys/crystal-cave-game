@@ -1,4 +1,4 @@
-import {elevation} from './world-design.js?v=35';
+import {elevation} from './world-design.js?v=36';
 // CSS-pixel camera shared by hit testing, the scene and all input methods.
 export const MIN_ZOOM=.22,MAX_ZOOM=2.4;
 export const unitFor=width=>Math.max(49,Math.min(58,width*.135));

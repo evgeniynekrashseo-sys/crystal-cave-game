@@ -1,15 +1,15 @@
-import {drawConstruction} from './settlement-construction.js?v=35';
+import {drawConstruction} from './settlement-construction.js?v=36';
 import {drawNaturalRiver} from './settlement-river.js?v=34';
-import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation} from './world-design.js?v=35';
+import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover} from './world-design.js?v=36';
 import {ARTIFACTS,artifactError} from './city-story.js?v=27';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=35';
-import {createMeadow,fillMeadow} from './settlement-ground.js?v=34';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=36';
+import {createMeadow,fillMeadow} from './settlement-ground.js?v=36';
 import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=35';
 import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE} from './settlement-model.js?v=35';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
-const meadowArt=new Image();meadowArt.src=new URL('./settlement-meadow-v18.png',import.meta.url).href;
+const meadowArt=new Image();meadowArt.src=new URL('./terrain-meadow-v36.webp',import.meta.url).href;
 
 const SPRITE_NAMES=['house','lab','farm','well','tree','rock','lumber','ranch','clinic','granary','mine','factory','energy','person','worker','truck'];
 const DETAIL_NAMES=['river','bridge','water','river-bend','path-straight','path-curve','path-t','path-cross','flowers','reeds','grass','berries','fence','scaffold','cargo','lantern'];
@@ -75,7 +75,7 @@ function prepare(){
  if(!preparedNature&&worldNature.complete&&worldNature.naturalWidth){sliceAtlas(worldNature,['spruce','oak','birch','shrubs','granite','bank','cliff','stump','grass','flowers','reeds','berries','deer','cow','sheep','horse'],nature,[[0,.31],[.31,.525],[.525,.73],[.73,1]]);preparedNature=true;}
  if(!preparedPeople&&worldPeople.complete&&worldPeople.naturalWidth){sliceAtlas(worldPeople,['worker','woman','scholar','farmer'].flatMap(k=>[0,1,2,3].map(n=>k+n)),people);preparedPeople=true;}
  if(!grass)grass=createMeadow(document);
- if(!preparedMeadow&&meadowArt.complete&&meadowArt.naturalWidth>=1024){grass=createMeadow(document,meadowArt);preparedMeadow=true;}
+ if(!preparedMeadow&&meadowArt.complete&&meadowArt.naturalWidth>=1024){grass=createMeadow(document,meadowArt,{natural:true});preparedMeadow=true;}
  if(!preparedSprites&&atlas.complete&&atlas.naturalWidth){sliceAtlas(atlas,SPRITE_NAMES,sprites);preparedSprites=true;}
  if(!preparedDetails&&detailAtlas.complete&&detailAtlas.naturalWidth){sliceAtlas(detailAtlas,DETAIL_NAMES,details);preparedDetails=true;}
  if(!preparedLife&&lifeAtlas.complete&&lifeAtlas.naturalWidth){sliceAtlas(lifeAtlas,LIFE_NAMES,life);preparedLife=true;}
@@ -100,7 +100,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  const view={width:W,height:H},camera={zoom,pan};
  const project=(x,y)=>projectPoint(view,camera,x,y);
  ctx.clearRect(0,0,W,H);ctx.fillStyle='#69734a';ctx.fillRect(0,0,W,H);
- if(grass)fillMeadow(ctx,grass,view,camera,originFor(view));
+ if(grass)fillMeadow(ctx,grass,view,camera,originFor(view),{natural:preparedMeadow});
  drawSea(ctx,project,u,time,reduced,view);
  ctx.save();ctx.beginPath();[project(-40,0),project(60,0),project(60,60),project(-40,60)].forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.clip();
  drawRiver(ctx,W,H,pan,zoom,time,reduced);ctx.restore();
@@ -121,14 +121,16 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  for(let x=0;x<c.extent;x++)for(let y=0;y<c.extent;y++){
   if(blocked.has(x+','+y)||isRiverTile(x,y))continue;
   const hash=((Math.imul(x+31,73856093)^Math.imul(y+47,19349663))>>>0);
-  if(hash%5>1)continue;
+  const wooded=forestCover(x,y);
+  if(!wooded&&hash%5>1)continue;
   const p=project(x+.5,y+.5);
   if(p.x<-u*2||p.x>W+u*2||p.y<-u*2||p.y>H+u*2)continue;
-  const radius=u*(.26+(hash%7)*.055);
-  const tint=hash%3===0?'rgba(69,99,42,0.15)':hash%3===1?'rgba(187,159,92,0.11)':'rgba(91,122,67,0.11)';
-  const gradient=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,radius);
+  const radius=u*(wooded?.93:.26+(hash%7)*.055);
+  const tint=wooded?'rgba(61,49,33,0.48)':hash%3===0?'rgba(69,83,42,0.15)':hash%3===1?'rgba(187,159,92,0.11)':'rgba(91,112,67,0.11)';
+  ctx.save();ctx.translate(p.x,p.y);ctx.scale(1,.56);
+  const gradient=ctx.createRadialGradient(0,0,0,0,0,radius);
   gradient.addColorStop(0,tint);gradient.addColorStop(1,'rgba(80,95,55,0)');
-  ctx.fillStyle=gradient;ctx.beginPath();ctx.ellipse(p.x,p.y,radius,radius*.57,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=gradient;ctx.beginPath();ctx.ellipse(0,0,radius,radius,0,0,Math.PI*2);ctx.fill();ctx.restore();
  }
  ctx.restore();
 
@@ -176,13 +178,18 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  for(let x=0;x<c.extent;x++)for(let y=0;y<c.extent;y++){
   if(occupied(x,y)||isRiverTile(x,y))continue;
   const hash=(x*37+y*53)%97;
-  const region=regionAt(x,y),forest=region==='woodland'||region==='highlands'||x<2||y>8||x>7;
-  const grove=.5+.5*Math.sin(x*.75+Math.sin(y*.55))*Math.cos(y*.62);
-  if(forest&&landscapeSeed(x,y)<(region==='woodland'?.48+grove*.4:.12+grove*.5))objects.push({x:x+(landscapeSeed(x+19,y)-.5)*.45,y:y+(landscapeSeed(x,y+41)-.5)*.4,kind:hash%5===0?'oak':hash%5===1?'birch':'spruce',width:unitFor(W)*(hash%5<2?1.1:.77)*(.85+landscapeSeed(x+3,y+9)*.3),sway:true});
+  const region=regionAt(x,y);
+  if(forestCover(x,y))objects.push({x:x+(landscapeSeed(x+19,y)-.5)*.45,y:y+(landscapeSeed(x,y+41)-.5)*.4,kind:hash%5===0?'oak':hash%5===1?'birch':'spruce',width:unitFor(W)*(hash%5<2?1.1:.77)*(.85+landscapeSeed(x+3,y+9)*.3),sway:true});
   else if((x*11+y*3)%19===0||region==='highlands'&&landscapeSeed(x+71,y)<.18)objects.push({x,y,kind:region==='highlands'&&hash%3===0?'cliff':'granite',width:unitFor(W)*1.1});
   else if(hash%13===0)objects.push({x:x+.12,y:y+.15,detail:'flowers',width:unitFor(W)*(.36+hash%4*.045),sway:true});
   else if(hash%23===0)objects.push({x:x+.2,y:y+.15,detail:'grass',width:unitFor(W)*.42});
   else if(hash%31===0)objects.push({x:x+.1,y:y+.1,detail:'berries',width:unitFor(W)*.46});
+  // Forests contain multiple ages and undergrowth instead of isolated specimen trees.
+  // Clearing the occupied plot removes the whole grove consistently.
+  if(forestCover(x,y)){
+   if(landscapeSeed(x+83,y+17)<.55)objects.push({x:x-.23,y:y+.25,kind:'spruce',width:unitFor(W)*(.36+landscapeSeed(x+52,y)*.2),sway:true});
+   if(landscapeSeed(x+91,y+27)<.65)objects.push({x:x+.28,y:y+.22,kind:'shrubs',width:unitFor(W)*.36,sway:true});
+  }
   // World-anchored low vegetation: varied ground cover with stable positions.
   // Keep the central settlement readable and avoid paved or flooded cells.
   if(hash%7===0)objects.push({x:x+.12+(hash%3)*.13,y:y+.19,detail:'grass',width:unitFor(W)*(.22+(hash%4)*.035)});
