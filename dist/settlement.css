@@ -219,3 +219,33 @@ body.in-settlement{overflow:hidden;background:radial-gradient(circle at 50% 15%,
 .story-history{padding:16px;font-size:12px;line-height:1.8}
 @media(min-width:760px){#settlement{width:min(100vw,1100px)}#city-sheet{left:auto;right:12px;width:370px;max-height:68vh}#settlement header,#city-resources{right:auto;width:390px}#settlement nav{left:50%;right:auto;width:420px;transform:translateX(-50%)}.city-mission{left:20px;right:auto;width:390px}}
 @media(prefers-reduced-motion:reduce){#settlement *{scroll-behavior:auto!important;transition:none!important}}
+/* World edition: compact warm HUD. Scene keeps priority on phone and tablet. */
+#settlement{--ink:#e8e1cc;--navy:#242d29;--cyan:#bfa673;--line:#8c8266;--paper:#e9e2cd;background:#70754f}
+#settlement header{top:calc(8px + env(safe-area-inset-top));left:8px;right:8px;height:40px;padding:8px 11px;border:1px solid #a4936a70;border-bottom:0;border-radius:10px 10px 0 0;background:#222b28ed;box-shadow:0 3px 14px #10151030}
+#settlement header strong{font-size:17px;letter-spacing:.4px;line-height:24px;font-family:Georgia,serif;text-shadow:none}
+#settlement header strong span{color:#d4bd85}
+#settlement header>div>small{display:none}
+#settlement #city-population{min-height:28px;min-width:76px;height:28px;padding:2px 7px;background:#38423b;border:1px solid #a4936a60;border-radius:6px;box-shadow:none}
+#city-population img{height:17px;width:17px}#city-population b{font-size:12px}
+#city-resources{top:calc(48px + env(safe-area-inset-top));left:8px;right:8px;height:34px;padding:2px 5px 6px;background:#222b28ed;border-color:#a4936a70;border-radius:0 0 10px 10px;box-shadow:0 5px 16px #10151030}
+.city-resource img.resource-art,.city-resource img{width:21px;height:21px}.city-resource b{font-size:12px;color:#eee6d0;text-shadow:none}.city-resource+.city-resource:before{background:#a4936a40}
+.city-map-tools{top:calc(94px + env(safe-area-inset-top));right:8px;gap:4px}
+#settlement .city-map-tools button,#settlement #city-coast{background:#27322add;border-color:#a99b7777;box-shadow:0 3px 12px #15201828;border-radius:8px}
+#city-zoom-value{background:#27322add;color:#ded7c4}
+#settlement #city-coast{top:calc(279px + env(safe-area-inset-top));right:8px}
+#settlement nav{left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));height:61px;padding:4px;gap:3px;border-radius:10px;border:1px solid #a4936a80;background:#242c27ef;box-shadow:0 5px 16px #10151050}
+#settlement nav button{min-height:50px;padding:3px 2px;border:1px solid transparent;border-radius:6px;background:transparent;color:#ded8c8;font-size:10px;box-shadow:none;gap:3px}
+#settlement nav img{width:21px;height:21px;filter:brightness(0) invert(.85)}
+#settlement nav button.current,#settlement nav button.chosen{background:#505744;color:#fff1ce;border-color:#bca67588;box-shadow:none}
+#settlement nav [data-city-tab="story"]>span:first-child{font-size:21px;line-height:21px;color:#d4bd85}
+.city-mission{bottom:calc(76px + env(safe-area-inset-bottom));height:48px;left:8px;right:8px;grid-template-columns:minmax(0,1fr) 86px;gap:2px 10px;padding:5px 6px 5px 12px;border:1px solid #a4936a80;border-radius:8px;background:#27322ae8;box-shadow:0 3px 12px #15201828;color:#ece6d3}
+.city-mission:before,.city-mission>img{display:none}.city-mission b{grid-column:1;font-size:13px}.city-mission span{grid-column:1;font-size:10px;color:#bfc7ae;margin-top:0}
+#settlement .city-mission button{grid-column:2;min-height:36px;padding:5px;background:#646a46!important;border-color:#a99b7777!important;box-shadow:none;font-size:11px;border-radius:6px;color:#fff2ce!important}
+.city-map-label{bottom:calc(136px + env(safe-area-inset-bottom));color:#eef1d299;font-weight:500;font-size:8px;letter-spacing:3px;text-shadow:0 1px 3px #0009}
+#city-sheet{bottom:calc(76px + env(safe-area-inset-bottom));border-radius:12px;border-color:#a99b7777;background:#ece6d7f7;color:#343d30;box-shadow:0 -8px 30px #0e170f66}
+#city-panel article{background:#f4f0e5;border-color:#b7b39870;color:#343d30}
+#city-panel button{color:#344033;background:#e1e3d4;border-color:#aaa88a;border-radius:7px}
+#city-panel .world-regions button{width:100%;margin:5px 0;text-align:left;padding:10px 12px;display:block}
+.world-regions small{display:block;font-size:10px;font-weight:400;margin-top:4px}
+#city-notice{bottom:calc(133px + env(safe-area-inset-bottom));background:#26352aee;border-color:#bba77b;color:#f3eacd}
+@media(min-width:760px){#settlement header,#city-resources{width:350px;right:auto}#settlement nav{left:50%;right:auto;width:420px}.city-mission{width:390px;right:auto}#city-sheet{right:12px;left:auto;width:370px}}

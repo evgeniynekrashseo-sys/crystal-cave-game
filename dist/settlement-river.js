@@ -25,7 +25,7 @@ export function drawNaturalRiver(ctx,project,u,time,reduced,water){
  for(let layer=0;layer<18;layer++)ribbon(layer*.014,'#245f6b0c');
  ctx.save();ribbon(0,'#49858222');ctx.clip();
  if(water){
-  ctx.globalAlpha=.30;
+  ctx.globalAlpha=.10;
   // World-anchored ripples move downstream; camera movement never slides the texture.
   const drift=reduced?0:(time*.04)%1;
   for(let y=-1;y<37;y+=.7)for(let x=13;x<17;x+=.7){const p=project(x,y+drift);ctx.drawImage(water,p.x-u,p.y-u*.56,u*2,u*1.12);}

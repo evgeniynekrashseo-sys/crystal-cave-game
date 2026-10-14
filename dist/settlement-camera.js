@@ -1,5 +1,6 @@
+import {elevation} from './world-design.js?v=34';
 // CSS-pixel camera shared by hit testing, the scene and all input methods.
-export const MIN_ZOOM=.45,MAX_ZOOM=2.4;
+export const MIN_ZOOM=.22,MAX_ZOOM=2.4;
 export const unitFor=width=>Math.max(49,Math.min(58,width*.135));
 export const originFor=({width,height})=>({x:width/2,y:height*.49});
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
@@ -7,14 +8,16 @@ const copy=c=>({zoom:c.zoom,pan:{...c.pan}});
 
 export function projectPoint(view,c,x,y){
  const o=originFor(view),u=unitFor(view.width)*c.zoom;
- return {x:o.x+(x-y)*u+c.pan.x,y:o.y+(x+y-10)*u*.56+c.pan.y};
+ return {x:o.x+(x-y)*u+c.pan.x,y:o.y+(x+y-10)*u*.56+c.pan.y-elevation(x,y)*u};
 }
 export function worldPoint(view,c,p){
  const o=originFor(view),u=unitFor(view.width)*c.zoom;
  const a=(p.x-o.x-c.pan.x)/u,b=(p.y-o.y-c.pan.y)/(u*.56)+10;
- return {x:(a+b)/2,y:(b-a)/2};
+ let sum=b;
+ for(let i=0;i<24;i++)sum=b+elevation((a+sum)/2,(sum-a)/2)/.56;
+ return {x:(a+sum)/2,y:(sum-a)/2};
 }
-export function tileAt(view,c,p){const q=worldPoint(view,c,p);return {x:Math.floor(q.x),y:Math.floor(q.y)};}
+export function tileAt(view,c,p){const q=worldPoint(view,c,p);return {x:Math.floor(q.x+1e-10),y:Math.floor(q.y+1e-10)};}
 export function zoomAt(view,c,zoom,from=originFor(view),to=from){
  zoom=clamp(zoom,MIN_ZOOM,MAX_ZOOM);
  const o=originFor(view),ratio=zoom/c.zoom;

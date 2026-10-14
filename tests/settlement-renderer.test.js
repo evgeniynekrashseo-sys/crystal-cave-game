@@ -1,4 +1,5 @@
 import * as story from '../dist/city-story.js';
+import * as world from '../dist/world-design.js';
 import {drawNaturalRiver} from '../dist/settlement-river.js';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,7 +20,7 @@ function renderer(){
  let id=0;
  const document={createElement:()=>({id:id++,width:0,height:0,getContext:()=>context()})};
  class Image{width=128;height=128;complete=true;naturalWidth=128;}
- const sandbox={...story,drawNaturalRiver,Image,URL,document,...camera,...life,VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,createMeadow:()=>({}),fillMeadow};
+ const sandbox={...world,...story,drawNaturalRiver,Image,URL,document,...camera,...life,VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,createMeadow:()=>({}),fillMeadow};
  const source=readFileSync(new URL('../dist/settlement-renderer.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replaceAll('import.meta.url',JSON.stringify('https://unit.test/renderer.js')).replaceAll('export function','function');
  vm.runInNewContext(source+'\nthis.scene={drawSettlement,mapTile};',sandbox);return sandbox.scene;
 }
@@ -32,7 +33,8 @@ test('river and bridge use exactly the same world-camera transform as buildings'
  scene.drawSettlement(first,canvas,sceneCity,{...a,selected:null,tool:null,time:0,reduced:true});
  scene.drawSettlement(second,canvas,sceneCity,{...b,selected:null,tool:null,time:0,reduced:true});
  // The old atlas bridge bakes in an unrelated river and must never be used.
- assert(!first.images.some(i=>i.id===35));assert(!second.images.some(i=>i.id===35));
+ const code=readFileSync(new URL('../dist/settlement-renderer.js',import.meta.url),'utf8');
+ assert(!code.includes("details['bridge']"));assert(!code.includes('details.bridge'));
  const before=camera.projectPoint(view,a,RIVER_BRIDGE.x+.5,RIVER_BRIDGE.y+.5),after=camera.projectPoint(view,b,RIVER_BRIDGE.x+.5,RIVER_BRIDGE.y+.5);
  const o=camera.originFor(view);near(after.x,o.x+(before.x-o.x)*b.zoom+b.pan.x);near(after.y,o.y+(before.y-o.y)*b.zoom+b.pan.y);
 });

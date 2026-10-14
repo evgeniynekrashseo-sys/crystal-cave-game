@@ -46,11 +46,13 @@ test('removing a road breaks truck connectivity and reroutes the vehicle as a wa
 
 test('road turns and junctions meet at the same projected tile edge',()=>{
  const c=rich();c.roads=[{x:4,y:5},{x:5,y:5},{x:4,y:6},{x:4,y:4},{x:3,y:5}];assert.equal(roadConnections(c,c.roads[0]).length,4);
- const lines=[];let start;const ctx={save(){},restore(){},beginPath(){},moveTo(x,y){start={x,y};},lineTo(x,y){lines.push({start,end:{x,y}});},stroke(){},ellipse(){},fill(){}};
+ const lines=[];let start;const ctx={save(){},restore(){},closePath(){},beginPath(){},moveTo(x,y){start={x,y};},lineTo(x,y){lines.push({start,end:{x,y}});},stroke(){},ellipse(){},fill(){}};
  const project=(x,y)=>({x:(x-y)*58,y:(x+y)*32.48});drawRoadNetwork(ctx,c,project,58);
- const midpoint=project(5,5.5),left=project(4.5,5.5),right=project(5.5,5.5);
- assert(lines.some(l=>l.start.x===left.x&&l.end.x===midpoint.x&&l.end.y===midpoint.y));
- assert(lines.some(l=>l.start.x===right.x&&l.end.x===midpoint.x&&l.end.y===midpoint.y));
+ // Both street polygons reach the exact same shared boundary at every material layer.
+ for(const radius of [.33,.29,.25,.20])for(const side of [-1,1]){
+  const edge=project(5,5.5+radius*side);
+  assert(lines.filter(l=>[l.start,l.end].some(p=>Math.abs(p.x-edge.x)<1e-8&&Math.abs(p.y-edge.y)<1e-8)).length>=2);
+ }
 });
 
 test('animals stay in the paddock, boats stay at sea and reduced motion is stable',()=>{

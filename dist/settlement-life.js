@@ -37,15 +37,25 @@ export function drawRoadNetwork(ctx,c,project,u){
   ctx.strokeStyle='#b8a17a';ctx.lineWidth=u*.13;ctx.stroke();
  }
 
- // Every connection ends at the SAME projected midpoint as its neighbouring tile.
+ // A continuous world-space street surface, including intersections. Every layer
+ // is completed across the whole network before the next; no per-tile end caps.
+ const paved=c.tech.includes('motor');
+ for(const [radius,color]of [[.33,'#94876835'],[.29,'#97866a88'],[.25,paved?'#a09d8d':'#b1a080'],[.20,paved?'#aaa799':'#bcaa89']]){
+  ctx.fillStyle=color;
+  for(const r of c.roads){
+   let l=.5-radius,t=.5-radius,rr=.5+radius,bb=.5+radius;
+   if(roads.has(`${r.x-1},${r.y}`))l=0;if(roads.has(`${r.x+1},${r.y}`))rr=1;
+   if(roads.has(`${r.x},${r.y-1}`))t=0;if(roads.has(`${r.x},${r.y+1}`))bb=1;
+   const rect=(x1,y1,x2,y2)=>{const points=[[x1,y1],[x2,y1],[x2,y2],[x1,y2]].map(([x,y])=>project(r.x+x,r.y+y));ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.fill();};
+   rect(l,.5-radius,rr,.5+radius);rect(.5-radius,t,.5+radius,bb);
+  }
+ }
  for(const r of c.roads){
-  const p=project(r.x+.5,r.y+.5),links=[[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dy])=>roads.has(`${r.x+dx},${r.y+dy}`));
-  const segments=links.length?links:[[0,0]];
-  for(const [dx,dy]of segments){const q=project(r.x+.5+dx*.5,r.y+.5+dy*.5);
-   for(const [width,color]of [[.39,'#675b44a0'],[.31,c.tech.includes('motor')?'#a3a09a':'#a88d69'],[.23,c.tech.includes('motor')?'#c0beb5':'#b49a76']]){
-    ctx.lineWidth=u*width;ctx.strokeStyle=color;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
-   }
-   for(let n=0;n<4;n++){const f=n/4;ctx.fillStyle=n%2?'#f4ead18c':'#7a806342';ctx.beginPath();ctx.ellipse(p.x+(q.x-p.x)*f,p.y+(q.y-p.y)*f,u*.025,u*.014,0,0,Math.PI*2);ctx.fill();}
+  for(let i=0;i<27;i++){
+   const x=.15+((i*37+r.x*13)%71)/100,y=.15+((i*23+r.y*17)%71)/100;
+   if(Math.abs(x-.5)>.22&&Math.abs(y-.5)>.22)continue;
+   const p=project(r.x+x,r.y+y);ctx.fillStyle=i%3?'#e6d9ba55':'#756f5944';
+   ctx.beginPath();ctx.ellipse(p.x,p.y,u*.012,u*.006,0,0,Math.PI*2);ctx.fill();
   }
  }
  ctx.restore();

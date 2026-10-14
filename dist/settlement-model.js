@@ -1,7 +1,7 @@
 import {normalizeStory,storyProduction} from './city-story.js?v=27';
 import {SUBSTANCES} from './mission.js?v=27';
 // Deterministic simulation shared by the map renderer and regression tests.
-export const SIZE=20;
+export const SIZE=32;
 export const LABELS={wood:'Деревина',stone:'Камінь',food:'Їжа',ore:'Руда',metal:'Метал',goods:'Товари',power:'Енергія',research:'Дослідження'};
 export const TECH=[
  {id:'water',name:'Знезараження води',era:'Санітарія',elements:['Cl'],cost:2,after:[],text:'Хлорвмісні засоби знезаражують воду. Водогін зменшує ризик кишкових інфекцій. Історичний орієнтир: муніципальне хлорування у США з 1908 року.'},
