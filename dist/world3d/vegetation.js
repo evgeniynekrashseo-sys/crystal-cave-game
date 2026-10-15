@@ -29,13 +29,13 @@ function grassGeometry(){
  return triangleGeometry(v);
 }
 export function vegetation(scene,materials,blocked){
- const rng=random(4429),dummy=new T.Object3D(),trees=[],grass=[],rocks=[];
+ const rng=random(4429),dummy=new T.Object3D(),trees=[],grass=[],rocks=[],fallback=new T.Group();scene.add(fallback);
  for(let i=0;i<600;i++){const x=rng()*160-6,z=rng()*160+8;if(blocked(x,z,1.2))continue;const near=x<77&&z<98;if(near&&rng()<.7)continue;trees.push({x,z,h:6+rng()*5,a:rng()*6.28});}
  const leaf=new T.MeshStandardMaterial({color:0xffffff,roughness:1,side:T.DoubleSide});
  for(let variant=0;variant<3;variant++){
   const foliageGeometry=firGeometry(170+variant),trunkGeometry=new T.CylinderGeometry(.1,.25,1,6);
   for(const list of chunks(trees.filter((_,i)=>i%3===variant))){const mesh=new T.InstancedMesh(foliageGeometry,leaf,list.length),trunks=new T.InstancedMesh(trunkGeometry,materials.timber,list.length);
-  list.forEach((p,i)=>{dummy.position.set(p.x,groundHeight(p.x,p.z),p.z);dummy.scale.setScalar(p.h);dummy.rotation.set(0,p.a,0);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);mesh.setColorAt(i,new T.Color().setHSL(.23+rng()*.035,.22+rng()*.1,.23+rng()*.08));dummy.position.y+=p.h/2;dummy.scale.set(1,p.h,1);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);});mesh.castShadow=mesh.receiveShadow=trunks.castShadow=true;mesh.computeBoundingSphere();trunks.computeBoundingSphere();scene.add(mesh,trunks);}
+  list.forEach((p,i)=>{dummy.position.set(p.x,groundHeight(p.x,p.z),p.z);dummy.scale.setScalar(p.h);dummy.rotation.set(0,p.a,0);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);mesh.setColorAt(i,new T.Color().setHSL(.23+rng()*.035,.22+rng()*.1,.23+rng()*.08));dummy.position.y+=p.h/2;dummy.scale.set(1,p.h,1);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);});mesh.castShadow=mesh.receiveShadow=trunks.castShadow=true;mesh.computeBoundingSphere();trunks.computeBoundingSphere();fallback.add(mesh,trunks);}
  }
  for(let i=0;i<23000;i++){const x=rng()*124-3,z=rng()*124+7;if(blocked(x,z,.05)||Math.sin(x*.21)*Math.cos(z*.27)<-.5)continue;grass.push({x,z,s:.55+rng()*.9,a:rng()*6.28});}
  const grassGeo=grassGeometry(),grassMaterial=new T.MeshStandardMaterial({color:0xffffff,roughness:1,side:T.DoubleSide});
@@ -43,5 +43,5 @@ export function vegetation(scene,materials,blocked){
  list.forEach((p,i)=>{dummy.position.set(p.x,groundHeight(p.x,p.z),p.z);dummy.rotation.set(0,p.a,0);dummy.scale.setScalar(p.s);dummy.updateMatrix();grassMesh.setMatrixAt(i,dummy.matrix);grassMesh.setColorAt(i,new T.Color().setHSL(.18+rng()*.055,.22+rng()*.12,.29+rng()*.11));});grassMesh.receiveShadow=true;grassMesh.computeBoundingSphere();scene.add(grassMesh);}
  for(let i=0;i<480;i++){const x=rng()*150,z=rng()<.65?rng()*11:rng()*140;if(blocked(x,z,0))continue;rocks.push({x,z,s:.22+rng()*1.4});}
  const rockMesh=new T.InstancedMesh(new T.IcosahedronGeometry(1,1),materials.stone,rocks.length);rocks.forEach((p,i)=>{dummy.position.set(p.x,groundHeight(p.x,p.z)+p.s*.2,p.z);dummy.scale.set(p.s,p.s*.55,p.s*.8);dummy.rotation.set(rng(),rng()*6,rng());dummy.updateMatrix();rockMesh.setMatrixAt(i,dummy.matrix);rockMesh.setColorAt(i,new T.Color().setScalar(.72+rng()*.28));});rockMesh.castShadow=rockMesh.receiveShadow=true;scene.add(rockMesh);
- return {trees:trees.length,grass:grass.length};
+ return {trees:trees.length,grass:grass.length,sites:trees,fallback};
 }
