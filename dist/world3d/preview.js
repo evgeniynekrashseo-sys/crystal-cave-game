@@ -4,6 +4,9 @@ const fixture={extent:16,seconds:120,roads:[],buildings:[],agents:[]};
 for(let y=2;y<12;y++)fixture.roads.push({x:5,y,level:y>7?2:1});
 for(let x=2;x<11;x++)fixture.roads.push({x,y:6,level:1});
 [['house',4,3,1],['house',6,4,3],['lumber',4,5,1],['ranch',7,5,1],['farm',8,7,1],['granary',6,8,2],['school',4,8,3],['house',4,10,2],['park',6,10,1]].forEach(([type,x,y,level],id)=>fixture.buildings.push({id,type,x,y,level,ready:0}));
+// Adjacent examples expose actual foundation and frame stages in the workshop.
+fixture.buildings[1].started=100;fixture.buildings[1].ready=150;
+fixture.buildings[7].started=116;fixture.buildings[7].ready=150;
 let saved;try{saved=JSON.parse(localStorage.getItem('chemlab_settlement_v2'));}catch{}
 const data=saved?.buildings?.length&&new URLSearchParams(location.search).get('save')==='1'?saved:fixture;
 const canvas=document.querySelector('canvas');

@@ -1,6 +1,7 @@
 import * as T from '../vendor/three/three.module.js';
 import {triangleGeometry} from './geometry.js';
 import {random} from './world-space.js';
+import {addCraftDetail} from './craft-detail.js';
 // Provisional mesh kit. No photographed ground, PNG walls, or baked shadows.
 // The model's front door is always local +Z; the whole group faces its access road.
 const box=new T.BoxGeometry(1,1,1),cylinder=new T.CylinderGeometry(1,1,1,12);
@@ -17,6 +18,7 @@ export function buildingMesh(type,level,m,progress=1){
  if(type==='well'){const ring=new T.Mesh(new T.CylinderGeometry(.75,.8,1,16,1,true),m.stone);ring.position.y=.5;ring.castShadow=true;g.add(ring);for(const x of [-1,1])part(m.wood,x,1.3,0,.16,2.6,.16);roof(2.7,2,2.5,m.roof);return g;}
  const open=type==='lumber',industrial=['factory','smelter','energy'].includes(type),barn=['ranch','granary'].includes(type),civic=['lab','school','university','clinic','observatory'].includes(type);
  const w=open?5.7:industrial?5.5:barn?4.5:civic?5:4,d=open?4.3:barn?5.3:4.5,h=level>=3?4.2:2.8;
+ addCraftDetail(g,m,{width:w,depth:d,height:h,progress,type,seed:180+type.length+level});
  part(m.stone,0,.18,0,w+.3,.36,d+.3);
  for(let row=0;row<2;row++)for(const sign of [-1,1]){
   for(let x=-w/2;x<w/2;x+=.64)part(m.stone,x+.27,row*.24+.13,sign*(d/2+.07),.59,.23,.25);

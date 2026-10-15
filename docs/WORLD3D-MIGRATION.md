@@ -38,6 +38,12 @@ Three.js 0.180.0 official npm distribution via jsDelivr (`build/three.module.js`
 
 ## Generated surface assets
 
+### Craft detail iteration
+
+Added `world3d/craft-detail.js`: chamfered corner masonry, door jambs/planks/hinges/pulls, shutters and stone sills, eave braces and pegs, sawmill workbench, timber stacks and construction scaffolds/ladders. These meshes are merged into their parent building's material batches. The workshop now shows one frame-stage house and one foundation-stage house, using its own fixture only. Zoom reaches a 14-metre vertical span; shadow coverage follows the camera to preserve detail at close range.
+
+Checks: 114 tests pass; desktop/mobile WebGL2 run has no JavaScript errors or horizontal overflow. The changed fixture submits 152 renderer calls / 417,967 triangles. These figures do not establish phone frame rate or reference-quality acceptance.
+
 Built-in imagegen was used for both material images. Outputs are converted to WebP for the project; the architecture atlas is divided into four equal quadrants by the runtime material loader. These are surface textures on geometry, not backdrop screenshots. Lighting/shadows remain real-time.
 
 - `dist/world3d/meadow-albedo.webp`, source `generated_images/exec-8b71ad6e-71c3-46e5-9a6d-8b88eb7f7621.png`.
