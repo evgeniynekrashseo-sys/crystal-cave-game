@@ -1,0 +1,30 @@
+name: City 3D Sandbox QA
+on:
+  push:
+    branches: [feature/city-visual-quality-loop]
+  pull_request:
+    paths:
+      - 'dist/city-3d-sandbox.html'
+      - 'docs/city/**'
+      - '.github/workflows/city-3d-qa.yml'
+  workflow_dispatch:
+jobs:
+  sandbox-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify sandbox integration
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const html=fs.readFileSync('dist/city-3d-sandbox.html','utf8');
+          for(const marker of ['three@','GLTFLoader','OrbitControls','id="view"','id="quality"','id="save"','id="load"','id="move"','requestAnimationFrame']) assert.ok(html.includes(marker), 'Missing: '+marker);
+          assert.ok(!html.includes('eval('));
+          console.log('Sandbox static checks passed');
+          NODE
+      - name: Existing game tests
+        run: npm test
