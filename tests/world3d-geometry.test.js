@@ -28,3 +28,9 @@ test('building detail is batched and all construction stages have finite geometr
 test('triangle geometry provides complete normals and UVs',()=>{
  const g=triangleGeometry([0,0,0,1,0,0,0,1,0]);assert.equal(g.attributes.normal.count,3);assert.equal(g.attributes.uv.count,3);
 });
+test('sloped roofs use two independent texture axes',()=>{
+ const group=new T.Group(),mat=new T.MeshStandardMaterial();mat.userData.surfaceScale=1;
+ const mesh=new T.Mesh(new T.PlaneGeometry(3,3),mat);mesh.rotation.set(-Math.PI/2,0,.6);group.add(mesh);
+ const uv=batchStatic(group).children[0].geometry.attributes.uv;
+ const area=(uv.getX(1)-uv.getX(0))*(uv.getY(2)-uv.getY(0))-(uv.getX(2)-uv.getX(0))*(uv.getY(1)-uv.getY(0));assert.ok(Math.abs(area)>1);
+});
