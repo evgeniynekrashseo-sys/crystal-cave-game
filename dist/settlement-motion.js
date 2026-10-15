@@ -1,4 +1,4 @@
-import {entrancePath,pathPosition} from './settlement-layout.js?v=41';
+import {entrancePath,pathPosition} from './settlement-layout.js?v=42';
 const indoor=new Set(['school','university','observatory','factory','smelter','clinic','granary','market']);
 const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
 export function actorPose(a,job,previous,alpha=1,reduced=false){

@@ -1,4 +1,4 @@
-import {constructionState} from './world-design.js?v=41';
+import {constructionState} from './world-design.js?v=42';
 
 // Geometry uses the same camera and world footprint as the finished building.
 // No substitute miniature building and no screen-space animation of structural parts.

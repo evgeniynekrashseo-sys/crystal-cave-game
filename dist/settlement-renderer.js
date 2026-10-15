@@ -1,13 +1,14 @@
-import {actorPose} from './settlement-motion.js?v=41';
-import {drawConstruction} from './settlement-construction.js?v=41';
+import {COHERENT_KEYS,coherentKey} from './settlement-art-direction.js?v=42';
+import {actorPose} from './settlement-motion.js?v=42';
+import {drawConstruction} from './settlement-construction.js?v=42';
 import {drawNaturalRiver} from './settlement-river.js?v=34';
-import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=41';
+import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=42';
 import {ARTIFACTS,artifactError} from './city-story.js?v=27';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
-import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=41';
+import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=42';
 import {createMeadow,fillMeadow} from './settlement-ground.js?v=36';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=41';
-import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=41';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=42';
+import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=42';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./terrain-meadow-v36.webp',import.meta.url).href;
@@ -34,7 +35,14 @@ const functionAtlas=new Image();functionAtlas.src=new URL('./city-functions-v38.
 const functionsArt={};let preparedFunctions=false;
 const motionAtlas=new Image();motionAtlas.src=new URL('./city-motion-v40.webp',import.meta.url).href;
 const motionArt={};let preparedMotion=false;
+const coherentAtlas=new Image();coherentAtlas.src=new URL('./city-architecture-v42.webp',import.meta.url).href;
+const coherentArt={};let preparedCoherent=false;
+const fieldAtlas=new Image();fieldAtlas.src=new URL('./city-fields-v42.webp',import.meta.url).href;
+const fieldArt={};let preparedFields=false;
 function objectArt(obj,time=0,reduced=true){
+ if(obj.b?.type==='farm'&&fieldArt['field'+architecturalStage(obj.b.level)])return fieldArt['field'+architecturalStage(obj.b.level)];
+ if(obj.lab&&coherentArt.lab1)return coherentArt.lab1;
+ const coherent=coherentKey(obj.b);if(coherent&&coherentArt[coherent])return coherentArt[coherent];
  if(obj.pose&&(!['woman','pupil','scientist','engineer','botanist','captain'].includes(obj.kind)||obj.pose.chopping)&&motionArt[obj.pose.key])return motionArt[obj.pose.key];
  if(obj.animal&&motionArt[obj.kind+obj.animal.frame])return motionArt[obj.kind+obj.animal.frame];
  if(obj.lab&&functionsArt.lab)return functionsArt.lab;
@@ -80,6 +88,12 @@ function sliceAtlas(image,names,target,rows=null){
 }
 
 function prepare(){
+ if(!preparedFields&&fieldAtlas.complete&&fieldAtlas.naturalWidth){
+  const raw={};sliceAtlas(fieldAtlas,['field1','field2','field3','field4'],raw,[[0,1]]);
+  for(const [key,img]of Object.entries(raw)){const cell=document.createElement('canvas');cell.width=img.width;cell.height=Math.round(img.width*.64);cell.getContext('2d').drawImage(img,0,0,cell.width,cell.height);fieldArt[key]=cell;}
+  preparedFields=true;
+ }
+ if(!preparedCoherent&&coherentAtlas.complete&&coherentAtlas.naturalWidth){sliceAtlas(coherentAtlas,COHERENT_KEYS,coherentArt,[[0,.25],[.25,.48],[.48,.735],[.735,1]]);preparedCoherent=true;}
  if(!preparedMotion&&motionAtlas.complete&&motionAtlas.naturalWidth){
   const cropped={};sliceAtlas(motionAtlas,['walk','back','chop','truck','horse','sheep'].flatMap(k=>[0,1,2,3].map(n=>k+n)),cropped,[[0,.17],[.17,.337],[.337,.535],[.535,.68],[.68,.845],[.845,1]]);
   for(const group of ['walk','back','chop','truck','horse','sheep']){
@@ -301,8 +315,15 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
    if((life[obj.kind]||chronicle[obj.kind])?direction<0:(direction<0)!==!!frame)ctx.scale(-1,1);
   }
   ctx.drawImage(image,-width/2,-height,width,height);ctx.restore();
-  // Ranch art already contains its stable, pen and livestock. A second oversized
-  // pen plus a whole herd used to cover adjacent buildings and the road.
+  // New ranch compound has an empty paddock; add only two small animated sheep.
+  if(obj.b?.type==='ranch'&&preparedCoherent){
+   const b=obj.b;
+   for(let i=0;i<2;i++){
+    const t=reduced?0:time*.35+i*2,walk=!reduced&&Math.abs(Math.cos(t))>.3;
+    const q=project(b.x+.70+Math.sin(t)*.06,b.y+.78+i*.12);
+    paintImage(ctx,motionArt['sheep'+(walk?Math.floor(time*4+i)%4:0)]||nature.sheep,q.x,q.y,u*.14,{flip:Math.cos(t)<0});
+   }
+  }
   if(obj.b?.type==='farm'){
    const b=obj.b;
    const count=Math.min(3,b.level+1);

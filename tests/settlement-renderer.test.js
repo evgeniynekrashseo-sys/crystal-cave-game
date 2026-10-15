@@ -1,3 +1,4 @@
+import {COHERENT_KEYS,coherentKey} from '../dist/settlement-art-direction.js';
 import {actorPose} from '../dist/settlement-motion.js';
 import * as story from '../dist/city-story.js';
 import * as world from '../dist/world-design.js';
@@ -22,7 +23,7 @@ function renderer(){
  let id=0;
  const document={createElement:()=>({id:id++,width:0,height:0,getContext:()=>context()})};
  class Image{width=128;height=128;complete=true;naturalWidth=128;}
- const sandbox={actorPose,...world,...story,drawConstruction,drawNaturalRiver,Image,URL,document,...camera,...life,VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable,createMeadow:()=>({}),fillMeadow};
+ const sandbox={COHERENT_KEYS,coherentKey,actorPose,...world,...story,drawConstruction,drawNaturalRiver,Image,URL,document,...camera,...life,VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable,createMeadow:()=>({}),fillMeadow};
  const source=readFileSync(new URL('../dist/settlement-renderer.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replaceAll('import.meta.url',JSON.stringify('https://unit.test/renderer.js')).replaceAll('export function','function');
  vm.runInNewContext(source+'\nthis.scene={drawSettlement,mapTile};',sandbox);return sandbox.scene;
 }
@@ -30,14 +31,14 @@ const sceneCity={extent:10,roads:[],buildings:[{id:1,type:'house',x:3,y:4,level:
 const canvas={clientWidth:430,clientHeight:936};
 const view={width:430,height:936};
 
-test('a ranch is a single anchored compound, without a second pen or duplicate herd',()=>{
+test('a ranch is a single anchored compound, with exactly two small livestock sprites and no second pen',()=>{
  const scene=renderer(),counts=[];
  for(const type of ['house','ranch']){
   const ctx=context(),c={...sceneCity,buildings:[{...sceneCity.buildings[0],type,level:5}]};
   scene.drawSettlement(ctx,canvas,c,{zoom:1,pan:{x:0,y:0},selected:null,tool:null,time:0,reduced:true});
   counts.push(ctx.images.length);
  }
- assert.equal(counts[1],counts[0]);
+ assert.equal(counts[1],counts[0]+2);
 });
 test('residents behind and in front of a plot sort by their actual ground contact',()=>{
  const building={x:3,y:4,b:{type:'house'}},behind={x:3.4,y:4.3},front={x:3.8,y:4.5};

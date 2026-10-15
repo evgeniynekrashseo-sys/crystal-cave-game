@@ -1,4 +1,4 @@
-import {entrancePath} from './settlement-layout.js?v=41';
+import {entrancePath} from './settlement-layout.js?v=42';
 // Shore relief is deterministic and stays outside the buildable y >= 0 cells.
 const shoreY=x=>-.10-.12*(1+Math.sin(x*.73))-.055*(1+Math.sin(x*2.31));
 export function drawSea(ctx,project,u,time,reduced,view){

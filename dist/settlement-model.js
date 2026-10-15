@@ -1,4 +1,4 @@
-import {constructionDuration,forestCover} from './world-design.js?v=41';
+import {constructionDuration,forestCover} from './world-design.js?v=42';
 import {normalizeStory,storyProduction} from './city-story.js?v=27';
 import {SUBSTANCES} from './mission.js?v=27';
 // Deterministic simulation shared by the map renderer and regression tests.

@@ -1,6 +1,6 @@
 // World-space door positions shared by access paths and worker transitions.
 // Front-left facades face +y; front-right facades face +x.
-const doors={house:[.30,.88],school:[.34,.88],granary:[.36,.89],lumber:[.58,.88],factory:[.32,.88],clinic:[.35,.88],university:[.38,.88],observatory:[.40,.88],lab:[.38,.9],ranch:[.6,.88],farm:[.5,.9],park:[.5,.9]};
+const doors={house:[.66,.96],school:[.61,.96],granary:[.63,.96],lumber:[.56,.96],factory:[.67,.96],clinic:[.35,.88],university:[.38,.88],observatory:[.40,.88],lab:[.64,.96],ranch:[.63,.96],farm:[.5,.9],park:[.5,.9]};
 export function buildingDoor(b){const [x,y]=doors[b.type]||[.38,.88];return {x:b.x+x,y:b.y+y};}
 export function entrancePath(b,target){
  const door=buildingDoor(b),left=b.x+.04,right=b.x+.96,top=b.y+.04,bottom=b.y+.96;
