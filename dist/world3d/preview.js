@@ -16,7 +16,7 @@ try{
  canvas.addEventListener('wheel',e=>{e.preventDefault();world.zoom(Math.exp(e.deltaY*.001));dirty=true;},{passive:false});
  document.querySelector('#left').onclick=()=>{world.orbit(-Math.PI/8);dirty=true;};document.querySelector('#right').onclick=()=>{world.orbit(Math.PI/8);dirty=true;};document.querySelector('#in').onclick=()=>{world.zoom(.8);dirty=true;};document.querySelector('#out').onclick=()=>{world.zoom(1.25);dirty=true;};
  addEventListener('resize',()=>{world.resize();dirty=true;});
- function frame(t){if(stopped)return;if(dirty){world.render(t*.001);dirty=false;}raf=requestAnimationFrame(frame);}raf=requestAnimationFrame(frame);
+ function frame(t){if(stopped)return;if(dirty||world.dirty){world.render(t*.001);dirty=false;world.dirty=false;}raf=requestAnimationFrame(frame);}raf=requestAnimationFrame(frame);
  addEventListener('pagehide',()=>{stopped=true;cancelAnimationFrame(raf);world.dispose();},{once:true});
  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();stopped=true;document.querySelector('#status').textContent='Графічний контекст втрачено. Перезавантаж сторінку.';});
 }catch(error){const el=document.querySelector('#error');el.style.display='block';el.textContent='Не вдалося запустити 3D-сцену: '+error.message;throw error;}
