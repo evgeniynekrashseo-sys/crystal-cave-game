@@ -5,6 +5,7 @@ import {buildingMesh} from './architecture.js';
 import {batchStatic} from './geometry.js';
 import {vegetation} from './vegetation.js';
 import {makeTerrain} from './terrain.js';
+import {loadForest} from './forest-assets.js';
 
 export class WorldRenderer {
  constructor(canvas,save){
@@ -29,12 +30,13 @@ export class WorldRenderer {
  makeNature(){
   const blocked=(x,z,padding=0)=>this.buildings.some(b=>Math.abs(x-b.position.x)<3.3+padding&&Math.abs(z-b.position.z)<3.3+padding)||roadDistance(x,z,this.roads).distance<2.3+padding;
   this.natureStats=vegetation(this.scene,this.materials,blocked);
+  this.assetsReady=loadForest(this.scene,this.natureStats.sites,()=>this.disposed,this.camera).then(group=>{if(group){this.forest=group;this.natureStats.fallback.visible=false;this.natureStats.detailed=true;this.dirty=true;}}).catch(error=>{this.natureStats.assetError=error.message;console.warn('Detailed forest unavailable; retaining fallback',error);});
  }
  resize(){const {width,height}=this.canvas.getBoundingClientRect();this.renderer.setSize(width,height,false);this.camera.left=-this.span*width/height/2;this.camera.right=-this.camera.left;this.camera.top=this.span/2;this.camera.bottom=-this.camera.top;this.camera.near=.1;this.camera.far=600;this.camera.updateProjectionMatrix();this.updateCamera();}
  updateCamera(){this.camera.position.copy(this.target).add(new T.Vector3(Math.sin(this.azimuth)*95,85,Math.cos(this.azimuth)*95));this.camera.lookAt(this.target);this.camera.updateMatrixWorld();if(this.sun){const radius=Math.max(18,this.span);this.sun.target.position.copy(this.target);this.sun.position.copy(this.target).add(new T.Vector3(-75,85,-25));Object.assign(this.sun.shadow.camera,{left:-radius,right:radius,top:radius,bottom:-radius});this.sun.shadow.camera.updateProjectionMatrix();}}
  orbit(delta){this.azimuth+=delta;this.updateCamera();}
  pan(dx,dy){const scale=this.span/this.canvas.clientHeight,right=new T.Vector3().setFromMatrixColumn(this.camera.matrixWorld,0),forward=new T.Vector3(right.z,0,-right.x);this.target.addScaledVector(right,-dx*scale).addScaledVector(forward,dy*scale*1.5);this.updateCamera();}
  zoom(factor){this.span=T.MathUtils.clamp(this.span*factor,14,160);this.resize();}
- render(time){this.water.material.roughness=.3+.025*Math.sin(time*.7);this.renderer.render(this.scene,this.camera);}
- dispose(){const geometries=new Set(),materials=new Set(),textures=new Set();this.scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const t of o.userData.extraTextures||[])textures.add(t);for(const m of (Array.isArray(o.material)?o.material:[o.material]))if(m){materials.add(m);for(const v of Object.values(m))if(v?.isTexture)textures.add(v);}});for(const x of [...geometries,...materials,...textures])x.dispose();this.renderer.dispose();}
+ render(time){this.forest?.userData.update();this.water.material.roughness=.3+.025*Math.sin(time*.7);this.renderer.render(this.scene,this.camera);}
+ dispose(){this.disposed=true;const geometries=new Set(),materials=new Set(),textures=new Set();this.scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const t of o.userData.extraTextures||[])textures.add(t);for(const m of (Array.isArray(o.material)?o.material:[o.material]))if(m){materials.add(m);for(const v of Object.values(m))if(v?.isTexture)textures.add(v);}});for(const x of [...geometries,...materials,...textures])x.dispose();this.renderer.dispose();}
 }
