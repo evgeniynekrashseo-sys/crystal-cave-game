@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "goal": "reference-matched editable medieval 3D settlement",
+  "status": "candidate-sources-only",
+  "sources": [
+    {
+      "name": "Three.js",
+      "url": "https://github.com/mrdoob/three.js",
+      "role": "web renderer/editor foundation",
+      "license": "MIT",
+      "integration": "candidate"
+    },
+    {
+      "name": "THREE.Terrain",
+      "url": "https://github.com/IceCreamYou/THREE.Terrain",
+      "role": "procedural terrain",
+      "license": "verify-before-integration",
+      "integration": "candidate"
+    },
+    {
+      "name": "Poly Haven",
+      "url": "https://polyhaven.com",
+      "role": "PBR textures/HDRI/3D assets",
+      "license": "CC0 per asset; verify metadata",
+      "integration": "candidate"
+    },
+    {
+      "name": "Quaternius",
+      "url": "https://quaternius.com",
+      "role": "prototype models",
+      "license": "verify specific asset pack",
+      "integration": "candidate"
+    }
+  ],
+  "importedAssets": [],
+  "rules": [
+    "Store provenance and licenses before import",
+    "No sprite replacements for approved lab art",
+    "Never mark candidate models as production ready without visual QA"
+  ]
+}

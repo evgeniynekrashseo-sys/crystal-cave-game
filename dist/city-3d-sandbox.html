@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ChemLab 3D World Editor — Sandbox</title>
+<style>
+html,body{margin:0;height:100%;background:#10191b;color:#e9e9dc;font:14px system-ui}#view{position:absolute;inset:0 280px 0 0}aside{position:absolute;right:0;top:0;bottom:0;width:248px;background:#172322;padding:16px;overflow:auto;box-shadow:-4px 0 22px #0005}button,input,select{box-sizing:border-box;width:100%;margin:5px 0;padding:9px;border:1px solid #455c52;background:#253a34;color:white;border-radius:7px}button{cursor:pointer}label{display:block;margin-top:12px;font-size:12px;color:#b4c5b9}h2{margin:0 0 8px}small{color:#b5c7bc}#status{font-size:12px;white-space:pre-wrap}#view canvas{display:block}@media(max-width:700px){#view{inset:0 0 260px 0}aside{top:auto;left:0;width:auto;height:230px;display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:8px}aside h2,aside small,aside #status{grid-column:1/-1}aside label{margin:0}}
+</style><script type="importmap">{"imports":{"three":"https://esm.sh/three@0.170.0","three/addons/":"https://esm.sh/three@0.170.0/examples/jsm/"}}</script></head>
+<body><div id="view"></div><aside><h2>ChemLab · 3D Sandbox</h2><small>Окремий редактор. Основна гра не змінена.</small>
+<label>Об'єкт</label><select id="objects"></select><label>Масштаб</label><input id="scale" type="range" min=".4" max="3" step=".05" value="1">
+<label>Поворот</label><input id="rotation" type="range" min="0" max="360" value="0">
+<label>Колір матеріалу</label><input id="color" type="color" value="#b9a68a">
+<button id="add">Додати будівлю (тест)</button><button id="addtree">Додати дерево</button><button id="move">Режим: переміщення об’єкта</button><button id="quality">Якість: авто</button><label>Імпорт редагованої GLB/GLTF моделі</label><input type="file" id="upload" accept=".glb,.gltf">
+<button id="save">Зберегти сцену JSON</button><input type="file" id="load" accept=".json">
+<button id="reset">Скинути тестову сцену</button><div id="status">Підготовка 3D…</div></aside>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const host=document.getElementById('view'),status=document.getElementById('status');
+const scene=new THREE.Scene();scene.background=new THREE.Color('#b7c9bf');scene.fog=new THREE.Fog('#b7c9bf',35,90);
+const camera=new THREE.OrthographicCamera(-12,12,9,-9,.1,200);camera.position.set(19,23,24);camera.lookAt(0,0,0);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.3;host.append(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,1,0);controls.enableDamping=true;controls.maxPolarAngle=Math.PI/2.05;
+scene.add(new THREE.HemisphereLight('#e6f5ff','#6c6045',2));const sun=new THREE.DirectionalLight('#fff1d6',3);sun.position.set(-10,23,14);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-25;sun.shadow.camera.right=25;sun.shadow.camera.top=25;sun.shadow.camera.bottom=-25;scene.add(sun);
+const mat=(c,roughness=1)=>new THREE.MeshStandardMaterial({color:c,roughness});
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(80,80),mat('#526c48'));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+const registry=[],objects=document.getElementById('objects');let selected=null;
+function mesh(geo,m,x,y,z,parent){const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o}
+function register(root,name,type){root.userData.kind=type;root.userData.label=name;scene.add(root);registry.push(root);refresh();select(root);return root}
+function house(x,z){const g=new THREE.Group();g.position.set(x,0,z);const stone=mat('#9b998a'),wood=mat('#76543b'),roof=mat('#695449');
+mesh(new THREE.BoxGeometry(3,1.7,2.7),stone,0,1.05,0,g);
+for(const sx of [-1.3,1.3])for(const sz of [-1.12,1.12])mesh(new THREE.BoxGeometry(.17,2.3,.17),wood,sx,1.15,sz,g);
+for(const side of [-1,1]){const panel=mesh(new THREE.BoxGeometry(2.3,.16,2.1),roof,side*.76,2.42,0,g);panel.rotation.z=side*-.65}
+mesh(new THREE.BoxGeometry(.7,1.2,.12),wood,0,.75,1.39,g);
+return register(g,'Timber house '+(registry.length+1),'house')}
+function tree(x,z){const g=new THREE.Group();g.position.set(x,0,z);mesh(new THREE.CylinderGeometry(.13,.22,2.2,8),mat('#56452f'),0,1.1,0,g);
+for(let i=0;i<3;i++)mesh(new THREE.ConeGeometry(1.25-i*.2,2.1,9),mat(i%2?'#31553b':'#416b42'),0,2.3+i*.68,0,g);
+return register(g,'Pine '+(registry.length+1),'tree')}
+function refresh(){objects.replaceChildren();registry.forEach((o,i)=>{const op=document.createElement('option');op.value=i;op.textContent=o.userData.label;objects.append(op)});if(selected)objects.value=registry.indexOf(selected)}
+function select(o){selected=o;refresh();document.getElementById('scale').value=o.scale.x;document.getElementById('rotation').value=(o.rotation.y*180/Math.PI+360)%360}
+document.getElementById('objects').onchange=e=>select(registry[+e.target.value]);
+document.getElementById('scale').oninput=e=>{if(selected)selected.scale.setScalar(+e.target.value)};
+document.getElementById('rotation').oninput=e=>{if(selected)selected.rotation.y=+e.target.value*Math.PI/180};
+document.getElementById('color').oninput=e=>{if(selected)selected.traverse(o=>{if(o.isMesh&&o.material?.color)o.material.color.set(e.target.value)})};
+document.getElementById('add').onclick=()=>house(Math.random()*8-4,Math.random()*8-4);
+document.getElementById('addtree').onclick=()=>tree(Math.random()*10-5,Math.random()*10-5);
+let moveMode=false;document.getElementById('move').onclick=e=>{moveMode=!moveMode;e.target.textContent=moveMode?'Режим: торкнись землі для розміщення':'Режим: переміщення об’єкта'};
+let quality=0;document.getElementById('quality').onclick=e=>{quality=(quality+1)%3;renderer.setPixelRatio(quality===1?1:quality===2?Math.min(devicePixelRatio,2):Math.min(devicePixelRatio,1.5));sun.shadow.mapSize.set(quality===1?512:quality===2?2048:1024,quality===1?512:quality===2?2048:1024);sun.shadow.map?.dispose();sun.shadow.map=null;e.target.textContent='Якість: '+['авто','економія','висока'][quality]};
+document.getElementById('reset').onclick=()=>{for(const o of registry)scene.remove(o);registry.length=0;selected=null;house(-3,0);house(2,-2);tree(-6,-4);tree(5,2);tree(6,-3);status.textContent='Тестові моделі — не фінальні 3D-асети.'};
+document.getElementById('upload').onchange=async e=>{const file=e.target.files[0];if(!file)return;const url=URL.createObjectURL(file);try{const gltf=await new GLTFLoader().loadAsync(url);register(gltf.scene,file.name,'imported');status.textContent='Модель імпортовано. Збереження JSON зберігає лише параметри об’єктів, не геометрію GLB.'}catch(err){status.textContent='Помилка імпорту: '+err.message}finally{URL.revokeObjectURL(url)}};
+document.getElementById('save').onclick=()=>{const data={version:1,objects:registry.map(o=>({kind:o.userData.kind,label:o.userData.label,position:o.position.toArray(),rotation:o.rotation.y,scale:o.scale.x}))};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='chemlab-scene.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+document.getElementById('load').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.version!==1||!Array.isArray(data.objects))throw Error('Невірний формат');for(const o of [...registry])scene.remove(o);registry.length=0;for(const item of data.objects){if(!['house','tree'].includes(item.kind))continue;const o=item.kind==='house'?house(0,0):tree(0,0);o.position.fromArray(item.position);o.rotation.y=item.rotation;o.scale.setScalar(item.scale)}status.textContent='Сцену завантажено (GLB потрібно імпортувати повторно).'}catch(err){status.textContent=err.message}};
+const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();renderer.domElement.addEventListener('pointerdown',e=>{const rect=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(registry,true);if(hits.length){let o=hits[0].object;while(o.parent&&!registry.includes(o))o=o.parent;if(registry.includes(o))select(o)}else if(moveMode&&selected){const hit=ray.intersectObject(ground)[0];if(hit){selected.position.x=Math.round(hit.point.x*2)/2;selected.position.z=Math.round(hit.point.z*2)/2}}});
+function resize(){const w=host.clientWidth,h=host.clientHeight;camera.left=-12*w/h;camera.right=12*w/h;camera.top=12;camera.bottom=-12;camera.updateProjectionMatrix();renderer.setSize(w,h)}new ResizeObserver(resize).observe(host);resize();document.getElementById('reset').click();
+let last=performance.now(),frames=0;function tick(now){requestAnimationFrame(tick);controls.update();renderer.render(scene,camera);frames++;if(now-last>3000){status.textContent='3D-пісочниця · '+Math.round(frames*1000/(now-last))+' FPS · '+registry.length+' об’єктів. Тестові моделі, не фінальний арт.';last=now;frames=0}}requestAnimationFrame(tick);
+</script></body></html>

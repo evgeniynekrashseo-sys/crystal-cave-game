@@ -1,3 +1,4 @@
+import {drawRoadMicroDetail} from './settlement-surface-detail.js';
 import {COHERENT_KEYS,coherentKey} from './settlement-art-direction.js?v=42';
 import {actorPose} from './settlement-motion.js?v=42';
 import {drawConstruction} from './settlement-construction.js?v=42';
@@ -203,6 +204,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
  foundation(4,2);
 
  drawRoadNetwork(ctx,c,project,u);
+  drawRoadMicroDetail(ctx,c.roads,project,u,zoom,reduced);
  if(tool)for(let x=0;x<c.extent;x++)for(let y=0;y<c.extent;y++)diamond(x,y,'#ffffff04','#e8ffff2e');
 
  for(const p of c.loggingPlots||[])diamond(p.x,p.y,'#d5ae4620','#d5ae46');
