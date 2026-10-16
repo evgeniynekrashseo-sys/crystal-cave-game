@@ -41,12 +41,12 @@ export function drawCompoundYard(ctx,b,project,u){
  const [w,h]=footprintSize(b),industrial=['factory','smelter','energy','lumber','mine','quarry','granary','harbor'].includes(b.type);
  const pts=[[.04,.04],[w-.04,.04],[w-.04,h-.04],[.04,h-.04]].map(([x,y])=>project(b.x+x,b.y+y));
  ctx.save();ctx.beginPath();pts.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.clip();
- ctx.fillStyle=industrial?'#91826995':'#8f917249';ctx.fill();
+ ctx.fillStyle=b.type==='factory'?'#827a6745':industrial?'#91826995':'#8f917249';ctx.fill();
  let seed=b.id*7919;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
  for(let i=0;i<w*h*45;i++){const p=project(b.x+random()*w,b.y+random()*h);ctx.fillStyle=i%3?'#c6bca24d':'#534c3e39';ctx.fillRect(p.x,p.y,u*.014,u*.008);}
  // A continuous perimeter service lane joins the original entrance and new halls.
  const lane=[[.12,.99],[.12,h-.12],[w-.12,h-.12],[w-.12,.12],[.12,.12],[.12,.99]].map(([x,y])=>project(b.x+x,b.y+y));
- ctx.lineJoin='round';ctx.lineWidth=u*.075;ctx.strokeStyle=industrial?'#b4a58a88':'#beae8b88';ctx.beginPath();lane.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.stroke();
+ ctx.lineJoin='round';ctx.lineWidth=u*(b.type==='factory'?.045:.075);ctx.strokeStyle=b.type==='factory'?'#b2a48645':industrial?'#b4a58a88':'#beae8b88';ctx.beginPath();lane.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.stroke();
  ctx.restore();
 }
 

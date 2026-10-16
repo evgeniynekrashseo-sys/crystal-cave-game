@@ -17,7 +17,7 @@ export function constructionCrew(b,seconds,reduced=false){
   return {x:x-.5,y:y-.62,working:!walking,carrying:phase<3,phase,pose:{opacity:1,key:'walk'+(reduced||!walking?0:Math.floor(time*5)%4),flip:phase>7,moving:walking}};
  });
 }
-export function drawConstruction(ctx,b,seconds,project,u,image,previousImage,width,reduced=false){
+export function drawConstruction(ctx,b,seconds,project,u,image,previousImage,width,reduced=false,placement=null){
  const {progress,upgrading}=constructionState(b,seconds),[w,h]=footprintSize(b);
  const ground=(x,y,z=0)=>{const p=project(b.x+x,b.y+y);return{x:p.x,y:p.y-z*u};};
  const point=(x,y,z=0)=>{const q=bodyPoint(b,x,y),p=project(q.x,q.y);return{x:p.x,y:p.y-z*u};};
@@ -28,7 +28,7 @@ export function drawConstruction(ctx,b,seconds,project,u,image,previousImage,wid
  };
  const front=point(.98,.98),height=image?width*image.height/image.width:width;
  const sprite=(img,bounds,clip=null)=>{
-  if(!img)return;const p=bodyPoint(bounds),q=project(p.x,p.y),ratio=Math.min(...footprintSize(bounds))/Math.min(w,h),ww=width*ratio,hh=ww*img.height/img.width;
+  if(!img)return;const p=placement?placement.anchor(bounds):bodyPoint(bounds),q=project(p.x,p.y),ratio=Math.min(...footprintSize(bounds))/Math.min(w,h),ww=placement?placement.width(bounds):width*ratio,hh=ww*img.height/img.width;
   ctx.save();if(clip){ctx.beginPath();for(const {col,row}of clip)ctx.rect(q.x-ww/2+col*ww/3,q.y-hh+row*hh/4,ww/3+.5,hh/4+.5);ctx.clip();}
   ctx.drawImage(img,q.x-ww/2,q.y-hh,ww,hh);ctx.restore();
  };
@@ -41,7 +41,7 @@ export function drawConstruction(ctx,b,seconds,project,u,image,previousImage,wid
    const p=ground(x,.10),q=ground(x,h-.10);ctx.strokeStyle='#51432f';ctx.lineWidth=Math.max(.6,u*.012);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
   }
  }else{
-  if(upgrading&&previousImage)sprite(previousImage,{...b,footprint:b.constructionFrom?.footprint||footprintSize(b)});
+  if(upgrading&&previousImage)sprite(previousImage,{...b,level:b.constructionFrom?.level||Math.max(1,b.level-1),footprint:b.constructionFrom?.footprint||footprintSize(b)});
   // Foundation courses appear block by block, followed by supporting timber.
   const blocks=Math.floor(Math.min(1,progress/.25)*24);
   for(let i=0;i<blocks;i++){

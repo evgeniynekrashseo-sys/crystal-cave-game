@@ -1,17 +1,18 @@
-import {compoundParts,drawCompoundProp,drawCompoundYard} from './settlement-compounds.js?v=47';
+import {factoryMetrics,factoryWidth,prepareFactorySprites,drawFactoryActivity,hasFactoryLogistics,drawFactoryLogistics} from './settlement-factory.js?v=48';
+import {compoundParts,drawCompoundProp,drawCompoundYard} from './settlement-compounds.js?v=48';
 import {footprintCells,footprintSize,plannedSize,buildingAt,bodyPoint,covers} from './settlement-footprints.js?v=44';
 import {drawCropPlot} from './settlement-crop-renderer.js?v=45';
 import {cropVisual} from './settlement-crops.js?v=43';
 import {COHERENT_KEYS,coherentKey} from './settlement-art-direction.js?v=42';
-import {actorPose} from './settlement-motion.js?v=47';
-import {drawConstruction,constructionCrew} from './settlement-construction.js?v=45';
+import {actorPose} from './settlement-motion.js?v=48';
+import {drawConstruction,constructionCrew} from './settlement-construction.js?v=48';
 import {drawNaturalRiver} from './settlement-river.js?v=34';
 import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=42';
 import {ARTIFACTS,artifactError} from './city-story.js?v=47';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
 import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=47';
 import {createMeadow,fillMeadow} from './settlement-ground.js?v=36';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=47';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=48';
 import {VOYAGES,placementError,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=47';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
@@ -31,6 +32,8 @@ const coastal={},infrastructure={};let preparedCoastal=false,preparedInfrastruct
 const sprites={},details={},life={},chronicle={};let preparedChronicle=false;let preparedLife=false;
 let grass,preparedMeadow=false,preparedSprites=false,preparedDetails=false;
 const shadowMasks=new WeakMap();
+const factoryAtlas=new Image();factoryAtlas.src=new URL('./factory-evolution-v48.webp',import.meta.url).href;
+let factoryArt=[];
 const worldBuildings=new Image();worldBuildings.src=new URL('./world-buildings-v34.webp',import.meta.url).href;
 const worldNature=new Image();worldNature.src=new URL('./world-nature-v34.webp',import.meta.url).href;
 const worldPeople=new Image();worldPeople.src=new URL('./world-people-v34.webp',import.meta.url).href;
@@ -44,6 +47,7 @@ const coherentArt={};let preparedCoherent=false;
 const fieldAtlas=new Image();fieldAtlas.src=new URL('./city-fields-v42.webp',import.meta.url).href;
 const fieldArt={};let preparedFields=false;
 function objectArt(obj,time=0,reduced=true){
+ if(obj.factory&&factoryArt.length)return factoryArt[factoryMetrics(obj.b).index];
  if(obj.b?.type==='farm'&&fieldArt['field'+architecturalStage(obj.b.level)])return fieldArt['field'+architecturalStage(obj.b.level)];
  if(obj.lab&&coherentArt.lab1)return coherentArt.lab1;
  const coherent=coherentKey(obj.b);if(coherent&&coherentArt[coherent])return coherentArt[coherent];
@@ -92,6 +96,7 @@ function sliceAtlas(image,names,target,rows=null){
 }
 
 function prepare(){
+ if(!factoryArt.length)factoryArt=prepareFactorySprites(factoryAtlas,document);
  if(!preparedFields&&fieldAtlas.complete&&fieldAtlas.naturalWidth){
   const raw={};sliceAtlas(fieldAtlas,['field1','field2','field3','field4'],raw,[[0,1]]);
   for(const [key,img]of Object.entries(raw)){const cell=document.createElement('canvas');cell.width=img.width;cell.height=Math.round(img.width*.64);cell.getContext('2d').drawImage(img,0,0,cell.width,cell.height);fieldArt[key]=cell;}
@@ -218,7 +223,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
  for(const b of c.buildings)for(const p of footprintCells(b))foundation(p.x,p.y,b.type);
  for(const b of c.buildings)drawCompoundYard(ctx,b,project,u);
  foundation(4,2);
- for(const b of c.buildings)if(compoundParts(b,c.seconds)||b.type==='farm')compoundFence(b);
+ for(const b of c.buildings)if(b.type!=='factory'&&(compoundParts(b,c.seconds)||b.type==='farm'))compoundFence(b);
 
  drawRoadNetwork(ctx,c,project,u);
  if(tool)for(let x=0;x<c.extent;x++)for(let y=0;y<c.extent;y++)diamond(x,y,'#ffffff04','#e8ffff2e');
@@ -270,6 +275,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
  // mixed-atlas sprites previously overlapped roads and neighboring roofs.
  const buildingScale={house:1.34,lumber:1.44,farm:1.82,well:.94,quarry:1.38,ranch:1.60,clinic:1.46,granary:1.43,mine:1.42,smelter:1.46,factory:1.48,energy:1.42,school:1.5,university:1.53,market:1.48,observatory:1.45,greenhouse:1.48,lighthouse:1.5,park:1.25,harbor:1.5,fishery:1.42};
  for(const b of c.buildings){
+  if(b.type==='factory'&&factoryArt.length){const m=factoryMetrics(b);objects.push({x:b.x,y:b.y,kind:'factory',width:unitFor(W)*factoryWidth(b),b,factory:true,depth:m.anchor.x+m.anchor.y});if(hasFactoryLogistics(b)&&!(b.ready>c.seconds)){const [w,h]=footprintSize(b);objects.push({x:b.x,y:b.y,factoryLogistics:b,depth:b.x+w/2+b.y+h-.12});}continue;}
   const parts=compoundParts(b,c.seconds);
   if(parts)for(const part of parts)objects.push({x:part.x,y:part.y,kind:kind[part.type],width:unitFor(W)*(buildingScale[part.type]??1.45),b:part.b,parent:b,part,prop:part.building?null:part.prop});
   else objects.push({x:b.x,y:b.y,kind:kind[b.type],width:unitFor(W)*(buildingScale[b.type]??1.45),b});
@@ -288,7 +294,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
  }
  for(const site of objects.filter(o=>o.b&&o.b.ready>time))for(const worker of constructionCrew(site.b,time,reduced)){
   const b=site.b;
-  objects.push({x:worker.x,y:worker.y,kind:'person',width:unitFor(W)*.18,pose:worker.pose,builder:worker,depth:bodyPoint(b).x+bodyPoint(b).y+.03});
+  objects.push({x:worker.x,y:worker.y,kind:'person',width:unitFor(W)*.18,pose:worker.pose,builder:worker,depth:site.factory?factoryMetrics(b).anchor.x+factoryMetrics(b).anchor.y+.03:bodyPoint(b).x+bodyPoint(b).y+.03});
  }
  for(let i=0;i<4;i++){const t=reduced?i:time*.08+i*1.7;objects.push({x:3+i+Math.sin(t)*2,y:-1.4-i*.65+Math.cos(t)*.4,kind:'gull',width:20,bird:true});}
 
@@ -298,9 +304,10 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
  if(!occupied(3,3))objects.push({x:3,y:3,kind:'park',width:40});
  if(!occupied(4,4))objects.push({x:4.05,y:4.1,kind:'streetlamp',width:unitFor(W)*.13});
  const drawObject=obj=>{
+  if(obj.factoryLogistics){const b=obj.factoryLogistics;drawFactoryLogistics(ctx,b,project,u,time,reduced,c.agents.some(a=>a.job===b.id&&a.state==='work'));return;}
   // Buildings use the front corner of their floor; people/plants use their foot point.
   const onPlot=!!(obj.b||obj.lab);
-  const anchor=obj.b?bodyPoint(obj.b):{x:obj.x+(onPlot?.98:.5),y:obj.y+(onPlot?.98:.62)};const p=project(anchor.x,anchor.y);
+  const anchor=obj.factory?factoryMetrics(obj.b).anchor:obj.b?bodyPoint(obj.b):{x:obj.x+(onPlot?.98:.5),y:obj.y+(onPlot?.98:.62)};const p=project(anchor.x,anchor.y);
   if(obj.detail){paintImage(ctx,nature[obj.detail]||details[obj.detail],p.x,p.y,obj.width*zoom,{alpha:.96});return;}
   const moving=obj.a?.path.length;
   const frame=0;
@@ -326,7 +333,8 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
   if(obj.constructing){
    if(selected?.x===obj.x&&selected?.y===obj.y)diamond(obj.x,obj.y,'#c9bf8610','#d5c795');
    const previous=objectArt({...obj,b:{...obj.b,level:Math.max(1,obj.b.level-1)}},time,reduced);
-   const hit=drawConstruction(ctx,obj.b,time,project,u,image,previous,width,reduced);hits.push({...hit,x:obj.parent?.x??hit.x,y:obj.parent?.y??hit.y});
+   const placement=obj.factory?{anchor:b=>factoryMetrics(b).anchor,width:b=>factoryWidth(b)*u}:null;
+   const hit=drawConstruction(ctx,obj.b,time,project,u,image,previous,width,reduced,placement);hits.push({...hit,x:obj.parent?.x??hit.x,y:obj.parent?.y??hit.y});
    return;
   }
   let bob=0,angle=0;
@@ -400,7 +408,8 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
    const label=`${Math.max(1,Math.ceil(obj.b.ready-c.seconds))} с`;
    ctx.strokeText(label,p.x,p.y+13*zoom);ctx.fillText(label,p.x,p.y+13*zoom);ctx.restore();
   }
-  if(obj.b&&['factory','smelter'].includes(obj.b.type)&&!reduced&&c.agents.some(a=>a.job===obj.b.id&&a.state==='work')){
+  if(obj.factory)drawFactoryActivity(ctx,obj.b,project,u,time,reduced,c.agents.some(a=>a.job===obj.b.id&&a.state==='work'));
+  if(!obj.factory&&obj.b&&['factory','smelter'].includes(obj.b.type)&&!reduced&&c.agents.some(a=>a.job===obj.b.id&&a.state==='work')){
    for(let i=0;i<4;i++){const f=(time*.2+i*.25)%1;ctx.fillStyle=`rgba(248,245,225,${(1-f)*.4})`;ctx.beginPath();ctx.arc(p.x+width*.2+f*12*zoom,p.y-height*.9-f*28*zoom,(3+f*7)*zoom,0,Math.PI*2);ctx.fill();}
   }
   if(obj.kind==='lab'&&!reduced){
@@ -413,7 +422,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
  for(const b of c.buildings)if(b.type==='farm'&&!(b.ready>c.seconds))hits.push(drawCropPlot(ctx,b,project,u,time,reduced,fieldArt));
  for(const obj of objects){
   if(!(obj.b||obj.lab||['spruce','spruce-group','oak','birch'].includes(obj.kind)))continue;
-  const onPlot=!!(obj.b||obj.lab),anchor=obj.b?bodyPoint(obj.b):{x:obj.x+(onPlot?.98:.5),y:obj.y+(onPlot?.98:.62)},p=project(anchor.x,anchor.y);
+  const onPlot=!!(obj.b||obj.lab),anchor=obj.factory?factoryMetrics(obj.b).anchor:obj.b?bodyPoint(obj.b):{x:obj.x+(onPlot?.98:.5),y:obj.y+(onPlot?.98:.62)},p=project(anchor.x,anchor.y);
   obj.constructing=obj.b?.ready>c.seconds;
   if(obj.constructing&&obj.b.level===1)continue;
   const image=objectArt(obj,time,reduced);

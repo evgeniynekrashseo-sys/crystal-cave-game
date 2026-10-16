@@ -1,7 +1,7 @@
 import {fieldWorkPoint} from './settlement-field-layout.js?v=45';
 import {footprintSize} from './settlement-footprints.js?v=44';
 import {cropVisual} from './settlement-crops.js?v=43';
-import {entrancePath,pathPosition} from './settlement-layout.js?v=47';
+import {entrancePath,pathPosition} from './settlement-layout.js?v=48';
 const indoor=new Set(['school','university','observatory','factory','smelter','clinic','granary','market']);
 const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
 export function actorPose(a,job,previous,alpha=1,reduced=false){

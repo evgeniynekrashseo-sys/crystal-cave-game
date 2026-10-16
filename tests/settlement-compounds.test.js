@@ -1,3 +1,4 @@
+import {factoryDoor} from '../dist/settlement-factory.js';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {compoundParts,compoundEntrance} from '../dist/settlement-compounds.js';
@@ -25,7 +26,7 @@ test('legacy compact complexes and ordinary houses remain compatible',()=>{
 });
 test('worker entrance keeps the same main door while new buildings use the outer service path',()=>{
  const b={type:'factory',x:2,y:3,level:5,footprint:[4,3]},points=entrancePath(b,{x:4.5,y:6.5});
- assert.deepEqual(points[0],compoundEntrance(b));assert.equal(points[2].x,2.04);
- assert(points.some(p=>p.x===2.04&&p.y===5.96));assert.deepEqual(points.at(-1),{x:4.5,y:6.5});
+ assert.deepEqual(points[0],factoryDoor(b));
+ assert(points.some(p=>p.y===5.96));assert.deepEqual(points.at(-1),{x:4.5,y:6.5});
 });
 
