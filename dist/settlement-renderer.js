@@ -1,5 +1,7 @@
+import {drawCropPlot} from './settlement-crop-renderer.js?v=43';
+import {cropVisual} from './settlement-crops.js?v=43';
 import {COHERENT_KEYS,coherentKey} from './settlement-art-direction.js?v=42';
-import {actorPose} from './settlement-motion.js?v=42';
+import {actorPose} from './settlement-motion.js?v=43';
 import {drawConstruction} from './settlement-construction.js?v=42';
 import {drawNaturalRiver} from './settlement-river.js?v=34';
 import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=42';
@@ -8,7 +10,7 @@ import {ARTIFACTS,artifactError} from './city-story.js?v=27';
 import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=42';
 import {createMeadow,fillMeadow} from './settlement-ground.js?v=36';
 import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=42';
-import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=42';
+import {VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=43';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./terrain-meadow-v36.webp',import.meta.url).href;
@@ -279,6 +281,15 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
   const moving=obj.a?.path.length;
   const frame=0;
   obj.constructing=obj.b?.ready>c.seconds;
+  if(obj.b?.type==='farm'&&!obj.constructing){
+   hits.push(drawCropPlot(ctx,obj.b,project,u,time,reduced,fieldArt));
+   if(selected?.x===obj.x&&selected?.y===obj.y){
+    diamond(obj.x,obj.y,'#ffffff06','#cbb881');
+    const q=project(obj.x+.5,obj.y+.5),crop=cropVisual(obj.b);
+    ctx.save();ctx.font='600 '+Math.max(10,11*zoom)+'px system-ui';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#26352b';ctx.fillStyle='#f3e6be';ctx.strokeText(crop.label,q.x,q.y-u*.28);ctx.fillText(crop.label,q.x,q.y-u*.28);ctx.restore();
+   }
+   return;
+  }
   const image=objectArt(obj,time,reduced);
   if(!image)return;
   const width=obj.width*zoom,height=width*image.height/image.width;
@@ -315,6 +326,17 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,time,reduced
    if((life[obj.kind]||chronicle[obj.kind])?direction<0:(direction<0)!==!!frame)ctx.scale(-1,1);
   }
   ctx.drawImage(image,-width/2,-height,width,height);ctx.restore();
+  if(obj.pose?.farming){
+   const swing=reduced?0:Math.sin(time*5)*.35;
+   ctx.save();ctx.translate(p.x,p.y-height*.45);ctx.scale(obj.pose.flip?-1:1,1);ctx.rotate(swing);
+   if(obj.pose.farming==='harvesting'){
+    ctx.strokeStyle='#836343';ctx.lineWidth=Math.max(1,zoom);ctx.beginPath();ctx.moveTo(-width*.15,height*.2);ctx.lineTo(width*.65,height*.12);ctx.stroke();
+    ctx.strokeStyle='#c1c6be';ctx.beginPath();ctx.moveTo(width*.65,height*.12);ctx.quadraticCurveTo(width*.9,-height*.08,width*.35,-height*.15);ctx.stroke();
+   }else if(obj.pose.farming==='sowing'){
+    ctx.fillStyle='#d5b56a';for(let k=0;k<3;k++){const f=reduced?.3:(time*1.5+k*.3)%1;ctx.fillRect(width*(.2+f*.55),height*f*.35,Math.max(1,zoom),Math.max(1,zoom));}
+   }
+   ctx.restore();
+  }
   // New ranch compound has an empty paddock; add only two small animated sheep.
   if(obj.b?.type==='ranch'&&preparedCoherent){
    const b=obj.b;
