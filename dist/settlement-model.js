@@ -1,7 +1,7 @@
 import {plannedSize,footprintSize,footprintCells,buildingAt,perimeter,covers} from './settlement-footprints.js?v=44';
 import {advanceCrop} from './settlement-crops.js?v=43';
 import {constructionDuration,forestCover} from './world-design.js?v=42';
-import {normalizeStory,storyProduction} from './city-story.js?v=27';
+import {normalizeStory,storyProduction} from './city-story.js?v=47';
 import {SUBSTANCES} from './mission.js?v=27';
 // Deterministic simulation shared by the map renderer and regression tests.
 export const SIZE=32;

@@ -1,3 +1,4 @@
+import {GROUND_SLOPE} from './settlement-geometry.js?v=47';
 import {elevation} from './world-design.js?v=42';
 // CSS-pixel camera shared by hit testing, the scene and all input methods.
 export const MIN_ZOOM=.22,MAX_ZOOM=2.4;
@@ -8,13 +9,13 @@ const copy=c=>({zoom:c.zoom,pan:{...c.pan}});
 
 export function projectPoint(view,c,x,y){
  const o=originFor(view),u=unitFor(view.width)*c.zoom;
- return {x:o.x+(x-y)*u+c.pan.x,y:o.y+(x+y-10)*u*.56+c.pan.y-elevation(x,y)*u};
+ return {x:o.x+(x-y)*u+c.pan.x,y:o.y+(x+y-10)*u*GROUND_SLOPE+c.pan.y-elevation(x,y)*u};
 }
 export function worldPoint(view,c,p){
  const o=originFor(view),u=unitFor(view.width)*c.zoom;
- const a=(p.x-o.x-c.pan.x)/u,b=(p.y-o.y-c.pan.y)/(u*.56)+10;
+ const a=(p.x-o.x-c.pan.x)/u,b=(p.y-o.y-c.pan.y)/(u*GROUND_SLOPE)+10;
  let sum=b;
- for(let i=0;i<24;i++)sum=b+elevation((a+sum)/2,(sum-a)/2)/.56;
+ for(let i=0;i<24;i++)sum=b+elevation((a+sum)/2,(sum-a)/2)/GROUND_SLOPE;
  return {x:(a+sum)/2,y:(sum-a)/2};
 }
 export function tileAt(view,c,p){const q=worldPoint(view,c,p);return {x:Math.floor(q.x+1e-10),y:Math.floor(q.y+1e-10)};}
@@ -29,7 +30,7 @@ export function boundCamera(view,c,extent){
  const marginX=Math.min(90,view.width*.2),marginY=Math.min(150,view.height*.2);
  return {zoom:c.zoom,pan:{
   x:clamp(c.pan.x,marginX-(o.x+extent*u),view.width-marginX-(o.x-extent*u)),
-  y:clamp(c.pan.y,marginY-(o.y+(extent*2-10)*u*.56),view.height-marginY-(o.y-10*u*.56))
+  y:clamp(c.pan.y,marginY-(o.y+(extent*2-10)*u*GROUND_SLOPE),view.height-marginY-(o.y-10*u*GROUND_SLOPE))
  }};
 }
 

@@ -1,12 +1,13 @@
+import {decide,decisionError} from './city-campaign.js?v=47';
 import {buildingAt} from './settlement-footprints.js?v=44';
-import {currentStory,ensureStory,storyPanel,choosePath,claimStory,collectArtifact,artifactError} from './city-story.js?v=27';
+import {currentStory,ensureStory,storyPanel,choosePath,claimStory,collectArtifact,artifactError} from './city-story.js?v=47';
 import {SUBSTANCES} from './mission.js?v=27';
 import {CITY_RESEARCH} from './city-research.js?v=27';
 import {REGIONS} from './world-design.js?v=42';
 import {mountCityHud} from './city-hud.js?v=27';
-import {drawSettlement,mapTile} from './settlement-renderer.js?v=46';
-import {bindMapControls,boundCamera,projectPoint,MIN_ZOOM,MAX_ZOOM} from './settlement-camera.js?v=42';
-import {SIZE,TYPES,TECH,toggleLoggingPlot,upgradeRoad,LABELS,deliverDiscovery,terrain,normalizeCity,onChemistryWin,stats,step,build,upgradeError,relocate,relocationError,canPlace,upgrade,upgradeCost,expand,research,affordable,demolish,demolitionRefund,VOYAGES,voyageError,dispatchVoyage,claimCityCoins,cityGoal,claimCityGoal,ensureCitySystems,cityEra,DISTRICTS,EXPEDITIONS,CITY_EVENTS,advanceCitySystems,resolveCityEvent,cityEventError,dispatchExpedition,expeditionError,districtSummary} from './settlement-model.js?v=45';
+import {drawSettlement,mapTile} from './settlement-renderer.js?v=47';
+import {bindMapControls,boundCamera,projectPoint,MIN_ZOOM,MAX_ZOOM} from './settlement-camera.js?v=47';
+import {SIZE,TYPES,TECH,toggleLoggingPlot,upgradeRoad,LABELS,deliverDiscovery,terrain,normalizeCity,onChemistryWin,stats,step,build,upgradeError,relocate,relocationError,canPlace,upgrade,upgradeCost,expand,research,affordable,demolish,demolitionRefund,VOYAGES,voyageError,dispatchVoyage,claimCityCoins,cityGoal,claimCityGoal,ensureCitySystems,cityEra,DISTRICTS,EXPEDITIONS,CITY_EVENTS,advanceCitySystems,resolveCityEvent,cityEventError,dispatchExpedition,expeditionError,districtSummary} from './settlement-model.js?v=47';
 const KEY='chemlab_settlement_v2';
 export function initCity(api){
  let raw;try{raw=JSON.parse(localStorage.getItem(KEY))}catch{}
@@ -50,9 +51,9 @@ export function initCity(api){
   root.querySelector('#city-population').setAttribute('aria-label',`Мешканці ${c.population} з ${s.housing}. Здоров’я ${s.health} відсотків, задоволення ${s.happiness} відсотків`);
   root.querySelector('#city-vitals').textContent=`${cityEra(c).name} · ${c.population}/${s.housing} мешканців · ${s.workers} працюють · здоров’я ${s.health}% · задоволення ${s.happiness}%`;
   const mission=root.querySelector('.city-mission');
-  const goal=cityGoal(c);mission.querySelector('b').textContent=goal?.name||'Місто майбутнього';
-  mission.querySelector('span').textContent=c.activeEvent?`Криза: ${CITY_EVENTS.find(e=>e.id===c.activeEvent.id)?.name||'подія'} · натисни, щоб вирішити`:goal?(goal.test(c)?`Готово: +${goal.coins} монет`:goal.hint):'Освіта, торгівля та нові відкриття';
-  mission.querySelector('button').textContent=goal?.test(c)?'Забрати':'Завдання';
+  const goal=cityGoal(c),chapter=currentStory(c);mission.querySelector('b').textContent=c.activeEvent?'Місто потребує допомоги':chapter?.name||goal?.name||'Місто майбутнього';
+  mission.querySelector('span').textContent=c.activeEvent?`Криза: ${CITY_EVENTS.find(e=>e.id===c.activeEvent.id)?.name||'подія'} · натисни, щоб вирішити`:chapter?(chapter.test(c)?'Розділ виконано · отримай нагороду':chapter.hint):goal?(goal.test(c)?`Готово: +${goal.coins} монет`:goal.hint):'Освіта, торгівля та нові відкриття';
+  mission.querySelector('button').textContent=c.activeEvent?'Допомогти':chapter?'Історія':goal?.test(c)?'Забрати':'Завдання';
   for(const node of root.querySelectorAll('[data-city-stock]'))node.textContent=String(Math.floor(c.resources[node.dataset.cityStock]||0));
   for(const node of root.querySelectorAll('[data-voyage-time]')){const v=c.voyages.find(v=>v.x===selected.x&&v.y===selected.y);node.textContent=v?`${VOYAGES[v.kind].name} · повернення за ${Math.max(1,Math.ceil(VOYAGES[v.kind].duration-v.elapsed))} с`:'Корабель готовий до рейсу';}
   for(const node of root.querySelectorAll('[data-expedition]'))node.disabled=!!expeditionError(c,building(),node.dataset.expedition);
@@ -105,6 +106,7 @@ export function initCity(api){
  target.querySelectorAll('[data-expedition]').forEach(el=>el.onclick=()=>{notice(dispatchExpedition(c,b?.id,el.dataset.expedition)||'Команда вирушила в експедицію!');persist();hud();panel()});
 
  target.querySelectorAll('[data-path]').forEach(el=>el.onclick=()=>{if(choosePath(c,el.dataset.path)){persist();panel();notice('Напрям розвитку обрано. Бонус уже діє.')}});
+ target.querySelectorAll('[data-decision]').forEach(button=>button.onclick=()=>{const q=currentStory(c);if(decide(c,button.dataset.decision,button.dataset.option,q?.id)){persist();hud();panel();notice('Рішення збережено. Проєкт профінансовано.')}else notice(decisionError(c,button.dataset.decision,button.dataset.option,q?.id));});
  const storyClaim=target.querySelector('#story-claim');if(storyClaim)storyClaim.onclick=()=>{const quest=claimStory(c);if(quest){payCityCoins();persist();hud();panel();notice('Завершено: '+quest.name)}};
  target.querySelectorAll('[data-artifact]').forEach(el=>el.onclick=()=>{const found=collectArtifact(c,el.dataset.artifact);if(found){payCityCoins();persist();hud();panel();notice('Знайдено: '+found.name)}});
  const scroll=panelScroll.get(tab);target.scrollTop=scroll?.top||0;
@@ -114,7 +116,7 @@ export function initCity(api){
  function payCityCoins(){const coins=claimCityCoins(c);if(coins){api.trade(coins);persist();}}
  function focusCoast(){mapControls?.cancel();const v=view(),next={zoom:Math.max(.85,zoom),pan:{x:0,y:0}},p=projectPoint(v,next,5.5,.5);next.pan={x:v.width*.48-p.x,y:v.height*.42-p.y};changeCamera(boundCamera(v,next,c.extent));}
  function resize(){mapControls?.cancel();const d=Math.min(2,devicePixelRatio||1);canvas.width=Math.round(canvas.clientWidth*d);canvas.height=Math.round(canvas.clientHeight*d);ctx.setTransform(d,0,0,d,0,0);if(mapControls)changeCamera(boundCamera(view(),camera(),c.extent));}
- function frame(now){if(!active)return;const dt=Math.min(.1,(now-last)/1000||0);last=now;if(!document.hidden){simTime+=dt;if(simTime>=.1){previousAgents=new Map(c.agents.map(a=>[a.id,{x:a.x,y:a.y}]));step(c,.1);advanceCitySystems(c,.1);payCityCoins();simTime-=.1}draw(now/1000);uiTime+=dt;saveTime+=dt;if(uiTime>=1){hud();if(tab==='build'){const e=root.querySelector('#city-place');if(e)e.disabled=!!canPlace(c,tool,selected.x,selected.y);const b=building(),up=root.querySelector('#city-upgrade');if(up&&b)up.disabled=!!upgradeError(c,b);const reason=root.querySelector('[data-city-expansion-error]');if(reason&&b)reason.textContent=upgradeError(c,b);const move=root.querySelector('#city-move-confirm');if(move)move.disabled=!!relocationError(c,b,selected.x,selected.y)}if(tab==='story'){const button=root.querySelector('#story-claim');if(button){button.disabled=!currentStory(c)?.test(c);button.textContent=button.disabled?'Завдання триває':'Отримати нагороду';}root.querySelectorAll('[data-artifact]').forEach(el=>el.disabled=!!artifactError(c,el.dataset.artifact));}if(tab==='life'){const signature=[c.activeEvent?.id,c.expeditions.length,c.completedExpeditions,cityGoal(c)?.id,c.agents.length].join(':');if(lastLifeSignature!==signature){lastLifeSignature=signature;panel();}}uiTime=0}if(saveTime>=5){persist();saveTime=0}}raf=requestAnimationFrame(frame)}
+ function frame(now){if(!active)return;const dt=Math.min(.1,(now-last)/1000||0);last=now;if(!document.hidden){simTime+=dt;if(simTime>=.1){previousAgents=new Map(c.agents.map(a=>[a.id,{x:a.x,y:a.y}]));step(c,.1);advanceCitySystems(c,.1);payCityCoins();simTime-=.1}draw(now/1000);uiTime+=dt;saveTime+=dt;if(uiTime>=1){hud();if(tab==='build'){const e=root.querySelector('#city-place');if(e)e.disabled=!!canPlace(c,tool,selected.x,selected.y);const b=building(),up=root.querySelector('#city-upgrade');if(up&&b)up.disabled=!!upgradeError(c,b);const reason=root.querySelector('[data-city-expansion-error]');if(reason&&b)reason.textContent=upgradeError(c,b);const move=root.querySelector('#city-move-confirm');if(move)move.disabled=!!relocationError(c,b,selected.x,selected.y)}if(tab==='story'){root.querySelectorAll('[data-decision]').forEach(el=>el.disabled=!!decisionError(c,el.dataset.decision,el.dataset.option,currentStory(c)?.id));const button=root.querySelector('#story-claim');if(button){button.disabled=!currentStory(c)?.test(c);button.textContent=button.disabled?'Завдання триває':'Отримати нагороду';}root.querySelectorAll('[data-artifact]').forEach(el=>el.disabled=!!artifactError(c,el.dataset.artifact));}if(tab==='life'){const signature=[c.activeEvent?.id,c.expeditions.length,c.completedExpeditions,cityGoal(c)?.id,c.agents.length].join(':');if(lastLifeSignature!==signature){lastLifeSignature=signature;panel();}}uiTime=0}if(saveTime>=5){persist();saveTime=0}}raf=requestAnimationFrame(frame)}
  function close(){rememberPanelScroll();renderedTab=null;active=false;cancelAnimationFrame(raf);mapControls?.destroy();mapControls=null;clearTimeout(noticeTimer);persist();root?.remove();root=null;document.getElementById('game').hidden=false;document.body.classList.remove('in-settlement');window.removeEventListener('resize',resize);api.render();document.getElementById('city-button')?.focus()}
  function open(){
   if(active||!api.canOpen()||api.enabled?.()===false)return;tab=null;onChemistryWin(c,api.core().level);
@@ -132,7 +134,7 @@ export function initCity(api){
   root.querySelector('#city-center').onclick=()=>mapControls.center();root.querySelector('#city-coast').onclick=()=>{togglePanel(null);focusCoast()};
   root.querySelectorAll('[data-city-tab]').forEach(b=>b.onclick=()=>togglePanel(tab===b.dataset.cityTab?null:b.dataset.cityTab));
   root.querySelector('#city-panel-close').onclick=()=>togglePanel(null);
-  root.querySelector('#city-research').onclick=()=>{const goal=cityGoal(c);if(c.activeEvent)togglePanel('life');else if(goal?.test(c)){claimCityGoal(c);payCityCoins();persist();hud();notice('Нагороду за місію отримано!')}else togglePanel('life')};root.querySelector('#city-population').onclick=()=>togglePanel('life');
+  root.querySelector('#city-research').onclick=()=>{const goal=cityGoal(c);if(c.activeEvent)togglePanel('life');else if(currentStory(c))togglePanel('story');else if(goal?.test(c)){claimCityGoal(c);payCityCoins();persist();hud();notice('Нагороду за місію отримано!')}else togglePanel('life')};root.querySelector('#city-population').onclick=()=>togglePanel('life');
   canvas.onkeydown=e=>{
    const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
    if(d){e.preventDefault();selected={x:Math.max(0,Math.min(c.extent-1,selected.x+d[0])),y:Math.max(0,Math.min(c.extent-1,selected.y+d[1]))};panel();}
@@ -143,6 +145,6 @@ export function initCity(api){
  }
  window.addEventListener('pagehide',persist);return {open,close,discover(id){if(deliverDiscovery(c,id))persist();},won(level){if(api.enabled?.()!==false){onChemistryWin(c,level);persist()}}};
 }
-import {renderBuildingPanel} from './city-building-panel.js?v=45';
+import {renderBuildingPanel} from './city-building-panel.js?v=47';
 
 

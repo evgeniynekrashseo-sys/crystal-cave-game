@@ -1,0 +1,35 @@
+// The second act begins only after the original beacon story. Choices are saved,
+// paid atomically, and never made on behalf of the player.
+const built=(c,type,level=1)=>c.buildings.some(b=>b.type===type&&b.level>=level&&!(b.ready>c.seconds));
+export const DECISIONS={
+ signal:{quest:'signal',title:'Кому віддати перший сигнал?',text:'Маяк приймає два повідомлення: прохання про допомогу та пропозицію купити результати досліджень. Потужності вистачить лише на одну першу відповідь.',options:{
+  rescue:{name:'Відкрити рятувальний коридор',text:'Передати 120 їжі та 20 товарів. Постійно +10% продуктивності клінік і рибалень.',cost:{food:120,goods:20},types:['clinic','fishery']},
+  archive:{name:'Відновити науковий зв’язок',text:'Передати 30 досліджень і 20 металу. Постійно +10% продуктивності шкіл, університетів та обсерваторій.',cost:{research:30,metal:20},types:['school','university','observatory']}}},
+ industry:{quest:'industry-choice',title:'Наступна зміна',text:'Тарас може запустити нову лінію вже зараз. Лада просить спершу побудувати замкнений цикл використання ресурсів. Обидва проєкти потребують матеріалів.',options:{
+  precision:{name:'Точне виробництво',text:'60 металу та 30 товарів. Постійно +10% продуктивності заводів і плавилень.',cost:{metal:60,goods:30},types:['factory','smelter']},
+  renewal:{name:'Відновлювана долина',text:'40 досліджень та 80 деревини. Постійно +10% продуктивності полів, ферм і теплиць.',cost:{research:40,wood:80},types:['farm','ranch','greenhouse']}}},
+ legacy:{quest:'legacy-choice',title:'Кому належатиме відкриття?',text:'У відновленому архіві — спосіб передавати знання між містами. Міра пропонує відкриту мережу; Оріон — незалежну торговельну станцію. Визнач, що долина залишить після себе.',options:{
+  commons:{name:'Відкрита мережа знань',text:'80 досліджень. Постійно +10% продуктивності університетів та енергоцентрів.',cost:{research:80},types:['university','energy']},
+  exchange:{name:'Незалежна станція обміну',text:'80 товарів. Постійно +10% продуктивності ринків та складів.',cost:{goods:80},types:['market','granary']}}}
+};
+export const CAMPAIGN=[
+ {id:'signal',chapter:4,who:'orion',name:'Хтось відповів',text:'Ми думали, що маяк лише показує дорогу. Уночі він передав голос: «Долина, ви нас чуєте?» За горизонтом є люди, які теж чекають на відкриття.',hint:'Обери першу відповідь маяка нижче. Ресурси буде передано одразу.',test:c=>!!c.story?.decisions?.signal,reward:{research:12},coins:80},
+ {id:'workshop-network',chapter:4,who:'taras',name:'Не ще одна труба',text:'Одного цеху недостатньо для складних деталей передавача. Потрібні точне лиття та окрема виробнича лінія.',hint:'Заверши завод рівня 2 та плавильню рівня 2.',test:c=>built(c,'factory',2)&&built(c,'smelter',2),reward:{metal:30,goods:15},coins:100},
+ {id:'industry-choice',chapter:4,who:'lada',name:'Ціна наступної зміни',text:'У місті сперечаються не про те, чи розвиватися, а про те, як. Обери пріоритет наступного виробничого проєкту.',hint:'Профінансуй один із двох проєктів нижче.',test:c=>!!c.story?.decisions?.industry,reward:{research:15},coins:100},
+ {id:'living-system',chapter:5,who:'lada',name:'Місто, яке відновлюється',text:'Сигнал відкрив нам чужі помилки: їхнє місто виробляло все, крім майбутнього. Наше має вміти і будувати, і вирощувати.',hint:'Заверши теплицю рівня 2, парк рівня 2 та щонайменше три цикли врожаю одного поля.',test:c=>built(c,'greenhouse',2)&&built(c,'park',2)&&c.buildings.some(b=>b.type==='farm'&&(b.crop?.cycles||0)>=3),reward:{food:100,research:20},coins:120},
+ {id:'far-shore',chapter:5,who:'orion',name:'Берег із повідомлення',text:'Оріон впізнав течію на карті. Підготуй гавань, здатну підтримувати регулярний зв’язок, а не одну ризиковану подорож.',hint:'Заверши пристань рівня 2 та п’ять морських рейсів загалом.',test:c=>built(c,'harbor',2)&&c.completedVoyages>=5,reward:{metal:35,goods:30},coins:140},
+ {id:'archive',chapter:5,who:'mira',name:'Архів не мовчить',text:'Шість артефактів — не скарб. Це інструкція. Обсерваторія допоможе прочитати останній фрагмент і зрозуміти, чому долина колись згасла.',hint:'Збери всі шість артефактів і заверши обсерваторію рівня 2.',test:c=>(c.story?.artifacts?.length||0)>=6&&built(c,'observatory',2),reward:{research:35},coins:160},
+ {id:'legacy-choice',chapter:6,who:'mira',name:'Право на відкриття',text:'Ми відновили не механізм, а можливість ділитися знаннями. Тепер виріши, для чого місто її використає.',hint:'Обери й профінансуй майбутнє мережі нижче.',test:c=>!!c.story?.decisions?.legacy,reward:{goods:30},coins:160},
+ {id:'new-era',chapter:6,who:'taras',name:'Перший день нової епохи',text:'Нова долина не копіюватиме стару. Заверши виробничу й освітню основу міста, яке зможе рухатися далі без готових відповідей.',hint:'Заверши завод рівня 3, університет рівня 2 та енергоцентр рівня 2.',test:c=>built(c,'factory',3)&&built(c,'university',2)&&built(c,'energy',2),reward:{research:50,goods:60},coins:250}
+];
+export function normalizeDecisions(raw){return Object.fromEntries(Object.entries(DECISIONS).filter(([id,d])=>Object.hasOwn(d.options,raw?.[id])).map(([id])=>[id,raw[id]]));}
+export function decisionError(c,id,option,currentQuest){
+ const d=Object.hasOwn(DECISIONS,id)?DECISIONS[id]:null,o=d&&Object.hasOwn(d.options,option)?d.options[option]:null;if(!o)return 'Невідоме рішення';
+ if(c.story?.decisions?.[id])return 'Рішення вже прийнято';
+ if(currentQuest!==d.quest)return 'Це рішення ще не відкрите';
+ return Object.entries(o.cost).some(([k,n])=>(c.resources[k]||0)<n)?'Недостатньо ресурсів':'';
+}
+export function decide(c,id,option,currentQuest){if(decisionError(c,id,option,currentQuest))return false;const o=DECISIONS[id].options[option];for(const [k,n]of Object.entries(o.cost))c.resources[k]-=n;c.story.decisions??={};c.story.decisions[id]=option;return true;}
+export function decisionProduction(c,b){let multiplier=1;for(const [id,option]of Object.entries(c.story?.decisions||{}))if(DECISIONS[id]?.options[option]?.types.includes(b.type))multiplier+=.1;return multiplier;}
+export function decisionPanel(c,quest){const entry=Object.entries(DECISIONS).find(([,d])=>d.quest===quest);if(!entry)return '';const [id,d]=entry,chosen=c.story?.decisions?.[id];return `<article class="story-card"><h3>${d.title}</h3><p>${d.text}</p><p>Вибір остаточний для цього збереження. Вартість списується під час підтвердження.</p><div class="story-paths">${Object.entries(d.options).map(([key,o])=>`<button data-decision="${id}" data-option="${key}" ${decisionError(c,id,key,quest)?'disabled':''}><b>${chosen===key?'✓ ':''}${o.name}</b><span>${o.text}</span><small>${chosen?(chosen===key?'Проєкт профінансовано':'Інший шлях не обрано'):decisionError(c,id,key,quest)||'Обрати й передати ресурси'}</small></button>`).join('')}</div></article>`;}
+export function ending(c){return c.story?.decisions?.legacy==='commons'?'Долина відкрила мережу знань. Маяк тепер передає не прохання про допомогу, а відкриття, доступні кожному місту.':'Долина стала незалежною станцією обміну. Кораблі привозять матеріали, а вирушають із технологіями та новими союзниками.';}

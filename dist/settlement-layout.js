@@ -1,4 +1,4 @@
-import {compoundEntrance} from './settlement-compounds.js?v=46';
+import {compoundEntrance} from './settlement-compounds.js?v=47';
 import {footprintSize,bodyPoint} from './settlement-footprints.js?v=44';
 // World-space door positions shared by access paths and worker transitions.
 // Front-left facades face +y; front-right facades face +x.

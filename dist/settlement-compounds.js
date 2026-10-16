@@ -1,3 +1,4 @@
+import {drawEquipment} from './settlement-geometry.js?v=47';
 import {footprintSize,plannedSize} from './settlement-footprints.js?v=44';
 const additions={
  factory:['granary','smelter','factory','energy'],smelter:['mine','granary','smelter','energy'],energy:['energy','granary','well','energy'],
@@ -32,27 +33,8 @@ export function compoundEntrance(b){return isCompound(b)?{x:b.x+.67,y:b.y+.96}:n
 
 // Working equipment and supplies use constant world dimensions, independent of site level.
 export function drawCompoundProp(ctx,part,project,u,time,working,reduced){
- const p=project(part.x+.5,part.y+.52);ctx.save();
- ctx.fillStyle='#292b2330';ctx.beginPath();ctx.ellipse(p.x,p.y,u*.29,u*.10,0,0,Math.PI*2);ctx.fill();
- if(part.prop==='machine'){
-  // Low iron housing, copper pipe and a flywheel mounted on the same foundation.
-  ctx.fillStyle='#68716c';ctx.fillRect(p.x-u*.19,p.y-u*.20,u*.32,u*.18);
-  ctx.fillStyle='#343e3b';ctx.fillRect(p.x+u*.13,p.y-u*.16,u*.09,u*.14);
-  ctx.strokeStyle='#a27a53';ctx.lineWidth=Math.max(1.5,u*.035);ctx.beginPath();ctx.moveTo(p.x-u*.2,p.y-u*.18);ctx.lineTo(p.x-u*.2,p.y-u*.4);ctx.lineTo(p.x+u*.1,p.y-u*.4);ctx.stroke();
-  const angle=working&&!reduced?time*2:0,cx=p.x-u*.08,cy=p.y-u*.12,r=u*.12;
-  ctx.strokeStyle='#b3b2a1';ctx.lineWidth=Math.max(1,u*.018);ctx.beginPath();ctx.ellipse(cx,cy,r,r*.78,0,0,Math.PI*2);ctx.stroke();
-  for(let i=0;i<6;i++){const a=angle+i*Math.PI/3;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r*.78);ctx.stroke();}
-  if(working&&!reduced)for(let i=0;i<3;i++){const f=(time*.4+i/3)%1;ctx.fillStyle=`rgba(218,224,207,${(1-f)*.22})`;ctx.beginPath();ctx.ellipse(p.x+u*.1+f*u*.05,p.y-u*.42-f*u*.24,u*(.025+f*.035),u*(.02+f*.035),0,0,Math.PI*2);ctx.fill();}
- }else if(part.prop==='logs'){
-  for(let i=0;i<5;i++){const y=p.y-i*u*.04;ctx.strokeStyle='#725132';ctx.lineWidth=u*.055;ctx.beginPath();ctx.moveTo(p.x-u*.23,y);ctx.lineTo(p.x+u*.2,y-u*.08);ctx.stroke();ctx.fillStyle='#bd9966';ctx.beginPath();ctx.ellipse(p.x-u*.23,y,u*.028,u*.022,0,0,Math.PI*2);ctx.fill();}
- }else if(part.prop==='garden'){
-  for(let i=0;i<7;i++){const x=p.x+Math.sin(i*2.4)*u*.24,y=p.y+Math.cos(i*2.4)*u*.09;ctx.fillStyle=i%2?'#597447':'#7d8951';ctx.beginPath();ctx.ellipse(x,y-u*.055,u*.055,u*.065,0,0,Math.PI*2);ctx.fill();}
- }else{
-  for(let i=0;i<3;i++){const x=p.x+(i-1)*u*.14,y=p.y-(i%2)*u*.08;ctx.fillStyle='#9a8058';ctx.fillRect(x-u*.06,y-u*.14,u*.12,u*.13);ctx.strokeStyle='#5e4b36';ctx.lineWidth=1;ctx.strokeRect(x-u*.06,y-u*.14,u*.12,u*.13);}
- }
- ctx.restore();
+ return drawEquipment(ctx,part,project,u,time,working,reduced);
 }
-
 
 export function drawCompoundYard(ctx,b,project,u){
  if(!isCompound(b))return;
