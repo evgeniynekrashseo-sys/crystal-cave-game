@@ -1,6 +1,12 @@
+import {footprintCells} from './settlement-footprints.js?v=44';
 import {cropVisual} from './settlement-crops.js?v=43';
 // Ground-space planting: every stalk stays rooted while its tip moves in wind.
 export function drawCropPlot(ctx,b,project,u,time,reduced,art={}){
+ const boxes=footprintCells(b).map(p=>drawCropCell(ctx,{...b,...p},project,u,time,reduced,art));
+ const left=Math.min(...boxes.map(p=>p.left)),top=Math.min(...boxes.map(p=>p.top));
+ return {left,top,width:Math.max(...boxes.map(p=>p.left+p.width))-left,height:Math.max(...boxes.map(p=>p.top+p.height))-top,x:b.x,y:b.y};
+}
+function drawCropCell(ctx,b,project,u,time,reduced,art={}){
  const state=cropVisual(b),poly=[[.08,.08],[.92,.08],[.92,.92],[.08,.92]].map(([x,y])=>project(b.x+x,b.y+y));
  ctx.save();ctx.beginPath();poly.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();
  ctx.fillStyle='#584936';ctx.fill();

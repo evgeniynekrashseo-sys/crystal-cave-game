@@ -1,3 +1,5 @@
+import * as footprints from '../dist/settlement-footprints.js';
+import {placementError} from '../dist/settlement-model.js';
 import {drawCropPlot} from '../dist/settlement-crop-renderer.js';
 import {cropVisual} from '../dist/settlement-crops.js';
 import {COHERENT_KEYS,coherentKey} from '../dist/settlement-art-direction.js';
@@ -18,14 +20,14 @@ const near=(a,b)=>assert(Math.abs(a-b)<1e-7,`${a} !== ${b}`);
 function context(){
  let matrix=[1,0,0,1,0,0];const stack=[],images=[],translations=[],scales=[];let strokes=0;
  const ctx={images,translations,scales,save(){stack.push([...matrix]);},restore(){matrix=stack.pop();},translate(x,y){translations.push([x,y]);matrix[4]+=matrix[0]*x+matrix[2]*y;matrix[5]+=matrix[1]*x+matrix[3]*y;},scale(x,y){scales.push([x,y]);matrix[0]*=x;matrix[1]*=x;matrix[2]*=y;matrix[3]*=y;},transform(a,b,c,d,e,f){const m=matrix;matrix=[m[0]*a+m[2]*b,m[1]*a+m[3]*b,m[0]*c+m[2]*d,m[1]*c+m[3]*d,m[0]*e+m[2]*f+m[4],m[1]*e+m[3]*f+m[5]];},putImageData(){},rotate(){},drawImage(image,...args){const [x,y,w,h]=args.length===2?[...args,image.width,image.height]:args.length===4?args:args.slice(4);const px=x+w/2,py=y+h;images.push({id:image.id,args,bottom:{x:matrix[0]*px+matrix[2]*py+matrix[4],y:matrix[1]*px+matrix[3]*py+matrix[5]},width:Math.abs(matrix[0]*w)});},createPattern(){return {setTransform(m){ctx.patternMatrix=m;}};},createLinearGradient(){return {addColorStop(){}};},createRadialGradient(){return {addColorStop(){}};},getImageData(x,y,w,h){const data=new Uint8ClampedArray(w*h*4);for(let i=3;i<data.length;i+=4)data[i]=255;return {data};},stroke(){strokes++;},get strokes(){return strokes;}};
- for(const name of ['clearRect','fillRect','rect','beginPath','moveTo','lineTo','closePath','fill','ellipse','arc','quadraticCurveTo','strokeText','fillText','clip'])ctx[name]=()=>{};
+ for(const name of ['setLineDash','clearRect','fillRect','rect','beginPath','moveTo','lineTo','closePath','fill','ellipse','arc','quadraticCurveTo','strokeText','fillText','clip'])ctx[name]=()=>{};
  return ctx;
 }
 function renderer(){
  let id=0;
  const document={createElement:()=>({id:id++,width:0,height:0,getContext:()=>context()})};
  class Image{width=128;height=128;complete=true;naturalWidth=128;}
- const sandbox={drawCropPlot,cropVisual,COHERENT_KEYS,coherentKey,actorPose,...world,...story,drawConstruction,drawNaturalRiver,Image,URL,document,...camera,...life,VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable,createMeadow:()=>({}),fillMeadow};
+ const sandbox={...footprints,placementError,drawCropPlot,cropVisual,COHERENT_KEYS,coherentKey,actorPose,...world,...story,drawConstruction,drawNaturalRiver,Image,URL,document,...camera,...life,VOYAGES,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable,createMeadow:()=>({}),fillMeadow};
  const source=readFileSync(new URL('../dist/settlement-renderer.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replaceAll('import.meta.url',JSON.stringify('https://unit.test/renderer.js')).replaceAll('export function','function');
  vm.runInNewContext(source+'\nthis.scene={drawSettlement,mapTile};',sandbox);return sandbox.scene;
 }
@@ -36,7 +38,7 @@ const view={width:430,height:936};
 test('a ranch is a single anchored compound, with exactly two small livestock sprites and no second pen',()=>{
  const scene=renderer(),counts=[];
  for(const type of ['house','ranch']){
-  const ctx=context(),c={...sceneCity,buildings:[{...sceneCity.buildings[0],type,level:5}]};
+  const ctx=context(),c={...sceneCity,buildings:[{...sceneCity.buildings[0],type,level:5,footprint:[1,1]}]};
   scene.drawSettlement(ctx,canvas,c,{zoom:1,pan:{x:0,y:0},selected:null,tool:null,time:0,reduced:true});
   counts.push(ctx.images.length);
  }
@@ -76,7 +78,7 @@ test('building floors are anchored to the front of their own grid square, not fl
 });
 test('upgrades never draw toy-sized houses or power stations over real buildings',()=>{
  const scene=renderer();for(const type of ['house','lumber','well','quarry']){
-  const low=context(),high=context();const c={...sceneCity,tech:['battery'],buildings:[{id:1,type,x:3,y:4,level:1}]};
+  const low=context(),high=context();const c={...sceneCity,tech:['battery'],buildings:[{id:1,type,x:3,y:4,level:1,footprint:[1,1]}]};
   const options={zoom:2.4,pan:{x:0,y:0},selected:null,tool:null,time:0,reduced:true};
   scene.drawSettlement(low,canvas,c,options);scene.drawSettlement(high,canvas,{...c,buildings:[{...c.buildings[0],level:5}]},options);
   assert.equal(high.images.length,low.images.length,type+' must not add miniature buildings');

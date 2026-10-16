@@ -1,3 +1,4 @@
+import {plannedSize,footprintSize,footprintCells,buildingAt,perimeter,covers} from './settlement-footprints.js?v=44';
 import {advanceCrop} from './settlement-crops.js?v=43';
 import {constructionDuration,forestCover} from './world-design.js?v=42';
 import {normalizeStory,storyProduction} from './city-story.js?v=27';
@@ -43,17 +44,77 @@ const num=(v,d=0)=>Number.isFinite(v)?Math.max(0,v):d;
 export const isRiverTile=(x,y)=>x===14||(x===15&&y>7);
 export const RIVER_BRIDGE={x:14,y:5};
 export const terrain=(x,y)=> y<0?'sea':x===RIVER_BRIDGE.x&&y===RIVER_BRIDGE.y?'bridge':isRiverTile(x,y)?'water':(x*7+y*11)%29===0?'ore':(x*11+y*3)%19===0?'rock':(x*13+y*7)%9<2?'forest':'grass';
-export function freshCity(level=1){return {version:1,voyages:[],expeditions:[],completedVoyages:0,completedExpeditions:0,pendingCoins:0,claimedGoals:[],mapRevision:0,extent:10,population:6,resources:{wood:65,stone:45,food:55,ore:0,metal:0,goods:0,power:0,research:2},tech:[],discoveries:[],buildings:[{id:1,type:'house',x:3,y:4,level:1},{id:2,type:'house',x:5,y:4,level:1},{id:3,type:'lumber',x:3,y:6,level:1},{id:4,type:'farm',x:5,y:6,level:1}],roads:[{x:4,y:4},{x:4,y:5},{x:4,y:6}],agents:[],seconds:0,lastLevel:level,nextId:5,births:0,arrivals:0,events:['Шість мешканців заснували долину. Побудуй каменярню та досліди чисту воду.'],activeEvent:null,eventIndex:0};}
-export function normalizeCity(raw,level=1){if(!raw||raw.version!==1)return freshCity(level);const c=freshCity(level);c.story=normalizeStory(raw.story);c.extent=Math.min(SIZE,Math.max(10,Math.floor(num(raw.extent,10))));c.population=Math.min(60,Math.max(6,Math.floor(num(raw.population,6))));for(const k in c.resources)c.resources[k]=num(raw.resources?.[k],c.resources[k]);c.tech=TECH.filter(t=>Array.isArray(raw.tech)&&raw.tech.includes(t.id)).map(t=>t.id);const coords=new Set();c.buildings=Array.isArray(raw.buildings)?raw.buildings.filter(b=>b&&Object.hasOwn(TYPES,b.type)&&b.type!=='road'&&Number.isInteger(b.x)&&Number.isInteger(b.y)&&b.x>=0&&b.y>=0&&b.x<c.extent&&b.y<c.extent&&!coords.has(`${b.x},${b.y}`)&&coords.add(`${b.x},${b.y}`)).map((b,i)=>({...b,id:i+1,level:Math.min(5,Math.max(1,Math.floor(num(b.level,1)))),ready:num(b.ready)})):c.buildings;c.discoveries=Array.isArray(raw.discoveries)?[...new Set(raw.discoveries.filter(x=>SUBSTANCES.some(q=>q.id===x)))]:[];c.nextId=c.buildings.length+1;c.completedVoyages=Math.floor(num(raw.completedVoyages));c.pendingCoins=Math.floor(num(raw.pendingCoins));c.claimedGoals=Array.isArray(raw.claimedGoals)?[...new Set(raw.claimedGoals.filter(id=>CITY_GOALS.some(g=>g.id===id)))]:[];c.voyages=Array.isArray(raw.voyages)?raw.voyages.filter(v=>v&&Object.hasOwn(VOYAGES,v.kind)&&Number.isInteger(v.x)&&Number.isInteger(v.y)&&c.buildings.some(b=>b.type==="harbor"&&b.x===v.x&&b.y===v.y)).filter((v,i,list)=>list.findIndex(o=>o.x===v.x&&o.y===v.y)===i).map(v=>({kind:v.kind,x:v.x,y:v.y,elapsed:Math.min(VOYAGES[v.kind].duration,num(v.elapsed)),level:Math.min(5,Math.max(1,Math.floor(num(v.level,1))))})):[];for(const a of Array.isArray(raw.agents)?raw.agents:[]){if(a.rawLogs)c.resources.wood+=Math.min(25,num(a.rawLogs));if(a.state==='return'||a.state==='доставка деревини'){for(const k in c.resources)c.resources[k]+=num(a.cargo?.[k]);}else if(a.state==='work'){const b=raw.buildings?.find(b=>b.id===a.job);for(const [k,v]of Object.entries(TYPES[b?.type]?.input||{}))c.resources[k]+=v;}}c.roads=Array.isArray(raw.roads)?raw.roads.filter(b=>Number.isInteger(b.x)&&Number.isInteger(b.y)&&b.x>=0&&b.y>=0&&b.x<c.extent&&b.y<c.extent):c.roads;c.loggingPlots=Array.isArray(raw.loggingPlots)?raw.loggingPlots.filter(p=>p&&loggingPlotAllowed(c,p.x,p.y)).filter((p,i,a)=>a.findIndex(q=>q.x===p.x&&q.y===p.y)===i):[];c.roads=c.roads.map(r=>({...r,level:Math.min(3,Math.max(1,Math.floor(num(r.level,1))))}));c.lastLevel=num(raw.lastLevel,level);c.seconds=num(raw.seconds);c.felled=Object.fromEntries(Object.entries(raw.felled||{}).filter(([key,value])=>/^\d+,\d+$/.test(key)&&Number.isFinite(value)&&value>c.seconds).map(([key,value])=>[key,Math.min(value,c.seconds+240)]));c.births=num(raw.births);c.arrivals=num(raw.arrivals);c.events=Array.isArray(raw.events)?raw.events.filter(x=>typeof x==='string').slice(-8):c.events;restoreCitySystems(c,raw);return c;}
+export function freshCity(level=1){return {version:1,footprintVersion:1,voyages:[],expeditions:[],completedVoyages:0,completedExpeditions:0,pendingCoins:0,claimedGoals:[],mapRevision:0,extent:10,population:6,resources:{wood:65,stone:45,food:55,ore:0,metal:0,goods:0,power:0,research:2},tech:[],discoveries:[],buildings:[{id:1,type:'house',x:3,y:4,level:1},{id:2,type:'house',x:5,y:4,level:1},{id:3,type:'lumber',x:3,y:6,level:1,footprint:[1,2]},{id:4,type:'farm',x:5,y:6,level:1}],roads:[{x:4,y:4},{x:4,y:5},{x:4,y:6}],agents:[],seconds:0,lastLevel:level,nextId:5,births:0,arrivals:0,events:['Шість мешканців заснували долину. Побудуй каменярню та досліди чисту воду.'],activeEvent:null,eventIndex:0};}
+export function normalizeCity(raw,level=1){if(!raw||raw.version!==1)return freshCity(level);const c=freshCity(level);c.story=normalizeStory(raw.story);c.extent=Math.min(SIZE,Math.max(10,Math.floor(num(raw.extent,10))));c.population=Math.min(60,Math.max(6,Math.floor(num(raw.population,6))));for(const k in c.resources)c.resources[k]=num(raw.resources?.[k],c.resources[k]);c.tech=TECH.filter(t=>Array.isArray(raw.tech)&&raw.tech.includes(t.id)).map(t=>t.id);const coords=new Set();c.buildings=Array.isArray(raw.buildings)?raw.buildings.filter(b=>b&&Object.hasOwn(TYPES,b.type)&&b.type!=='road'&&Number.isInteger(b.x)&&Number.isInteger(b.y)&&b.x>=0&&b.y>=0&&b.x<c.extent&&b.y<c.extent&&!coords.has(`${b.x},${b.y}`)&&coords.add(`${b.x},${b.y}`)).map((b,i)=>({...b,footprint:raw.footprintVersion?footprintSize(b):[1,1],id:i+1,level:Math.min(5,Math.max(1,Math.floor(num(b.level,1)))),ready:num(b.ready)})):c.buildings;c.discoveries=Array.isArray(raw.discoveries)?[...new Set(raw.discoveries.filter(x=>SUBSTANCES.some(q=>q.id===x)))]:[];c.nextId=c.buildings.length+1;c.completedVoyages=Math.floor(num(raw.completedVoyages));c.pendingCoins=Math.floor(num(raw.pendingCoins));c.claimedGoals=Array.isArray(raw.claimedGoals)?[...new Set(raw.claimedGoals.filter(id=>CITY_GOALS.some(g=>g.id===id)))]:[];c.voyages=Array.isArray(raw.voyages)?raw.voyages.filter(v=>v&&Object.hasOwn(VOYAGES,v.kind)&&Number.isInteger(v.x)&&Number.isInteger(v.y)&&c.buildings.some(b=>b.type==="harbor"&&b.x===v.x&&b.y===v.y)).filter((v,i,list)=>list.findIndex(o=>o.x===v.x&&o.y===v.y)===i).map(v=>({kind:v.kind,x:v.x,y:v.y,elapsed:Math.min(VOYAGES[v.kind].duration,num(v.elapsed)),level:Math.min(5,Math.max(1,Math.floor(num(v.level,1))))})):[];for(const a of Array.isArray(raw.agents)?raw.agents:[]){if(a.rawLogs)c.resources.wood+=Math.min(25,num(a.rawLogs));if(a.state==='return'||a.state==='доставка деревини'){for(const k in c.resources)c.resources[k]+=num(a.cargo?.[k]);}else if(a.state==='work'){const b=raw.buildings?.find(b=>b.id===a.job);for(const [k,v]of Object.entries(TYPES[b?.type]?.input||{}))c.resources[k]+=v;}}c.roads=Array.isArray(raw.roads)?raw.roads.filter(b=>Number.isInteger(b.x)&&Number.isInteger(b.y)&&b.x>=0&&b.y>=0&&b.x<c.extent&&b.y<c.extent):c.roads;c.loggingPlots=Array.isArray(raw.loggingPlots)?raw.loggingPlots.filter(p=>p&&loggingPlotAllowed(c,p.x,p.y)).filter((p,i,a)=>a.findIndex(q=>q.x===p.x&&q.y===p.y)===i):[];c.roads=c.roads.map(r=>({...r,level:Math.min(3,Math.max(1,Math.floor(num(r.level,1))))}));c.lastLevel=num(raw.lastLevel,level);c.seconds=num(raw.seconds);c.felled=Object.fromEntries(Object.entries(raw.felled||{}).filter(([key,value])=>/^\d+,\d+$/.test(key)&&Number.isFinite(value)&&value>c.seconds).map(([key,value])=>[key,Math.min(value,c.seconds+240)]));c.births=num(raw.births);c.arrivals=num(raw.arrivals);c.events=Array.isArray(raw.events)?raw.events.filter(x=>typeof x==='string').slice(-8):c.events;restoreCitySystems(c,raw);return c;}
 export const affordable=(c,cost)=>Object.entries(cost).every(([k,v])=>c.resources[k]>=v);
 const debit=(c,cost)=>{for(const k in cost)c.resources[k]-=cost[k]};
 export function log(c,msg){c.events.push(msg);c.events=c.events.slice(-8)}
 export function onChemistryWin(c,level){if(level<=c.lastLevel)return false;const delta=level-c.lastLevel;c.lastLevel=level;c.resources.research+=delta*(c.discoveries.includes('glass')?3:2);c.resources.wood+=delta*8;c.resources.stone+=delta*5;c.resources.food+=delta*8;const room=stats(c).housing-c.population;if(room>0){const n=Math.min(room,delta);c.population+=n;c.arrivals+=n;log(c,`Приїхало ${n} поселенців після новин про лабораторію.`)}log(c,`Експерименти: +${delta*2} дослідження, +${delta*8} деревини, +${delta*5} каменю.`);return true;}
 export function research(c,id,discovered){const t=TECH.find(t=>t.id===id);if(!t||c.tech.includes(id)||!t.elements.every(x=>discovered.includes(x))||!t.after.every(x=>c.tech.includes(x))||c.resources.research<t.cost)return false;c.resources.research-=t.cost;c.tech.push(id);log(c,`Впроваджено: ${t.name}.`);return true;}
-export function canPlace(c,type,x,y){const t=TYPES[type];if(!t||!Number.isInteger(x)||!Number.isInteger(y)||x<0||y<0||x>=c.extent||y>=c.extent)return 'Ділянка за межами розвіданої території';if(t.coastal&&y!==0)return "Обери північний берег моря: ряд 1. Кнопка «Узбережжя» покаже його";if(t.tech&&!c.tech.includes(t.tech))return 'Спочатку впровадь технологію у «Відкриттях»';if(x===4&&y===5)return 'Це центральна площа для доставки';if(x===4&&y===2)return 'Це головна лабораторія';if(c.buildings.some(b=>b.x===x&&b.y===y)||c.roads.some(b=>b.x===x&&b.y===y))return 'Ділянка вже зайнята';const land=terrain(x,y);if(land==='water')return 'Будівництво у річці недоступне';if(land==='bridge')return 'Це міст: залиш прохід вільним';if(t.terrain&&land!==t.terrain)return t.terrain==='ore'?'Шахта потребує родовища руди':'Каменярня потребує кам’янистої ділянки';if(!t.terrain&&['ore','rock'].includes(land))return 'Залиш родовище для видобутку';if(!affordable(c,t.cost))return 'Недостатньо ресурсів';return '';}
-export function build(c,type,x,y){const error=canPlace(c,type,x,y);if(error)return error;debit(c,TYPES[type].cost);c.mapRevision++;if(type==='road')c.roads.push({x,y});else{c.buildings.push({id:c.nextId++,type,x,y,level:1,started:c.seconds,ready:c.seconds+constructionDuration(type)});log(c,`Будується: ${TYPES[type].name}.`)}return '';}
+export function placementError(c,type,x,y,level=1,ignoreId=null,size=plannedSize(type,level)){
+ const t=TYPES[type];
+ if(!t||!Number.isInteger(x)||!Number.isInteger(y))return 'Некоректна ділянка';
+ if(t.coastal&&y!==0)return 'Обери північний берег моря: ряд 1';
+ const old=c.buildings.find(b=>b.id===ignoreId);
+ for(const p of footprintCells({x,y},size)){
+  if(p.x<0||p.y<0||p.x>=c.extent||p.y>=c.extent)return 'Ділянка за межами розвіданої території';
+  if(p.x===4&&p.y===5)return 'Це центральна площа для доставки';
+  if(p.x===4&&p.y===2)return 'Це головна лабораторія';
+  const occupant=buildingAt(c,p.x,p.y);
+  if(occupant&&occupant.id!==ignoreId||c.roads.some(r=>r.x===p.x&&r.y===p.y))return 'Ділянка вже зайнята';
+  if(old&&covers(old,p.x,p.y))continue;
+  const land=terrain(p.x,p.y);
+  if(land==='water')return 'Будівництво у річці недоступне';
+  if(land==='bridge')return 'Це міст: залиш прохід вільним';
+  if(!t.terrain&&['ore','rock'].includes(land))return 'Залиш родовище для видобутку';
+ }
+ if(t.terrain&&terrain(x,y)!==t.terrain)return t.terrain==='ore'?'Шахта потребує родовища руди':'Каменярня потребує кам’янистої ділянки';
+ return '';
+}
+export function canPlace(c,type,x,y){
+ const error=placementError(c,type,x,y);if(error)return error;
+ const t=TYPES[type];if(t.tech&&!c.tech.includes(t.tech))return 'Спочатку впровадь технологію у «Відкриттях»';
+ return affordable(c,t.cost)?'':'Недостатньо ресурсів';
+}
+export function build(c,type,x,y){const error=canPlace(c,type,x,y);if(error)return error;debit(c,TYPES[type].cost);c.mapRevision++;if(type==='road')c.roads.push({x,y});else{c.buildings.push({id:c.nextId++,type,x,y,level:1,footprint:plannedSize(type,1),started:c.seconds,ready:c.seconds+constructionDuration(type)});log(c,`Будується: ${TYPES[type].name}.`)}if(type!=='road')resetWorkers(c,c.buildings.at(-1));return '';}
 export function upgradeCost(b){return Object.fromEntries(Object.entries(TYPES[b.type].cost).map(([k,v])=>[k,Math.ceil(v*(b.level+1)*.65)]))}
-export function upgrade(c,id){const b=c.buildings.find(b=>b.id===id);if(!b||b.level>=5||b.ready>c.seconds||!affordable(c,upgradeCost(b)))return false;debit(c,upgradeCost(b));b.level++;b.started=c.seconds;b.ready=c.seconds+constructionDuration(b.type,b.level);log(c,`${TYPES[b.type].name}: модернізація до рівня ${b.level}.`);return true;}
+export function upgradeError(c,b){
+ if(!b)return 'Обери будівлю';
+ if(b.level>=5)return 'Максимальний рівень';
+ if(b.ready>c.seconds)return 'Дочекайся завершення будівництва';
+ const error=placementError(c,b.type,b.x,b.y,b.level+1,b.id);
+ if(error)return 'Розширення неможливе: '+error+'. Звільни територію або перенеси об’єкт.';
+ return affordable(c,upgradeCost(b))?'':'Недостатньо ресурсів';
+}
+// A layout mutation safely returns carried goods and paid inputs before reassigning workers.
+function resetWorkers(c,changed){
+ for(const a of c.agents){
+  if(a.job!==changed.id&&!covers(changed,Math.round(a.x),Math.round(a.y))&&!a.path?.some(p=>covers(changed,p.x,p.y)))continue;
+  for(const [k,v]of Object.entries(a.cargo||{}))c.resources[k]+=v;
+  c.resources.wood+=a.rawLogs||0;
+  if(a.state==='work'){const b=c.buildings.find(b=>b.id===a.job);for(const [k,v]of Object.entries(TYPES[b?.type]?.input||{}))c.resources[k]+=v;}
+  Object.assign(a,{job:null,x:4,y:5,path:[],state:'idle',cargo:{},rawLogs:0,timer:0,truck:false});delete a.tree;
+ }
+ c.mapRevision=(c.mapRevision||0)+1;accessCache.delete(c);
+}
+export function upgrade(c,id){
+ const b=c.buildings.find(b=>b.id===id);if(upgradeError(c,b))return false;
+ debit(c,upgradeCost(b));resetWorkers(c,{...b,footprint:plannedSize(b.type,b.level+1)});b.level++;b.footprint=plannedSize(b.type,b.level);
+ b.started=c.seconds;b.ready=c.seconds+constructionDuration(b.type,b.level);
+ log(c,`${TYPES[b.type].name}: модернізація до рівня ${b.level}.`);return true;
+}
+export function relocationError(c,b,x,y){
+ if(!b)return 'Обери будівлю';
+ if(b.ready>c.seconds)return 'Дочекайся завершення будівництва';
+ if([...c.voyages,...(c.expeditions||[])].some(v=>v.x===b.x&&v.y===b.y))return 'Дочекайся повернення морської команди';
+ if(x===b.x&&y===b.y)return 'Обери нову ділянку';
+ return placementError(c,b.type,x,y,b.level,b.id);
+}
+export function relocate(c,id,x,y){
+ const b=c.buildings.find(b=>b.id===id),error=relocationError(c,b,x,y);if(error)return error;
+ resetWorkers(c,{...b,x,y,footprint:plannedSize(b.type,b.level)});Object.assign(b,{x,y,footprint:plannedSize(b.type,b.level),started:c.seconds,ready:c.seconds+constructionDuration(b.type,b.level)});
+ log(c,`${TYPES[b.type].name}: перенесення на нову ділянку.`);return '';
+}
 export function expand(c){const cost={wood:c.extent*3,stone:c.extent*2,research:1};if(c.extent>=SIZE||!affordable(c,cost))return false;debit(c,cost);c.extent=Math.min(SIZE,c.extent+2);log(c,'Розвідано нові землі та родовища.');return true;}
 export function stats(c){
  const jobs=c.buildings.filter(b=>!b.ready||b.ready<=c.seconds);
@@ -68,13 +129,13 @@ export function stats(c){
  workers:c.agents.filter(a=>a.job).length,era:c.tech.includes('automation')?'Сучасне місто':c.tech.includes('motor')?'Механізація':c.tech.includes('steel')?'Промислове місто':'Поселення'};
 }
 // Four-neighbour BFS: workers travel around buildings and water, trucks use roads.
-export function route(c,from,to,roadOnly=false){const key=(x,y)=>x+','+y,start=key(from.x,from.y),queue=[from],prev=new Map([[start,null]]);for(let i=0;i<queue.length;i++){const p=queue[i];if(p.x===to.x&&p.y===to.y){const out=[];let k=key(p.x,p.y);while(prev.get(k)){const [x,y]=k.split(',').map(Number);out.unshift({x,y});k=prev.get(k)}return out}for(const [dx,dy]of [[1,0],[-1,0],[0,1],[0,-1]]){const x=p.x+dx,y=p.y+dy,k=key(x,y);if(x<0||y<0||x>=c.extent||y>=c.extent||prev.has(k)||terrain(x,y)==='water')continue;if((x===4&&y===2)||c.buildings.some(b=>b.x===x&&b.y===y))continue;if(roadOnly&&terrain(x,y)!=='bridge'&&!c.roads.some(r=>r.x===x&&r.y===y))continue;prev.set(k,key(p.x,p.y));queue.push({x,y})}}return null;}
+export function route(c,from,to,roadOnly=false){const key=(x,y)=>x+','+y,start=key(from.x,from.y),queue=[from],prev=new Map([[start,null]]);for(let i=0;i<queue.length;i++){const p=queue[i];if(p.x===to.x&&p.y===to.y){const out=[];let k=key(p.x,p.y);while(prev.get(k)){const [x,y]=k.split(',').map(Number);out.unshift({x,y});k=prev.get(k)}return out}for(const [dx,dy]of [[1,0],[-1,0],[0,1],[0,-1]]){const x=p.x+dx,y=p.y+dy,k=key(x,y);if(x<0||y<0||x>=c.extent||y>=c.extent||prev.has(k)||terrain(x,y)==='water')continue;if((x===4&&y===2)||buildingAt(c,x,y))continue;if(roadOnly&&terrain(x,y)!=='bridge'&&!c.roads.some(r=>r.x===x&&r.y===y))continue;prev.set(k,key(p.x,p.y));queue.push({x,y})}}return null;}
 const accessCache=new WeakMap();
 function access(c,b){
  const stamp=c.buildings.length+':'+c.extent+':'+c.mapRevision;let memo=accessCache.get(c);
  if(!memo||memo.stamp!==stamp){memo={stamp,points:new Map()};accessCache.set(c,memo)}
  if(memo.points.has(b.id))return memo.points.get(b.id);
- const points=[[b.x,b.y+1],[b.x+1,b.y],[b.x-1,b.y],[b.x,b.y-1]].map(([x,y])=>({x,y})).filter(p=>p.x>=0&&p.y>=0&&p.x<c.extent&&p.y<c.extent&&terrain(p.x,p.y)!=='water'&&!c.buildings.some(v=>v.x===p.x&&v.y===p.y)&&route(c,{x:4,y:5},p)!==null);
+ const points=perimeter(b).filter(p=>p.x>=0&&p.y>=0&&p.x<c.extent&&p.y<c.extent&&terrain(p.x,p.y)!=='water'&&!buildingAt(c,p.x,p.y)&&route(c,{x:4,y:5},p)!==null);
  // A connected road entrance lets the truck use the actual network rather than an arbitrary side.
  const result=points.find(p=>route(c,{x:4,y:5},p,true)!==null)||points[0];memo.points.set(b.id,result);return result;
 }
@@ -89,7 +150,7 @@ export function step(c,dt){
  }
 }
 export function timberAvailable(c,x,y){return forestCover(x,y)&&(!c.felled?.[`${x},${y}`]||c.felled[`${x},${y}`]<=c.seconds);}
-export function loggingPlotAllowed(c,x,y){return Number.isInteger(x)&&Number.isInteger(y)&&x>=0&&y>=0&&x<c.extent&&y<c.extent&&forestCover(x,y)&&terrain(x,y)!=='water'&&!c.buildings.some(b=>b.x===x&&b.y===y)&&!c.roads.some(r=>r.x===x&&r.y===y)&&!(x===4&&y===2);}
+export function loggingPlotAllowed(c,x,y){return Number.isInteger(x)&&Number.isInteger(y)&&x>=0&&y>=0&&x<c.extent&&y<c.extent&&forestCover(x,y)&&terrain(x,y)!=='water'&&!buildingAt(c,x,y)&&!c.roads.some(r=>r.x===x&&r.y===y)&&!(x===4&&y===2);}
 export function toggleLoggingPlot(c,x,y){
  if(!loggingPlotAllowed(c,x,y))return false;
  c.loggingPlots??=[];const i=c.loggingPlots.findIndex(p=>p.x===x&&p.y===y);
@@ -188,10 +249,10 @@ export function claimCityGoal(c){const g=cityGoal(c);if(!g||!g.test(c))return fa
 
 export function demolitionRefund(b){return Object.fromEntries(Object.entries(TYPES[b.type].cost).map(([k,n])=>[k,Math.floor(n*b.level*.3)]));}
 export function demolish(c,x,y){
- const b=c.buildings.find(b=>b.x===x&&b.y===y);
+ const b=buildingAt(c,x,y);
  if(b){
-  if(c.voyages.some(v=>v.x===x&&v.y===y))return 'Спочатку дочекайся повернення корабля';
-  if(c.expeditions?.some(v=>v.x===x&&v.y===y))return 'Спочатку дочекайся повернення експедиції';
+  if(c.voyages.some(v=>v.x===b.x&&v.y===b.y))return 'Спочатку дочекайся повернення корабля';
+  if(c.expeditions?.some(v=>v.x===b.x&&v.y===b.y))return 'Спочатку дочекайся повернення експедиції';
   for(const a of c.agents.filter(a=>a.job===b.id)){
    c.resources.wood+=a.rawLogs||0;a.rawLogs=0;delete a.tree;
    for(const [k,n]of Object.entries(a.cargo))c.resources[k]+=n;

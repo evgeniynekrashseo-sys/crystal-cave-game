@@ -30,7 +30,7 @@ test('voyage cargo is charged once, survives reload and awards a single return',
 });
 
 test('demolition keeps residents and returns materials plus cargo and reserved inputs',()=>{
- const c=rich();assert.equal(build(c,'ranch',6,5),'');const b=c.buildings.at(-1),refund=demolitionRefund(b),food=c.resources.food,wood=c.resources.wood;
+ const c=rich();assert.equal(build(c,'ranch',7,4),'');const b=c.buildings.at(-1),refund=demolitionRefund(b),food=c.resources.food,wood=c.resources.wood;
  c.agents=[{id:0,job:b.id,state:'work',path:[],cargo:{stone:3},x:6,y:6,timer:2}];
  assert.equal(demolish(c,b.x,b.y),'');assert.equal(c.resources.food,food+2);assert.equal(c.resources.wood,wood+refund.wood);
  assert.equal(c.agents[0].job,null);assert.equal(c.buildings.some(v=>v.id===b.id),false);assert.equal(c.population,6);

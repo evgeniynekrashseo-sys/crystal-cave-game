@@ -1,14 +1,15 @@
+import {footprintSize,bodyPoint} from './settlement-footprints.js?v=44';
 // World-space door positions shared by access paths and worker transitions.
 // Front-left facades face +y; front-right facades face +x.
 const doors={house:[.66,.96],school:[.61,.96],granary:[.63,.96],lumber:[.56,.96],factory:[.67,.96],clinic:[.35,.88],university:[.38,.88],observatory:[.40,.88],lab:[.64,.96],ranch:[.63,.96],farm:[.5,.9],park:[.5,.9]};
-export function buildingDoor(b){const [x,y]=doors[b.type]||[.38,.88];return {x:b.x+x,y:b.y+y};}
+export function buildingDoor(b){const [x,y]=doors[b.type]||[.38,.88];return bodyPoint(b,x,y);}
 export function entrancePath(b,target){
- const door=buildingDoor(b),left=b.x+.04,right=b.x+.96,top=b.y+.04,bottom=b.y+.96;
+ const [w,h]=footprintSize(b);const door=buildingDoor(b),left=b.x+.04,right=b.x+w-.04,top=b.y+.04,bottom=b.y+h-.04;
  const start={x:door.x,y:bottom};let points=[door,start];
- if(target.y>=b.y+1)points.push({x:target.x,y:bottom});
- else if(target.x>=b.x+1)points.push({x:right,y:bottom},{x:right,y:target.y});
+ if(target.y>=b.y+h)points.push({x:target.x,y:bottom});
+ else if(target.x>=b.x+w)points.push({x:right,y:bottom},{x:right,y:target.y});
  else if(target.x<b.x)points.push({x:left,y:bottom},{x:left,y:target.y});
- else {const side=target.x< b.x+.5?left:right;points.push({x:side,y:bottom},{x:side,y:top},{x:target.x,y:top});}
+ else {const side=target.x< b.x+w/2?left:right;points.push({x:side,y:bottom},{x:side,y:top},{x:target.x,y:top});}
  points.push(target);return points.filter((p,i)=>!i||Math.hypot(p.x-points[i-1].x,p.y-points[i-1].y)>.001);
 }
 export function pathPosition(points,fraction){

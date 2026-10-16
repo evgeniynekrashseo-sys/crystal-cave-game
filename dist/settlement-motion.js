@@ -1,5 +1,6 @@
+import {footprintSize} from './settlement-footprints.js?v=44';
 import {cropVisual} from './settlement-crops.js?v=43';
-import {entrancePath,pathPosition} from './settlement-layout.js?v=42';
+import {entrancePath,pathPosition} from './settlement-layout.js?v=44';
 const indoor=new Set(['school','university','observatory','factory','smelter','clinic','granary','market']);
 const smooth=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
 export function actorPose(a,job,previous,alpha=1,reduced=false){
@@ -22,7 +23,7 @@ export function actorPose(a,job,previous,alpha=1,reduced=false){
    farming=crop.id;
    const progress=crop.progress,travel=smooth(Math.min(progress/.08,(1-progress)/.08));
    const q=Math.min(.999,Math.max(0,(progress-.08)/.84))*8,row=Math.floor(q),along=q-row;
-   const px=job.x+.12+(row+.5)*.095,py=job.y+.12+(row%2?1-along:along)*.76;
+   const [w,h]=footprintSize(job),px=job.x+(.12+(row+.5)*.095)*w,py=job.y+(.12+(row%2?1-along:along)*.76)*h;
    x+=(px-.5-x)*travel;y+=(py-.62-y)*travel;
    entryHeading={x:0,y:row%2?-1:1};
   }

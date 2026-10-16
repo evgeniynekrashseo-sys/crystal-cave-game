@@ -1,4 +1,5 @@
-import {entrancePath} from './settlement-layout.js?v=42';
+import {footprintCells,perimeter} from './settlement-footprints.js?v=44';
+import {entrancePath} from './settlement-layout.js?v=44';
 // Shore relief is deterministic and stays outside the buildable y >= 0 cells.
 const shoreY=x=>-.10-.12*(1+Math.sin(x*.73))-.055*(1+Math.sin(x*2.31));
 export function drawSea(ctx,project,u,time,reduced,view){
@@ -28,9 +29,9 @@ export function drawRoadNetwork(ctx,c,project,u){
  // Existing saves may contain buildings without a road directly in front.
  // Draw short pedestrian access paths toward the nearest adjacent road
  // without mutating simulation state or placing roads through structures.
- const occupied=new Set(c.buildings.map(b=>`${b.x},${b.y}`));
+ const occupied=new Set(c.buildings.flatMap(b=>footprintCells(b).map(p=>`${p.x},${p.y}`)));
  for(const b of c.buildings){
-  const neighbors=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>({x:b.x+dx,y:b.y+dy,dx,dy}))
+  const neighbors=perimeter(b)
    .filter(n=>roads.has(`${n.x},${n.y}`));
   if(!neighbors.length)continue;
   const choices=neighbors.map(n=>entrancePath(b,{x:n.x+.5,y:n.y+.5}));
