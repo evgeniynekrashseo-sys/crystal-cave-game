@@ -99,7 +99,7 @@ function resetWorkers(c,changed){
 }
 export function upgrade(c,id){
  const b=c.buildings.find(b=>b.id===id);if(upgradeError(c,b))return false;
- debit(c,upgradeCost(b));resetWorkers(c,{...b,footprint:plannedSize(b.type,b.level+1)});b.level++;b.footprint=plannedSize(b.type,b.level);
+ b.constructionFrom={level:b.level,footprint:footprintSize(b)};debit(c,upgradeCost(b));resetWorkers(c,{...b,footprint:plannedSize(b.type,b.level+1)});b.level++;b.footprint=plannedSize(b.type,b.level);
  b.started=c.seconds;b.ready=c.seconds+constructionDuration(b.type,b.level);
  log(c,`${TYPES[b.type].name}: модернізація до рівня ${b.level}.`);return true;
 }

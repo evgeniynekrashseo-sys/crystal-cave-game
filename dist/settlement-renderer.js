@@ -1,9 +1,9 @@
 import {footprintCells,footprintSize,plannedSize,buildingAt,bodyPoint,covers} from './settlement-footprints.js?v=44';
-import {drawCropPlot} from './settlement-crop-renderer.js?v=44';
+import {drawCropPlot} from './settlement-crop-renderer.js?v=45';
 import {cropVisual} from './settlement-crops.js?v=43';
 import {COHERENT_KEYS,coherentKey} from './settlement-art-direction.js?v=42';
-import {actorPose} from './settlement-motion.js?v=44';
-import {drawConstruction} from './settlement-construction.js?v=42';
+import {actorPose} from './settlement-motion.js?v=45';
+import {drawConstruction,constructionCrew} from './settlement-construction.js?v=45';
 import {drawNaturalRiver} from './settlement-river.js?v=34';
 import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=42';
 import {ARTIFACTS,artifactError} from './city-story.js?v=27';
@@ -11,7 +11,7 @@ import {ARTIFACTS,artifactError} from './city-story.js?v=27';
 import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=42';
 import {createMeadow,fillMeadow} from './settlement-ground.js?v=36';
 import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=44';
-import {VOYAGES,placementError,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=44';
+import {VOYAGES,placementError,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=45';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
 const meadowArt=new Image();meadowArt.src=new URL('./terrain-meadow-v36.webp',import.meta.url).href;
@@ -274,11 +274,14 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
   const animal={frame:walking?Math.floor(time*4)%4:0,flip:Math.cos(phase)<0};
   objects.push({x:x+offset,y:y+.12,kind:regionAt(x,y)==='meadows'?'horse':'sheep',width:unitFor(W)*.4,animal});
  }
- for(const a of c.agents){const job=c.buildings.find(b=>b.id===a.job);const kind=a.truck?'truck':['school','university','observatory'].includes(job?.type)?'scientist':job?.type==='greenhouse'?'botanist':['factory','smelter','energy'].includes(job?.type)?'engineer':job?.type==='harbor'?'captain':job?.type==='fishery'?'fisherman':!a.job&&a.id%3===0&&c.buildings.some(b=>b.type==='school')?'pupil':a.id%3===1?'woman':'person';const prev=previousAgents?.get(a.id)||a,pose=actorPose(a,job,prev,alpha,reduced);if(pose.opacity<=.01)continue;objects.push({x:pose.x,y:pose.y,kind,width:unitFor(W)*(a.truck?.46:pose.chopping?.26:kind==='pupil'?.14:.18),a,pose});}
+ for(const a of c.agents){const job=c.buildings.find(b=>b.id===a.job);const kind=a.truck&&!(job?.type==='farm'&&a.state==='work')?'truck':['school','university','observatory'].includes(job?.type)?'scientist':job?.type==='greenhouse'?'botanist':['factory','smelter','energy'].includes(job?.type)?'engineer':job?.type==='harbor'?'captain':job?.type==='fishery'?'fisherman':!a.job&&a.id%3===0&&c.buildings.some(b=>b.type==='school')?'pupil':a.id%3===1?'woman':'person';const actor=job?.type==='farm'&&a.state==='work'?{...a,truck:false}:a;const prev=previousAgents?.get(a.id)||actor,pose=actorPose(actor,job,prev,alpha,reduced);if(pose.opacity<=.01)continue;objects.push({x:pose.x,y:pose.y,kind,width:unitFor(W)*(actor.truck?.46:pose.chopping?.26:kind==='pupil'?.14:.18),a:actor,pose});}
  for(const b of c.buildings.filter(b=>['harbor','fishery'].includes(b.type))){
   const v=(c.voyages||[]).find(v=>v.x===b.x&&v.y===b.y);
   const point=v?boatPose(v,VOYAGES[v.kind].duration):{x:b.x+.65,y:-.7};
   if(b.type==='harbor'||c.agents.some(a=>a.job===b.id&&a.state==='work'))objects.push({...point,kind:'ship',width:b.type==='harbor'?57:31,boat:true,returning:point.returning});
+ }
+ for(const b of c.buildings)for(const worker of constructionCrew(b,time,reduced)){
+  objects.push({x:worker.x,y:worker.y,kind:'person',width:unitFor(W)*.18,pose:worker.pose,builder:worker,depth:bodyPoint(b).x+bodyPoint(b).y+.03});
  }
  for(let i=0;i<4;i++){const t=reduced?i:time*.08+i*1.7;objects.push({x:3+i+Math.sin(t)*2,y:-1.4-i*.65+Math.cos(t)*.4,kind:'gull',width:20,bird:true});}
 
@@ -296,7 +299,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
   const frame=0;
   obj.constructing=obj.b?.ready>c.seconds;
   if(obj.b?.type==='farm'&&!obj.constructing){
-   hits.push(drawCropPlot(ctx,obj.b,project,u,time,reduced,fieldArt));
+   // Crop ground was painted before all people and structures.
    if(selected?.x===obj.x&&selected?.y===obj.y){
     diamond(obj.x,obj.y,'#ffffff06','#cbb881');
     const q=project(obj.x+.5,obj.y+.5),crop=cropVisual(obj.b);
@@ -311,7 +314,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
   if(obj.constructing){
    if(selected?.x===obj.x&&selected?.y===obj.y)diamond(obj.x,obj.y,'#c9bf8610','#d5c795');
    const previous=objectArt({...obj,b:{...obj.b,level:Math.max(1,obj.b.level-1)}},time,reduced);
-   hits.push(drawConstruction(ctx,obj.b,c.seconds,(x,y)=>{const q=bodyPoint(obj.b,x-obj.b.x,y-obj.b.y);return project(q.x,q.y);},u,image,previous,width));
+   hits.push(drawConstruction(ctx,obj.b,time,project,u,image,previous,width,reduced));
    return;
   }
   let bob=0,angle=0;
@@ -340,6 +343,13 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
    if((life[obj.kind]||chronicle[obj.kind])?direction<0:(direction<0)!==!!frame)ctx.scale(-1,1);
   }
   ctx.drawImage(image,-width/2,-height,width,height);ctx.restore();
+  if(obj.builder){
+   const worker=obj.builder,swing=reduced?0:Math.sin(time*9);
+   ctx.save();ctx.translate(p.x,p.y-height*.5);ctx.scale(worker.pose.flip?-1:1,1);
+   if(worker.carrying){ctx.fillStyle='#a38d6d';ctx.fillRect(width*.02,0,width*.4,height*.14);}
+   if(worker.working){ctx.rotate(-.4+swing*.65);ctx.strokeStyle='#9c7850';ctx.lineWidth=Math.max(1,zoom);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(width*.5,-height*.18);ctx.stroke();ctx.fillStyle='#777c78';ctx.fillRect(width*.4,-height*.22,width*.25,height*.08);}
+   ctx.restore();
+  }
   if(obj.pose?.farming){
    const swing=reduced?0:Math.sin(time*5)*.35;
    ctx.save();ctx.translate(p.x,p.y-height*.45);ctx.scale(obj.pose.flip?-1:1,1);ctx.rotate(swing);
@@ -388,6 +398,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
  };
 
  if(selected&&!objects.some(o=>o.b&&o.x===selected.x&&o.y===selected.y))diamond(selected.x,selected.y,'#50eff518','#83f9ff');
+ for(const b of c.buildings)if(b.type==='farm'&&!(b.ready>c.seconds))hits.push(drawCropPlot(ctx,b,project,u,time,reduced,fieldArt));
  for(const obj of objects){
   if(!(obj.b||obj.lab||['spruce','spruce-group','oak','birch'].includes(obj.kind)))continue;
   const onPlot=!!(obj.b||obj.lab),anchor=obj.b?bodyPoint(obj.b):{x:obj.x+(onPlot?.98:.5),y:obj.y+(onPlot?.98:.62)},p=project(anchor.x,anchor.y);
@@ -398,7 +409,7 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
   if(obj.b?.type!=='farm')castShadow(ctx,image,p,obj.width*zoom);
  }
  for(let i=objects.length-1;i>=0;i--){const o=objects[i];if(o.detail&&buildingAt(c,Math.floor(o.x),Math.floor(o.y)))objects.splice(i,1);}
- objects.sort((a,b)=>(a.b?bodyPoint(a.b).x+bodyPoint(a.b).y:sceneDepth(a))-(b.b?bodyPoint(b.b).x+bodyPoint(b.b).y:sceneDepth(b))).forEach(drawObject);
+ objects.sort((a,b)=>(a.depth??(a.b?bodyPoint(a.b).x+bodyPoint(a.b).y:sceneDepth(a)))-(b.depth??(b.b?bodyPoint(b.b).x+bodyPoint(b.b).y:sceneDepth(b)))).forEach(drawObject);
  const moving=c.buildings.find(b=>b.id===movingId),focus=selected&&buildingAt(c,selected.x,selected.y);
  const previewType=moving?.type||tool,previewLevel=moving?.level||1;
  const outline=(b,size,color,dashed=false)=>{

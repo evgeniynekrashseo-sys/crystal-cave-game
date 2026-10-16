@@ -1,5 +1,5 @@
 import {plannedSize,footprintSize,buildingAt} from './settlement-footprints.js?v=44';
-import {TYPES,TECH,loggingPlotAllowed,terrain,canPlace,upgradeCost,affordable,upgradeError,placementError,relocationError} from './settlement-model.js?v=44';
+import {TYPES,TECH,loggingPlotAllowed,terrain,canPlace,upgradeCost,affordable,upgradeError,placementError,relocationError} from './settlement-model.js?v=45';
 
 // One building, one description. Keep optional construction out of the way.
 export function renderBuildingPanel(c,{selected,tool,movingId},costText){

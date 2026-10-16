@@ -1,24 +1,26 @@
+import {fieldCellProgress} from './settlement-field-layout.js?v=45';
 import {footprintCells} from './settlement-footprints.js?v=44';
 import {cropVisual} from './settlement-crops.js?v=43';
 // Ground-space planting: every stalk stays rooted while its tip moves in wind.
 export function drawCropPlot(ctx,b,project,u,time,reduced,art={}){
- const boxes=footprintCells(b).map(p=>drawCropCell(ctx,{...b,...p},project,u,time,reduced,art));
+ const boxes=footprintCells(b).map(p=>drawCropCell(ctx,{...b,...p},project,u,time,reduced,art,fieldCellProgress(b,p.x-b.x,Math.max(0,Math.min(1,(cropVisual(b).progress-.08)/.84)))));
  const left=Math.min(...boxes.map(p=>p.left)),top=Math.min(...boxes.map(p=>p.top));
  return {left,top,width:Math.max(...boxes.map(p=>p.left+p.width))-left,height:Math.max(...boxes.map(p=>p.top+p.height))-top,x:b.x,y:b.y};
 }
-function drawCropCell(ctx,b,project,u,time,reduced,art={}){
- const state=cropVisual(b),poly=[[.08,.08],[.92,.08],[.92,.92],[.08,.92]].map(([x,y])=>project(b.x+x,b.y+y));
+function drawCropCell(ctx,b,project,u,time,reduced,art={},workProgress=0){
+ const state=cropVisual(b);if(['soil','sowing','harvesting'].includes(state.id))state.progress=workProgress;
+ const poly=[[.08,.08],[.92,.08],[.92,.92],[.08,.92]].map(([x,y])=>project(b.x+x,b.y+y));
  ctx.save();ctx.beginPath();poly.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();
  ctx.fillStyle='#584936';ctx.fill();
  for(let row=0;row<12;row++){
-  const y=.12+row*.067,a=project(b.x+.10,b.y+y),z=project(b.x+.90,b.y+y);
+  const x=.12+row*.067,a=project(b.x+x,b.y+.10),z=project(b.x+x,b.y+.90);
   ctx.strokeStyle=row%2?'#877052':'#342d2480';ctx.lineWidth=Math.max(.6,u*.012);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(z.x,z.y);ctx.stroke();
  }
  const hasArt=art.field1&&art.field2&&art.field3&&art.field4;
- const growing=!hasArt&&['green','ripening','ripe','harvesting'].includes(state.id);
+ const growing=(!hasArt||state.id==='harvesting')&&['green','ripening','ripe','harvesting'].includes(state.id);
  for(let row=0;row<12;row++)for(let col=0;col<24;col++){
   const seed=Math.sin(row*73.13+col*17.91+b.id*3)*43758.5453,r=seed-Math.floor(seed);
-  const p=project(b.x+.12+col*.032+r*.009,b.y+.12+row*.067);
+  const p=project(b.x+.12+row*.067,b.y+.12+col*.032+r*.009);
   if(state.id==='sowing'&&row/12<state.progress){ctx.fillStyle='#c5aa70';ctx.fillRect(p.x,p.y,Math.max(1,u*.008),Math.max(1,u*.006));}
   if(!growing)continue;
   const cut=state.id==='harvesting'&&(row*24+col)/288<state.progress;
@@ -37,10 +39,10 @@ function drawCropCell(ctx,b,project,u,time,reduced,art={}){
   if(state.id==='ripening'){paint(art.field2);paint(art.field3,state.progress);}
   if(state.id==='ripe')paint(art.field3);
   if(state.id==='harvesting'){
-   paint(art.field4);
+   // Harvested ground is soil and stubble, never the atlas's half-uncut example.
    const edge=.08+.84*state.progress;
    const region=[[edge,.08],[.92,.08],[.92,.92],[edge,.92]].map(([x,y])=>project(b.x+x,b.y+y));
-   ctx.save();ctx.beginPath();region.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y-u*.1));ctx.lineTo(region[2].x,region[2].y+u*.12);ctx.lineTo(region[3].x,region[3].y+u*.12);ctx.closePath();ctx.clip();paint(art.field3);ctx.restore();
+   ctx.save();ctx.beginPath();region.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.clip();paint(art.field3);ctx.restore();
   }
  }
  ctx.restore();

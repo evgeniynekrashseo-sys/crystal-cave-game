@@ -1,75 +1,84 @@
 import {constructionState} from './world-design.js?v=42';
+import {footprintSize,bodyPoint} from './settlement-footprints.js?v=44';
 
-// Geometry uses the same camera and world footprint as the finished building.
-// No substitute miniature building and no screen-space animation of structural parts.
-export function drawConstruction(ctx,b,seconds,project,u,image,previousImage,width){
- const state=constructionState(b,seconds),{progress,upgrading}=state;
- const front=project(b.x+.98,b.y+.98);
- const point=(x,y,z=0)=>{const p=project(b.x+x,b.y+y);return {x:p.x,y:p.y-z*u};};
- const polygon=(points,color)=>{ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.fillStyle=color;ctx.fill();};
- const box=(x,y,z,w,d,h)=>{
-  const p=(a,c,v)=>point(a,c,v);
-  polygon([p(x,y+d,z),p(x+w,y+d,z),p(x+w,y+d,z+h),p(x,y+d,z+h)],'#756b56');
-  polygon([p(x+w,y,z),p(x+w,y+d,z),p(x+w,y+d,z+h),p(x+w,y,z+h)],'#504d43');
-  polygon([p(x,y,z+h),p(x+w,y,z+h),p(x+w,y+d,z+h),p(x,y+d,z+h)],'#b5aa8e');
+// Discrete fixed-position assembly; completed masonry never slides or scales.
+export function assemblySections(progress){
+ const count=Math.floor(Math.max(0,Math.min(1,(progress-.35)/.6))*12);
+ return Array.from({length:count},(_,i)=>({col:i%3,row:3-Math.floor(i/3)}));
+}
+export function constructionCrew(b,seconds,reduced=false){
+ if(!(b.ready>seconds))return [];
+ const [w,h]=footprintSize(b),time=reduced?2:seconds-(b.started||0);
+ return [0,1].map(i=>{
+  const phase=((time+i*4)%10+10)%10,walking=phase<3||phase>7;
+  const travel=phase<3?phase/3:phase>7?(10-phase)/3:1;
+  const start={x:b.x+.14+i*.25,y:b.y+h-.09},end={x:b.x+w*(i?.78:.38),y:b.y+h-.12};
+  const x=start.x+(end.x-start.x)*travel,y=start.y+(end.y-start.y)*travel;
+  return {x:x-.5,y:y-.62,working:!walking,carrying:phase<3,phase,pose:{opacity:1,key:'walk'+(reduced||!walking?0:Math.floor(time*5)%4),flip:phase>7,moving:walking}};
+ });
+}
+export function drawConstruction(ctx,b,seconds,project,u,image,previousImage,width,reduced=false){
+ const {progress,upgrading}=constructionState(b,seconds),[w,h]=footprintSize(b);
+ const ground=(x,y,z=0)=>{const p=project(b.x+x,b.y+y);return{x:p.x,y:p.y-z*u};};
+ const point=(x,y,z=0)=>{const q=bodyPoint(b,x,y),p=project(q.x,q.y);return{x:p.x,y:p.y-z*u};};
+ const poly=(pts,color)=>{ctx.beginPath();pts.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.fillStyle=color;ctx.fill();};
+ const beam=(a,z,size=.035)=>{
+  const p=point(...a),q=point(...z);ctx.lineCap='butt';
+  for(const [color,m]of [['#4c3828',1],['#b18a59',.6]]){ctx.strokeStyle=color;ctx.lineWidth=Math.max(.7,u*size*m);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}
  };
- const beam=(a,b,size=.038)=>{
-  const p=point(...a),q=point(...b);ctx.lineCap='butt';ctx.strokeStyle='#4a3425';ctx.lineWidth=u*size;
-  ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
-  ctx.strokeStyle='#96754e';ctx.lineWidth=u*size*.62;ctx.stroke();
-  ctx.strokeStyle='#c7a16a';ctx.lineWidth=Math.max(.5,u*size*.15);ctx.stroke();
- };
- const paint=(sprite,portion=1)=>{
-  if(!sprite)return;const h=width*sprite.height/sprite.width;
-  ctx.save();ctx.beginPath();ctx.rect(front.x-width/2,front.y-h*portion,width,h*portion);ctx.clip();
-  ctx.drawImage(sprite,front.x-width/2,front.y-h,width,h);ctx.restore();
+ const front=point(.98,.98),height=image?width*image.height/image.width:width;
+ const sprite=(img,bounds,clip=null)=>{
+  if(!img)return;const p=bodyPoint(bounds),q=project(p.x,p.y),ratio=Math.min(...footprintSize(bounds))/Math.min(w,h),ww=width*ratio,hh=ww*img.height/img.width;
+  ctx.save();if(clip){ctx.beginPath();for(const {col,row}of clip)ctx.rect(q.x-ww/2+col*ww/3,q.y-hh+row*hh/4,ww/3+.5,hh/4+.5);ctx.clip();}
+  ctx.drawImage(img,q.x-ww/2,q.y-hh,ww,hh);ctx.restore();
  };
  ctx.save();
- if(b.type==='farm'||b.type==='park'){
-  polygon([point(.12,.12),point(.88,.12),point(.88,.88),point(.12,.88)],b.type==='farm'?'#68533a':'#747650');
-  if(upgrading)paint(previousImage||image);
-  paint(image,progress);
-  const bar=point(.5,.5,.22),bw=u*.65;
-  ctx.fillStyle='#242a22e0';ctx.fillRect(bar.x-bw/2,bar.y,bw,u*.055);
-  ctx.fillStyle='#b2bd7a';ctx.fillRect(bar.x-bw/2,bar.y,bw*progress,u*.055);
-  ctx.restore();
-  return {left:front.x-width/2,top:front.y-width,width,height:width,x:b.x,y:b.y};
- }
- if(upgrading)paint(previousImage||image);
- else{
-  // Separate stone courses, with a real entrance gap facing the road/front.
-  for(let row=0;row<2;row++)for(let i=0;i<6;i++){
-   const t=.16+i*.112,offset=row*.015;
-   box(t,.16+offset,row*.045,.106,.085,.044);
-   box(.16+offset,t,row*.045,.085,.106,.044);
-   if(i!==2&&i!==3)box(t,.76-offset,row*.045,.106,.085,.044);
-   box(.76-offset,t,row*.045,.085,.106,.044);
+ poly([ground(.05,.05),ground(w-.05,.05),ground(w-.05,h-.05),ground(.05,h-.05)],'#84725366');
+ const field=['farm','park'].includes(b.type);
+ if(field){
+  // Prepare actual new ground, with furrows along the same Y axis as mature crops.
+  for(let x=.12;x<w-.08;x+=.067)if(x/w<progress){
+   const p=ground(x,.10),q=ground(x,h-.10);ctx.strokeStyle='#51432f';ctx.lineWidth=Math.max(.6,u*.012);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
+  }
+ }else{
+  if(upgrading&&previousImage)sprite(previousImage,{...b,footprint:b.constructionFrom?.footprint||footprintSize(b)});
+  // Foundation courses appear block by block, followed by supporting timber.
+  const blocks=Math.floor(Math.min(1,progress/.25)*24);
+  for(let i=0;i<blocks;i++){
+   const side=Math.floor(i/6),t=.14+(i%6)*.12;
+   if(side===2&&(i%6===2||i%6===3))continue;
+   const x=side===1?.14:side===3?.82:t,y=side===0?.14:side===2?.82:t;
+   poly([point(x,y,.04),point(x+.1,y,.04),point(x+.1,y+.07,.04),point(x,y+.07,.04)],i%2?'#aaa18b':'#817a69');
+   beam([x,y+.07,0],[x+.1,y+.07,0],.045);
+  }
+  const roof=Math.max(.35,Math.min(1.1,height/u-.95*Math.min(w,h)));
+  if(progress>.2){
+   const posts=[[.12,.12],[.47,.12],[.88,.12],[.12,.5],[.88,.5],[.12,.89],[.5,.89],[.88,.89]];
+   posts.slice(0,Math.ceil(Math.min(1,(progress-.2)/.2)*posts.length)).forEach(([x,y])=>beam([x,y,.04],[x,y,roof],.055));
+   if(progress>.32){beam([.12,.12,roof],[.88,.12,roof]);beam([.12,.12,roof],[.12,.89,roof]);}
+  }
+  const sections=assemblySections(progress);if(sections.length)sprite(image,b,sections);
+  // Scaffold uprights, cross-bracing, platform planks and a ladder remain outside walls.
+  if(progress>.16&&progress<.98){
+   for(const x of [.08,.5,.94])beam([x,.96,0],[x,.96,roof+.12],.04);
+   for(const z of [roof*.45,roof*.85]){
+    beam([.08,.96,z],[.94,.96,z],.03);beam([.94,.08,z],[.94,.96,z],.03);
+    for(let i=0;i<4;i++)beam([.08,.89+i*.022,z],[.94,.89+i*.022,z],.02);
+   }
+   beam([.08,.96,.04],[.5,.96,roof*.45],.025);beam([.5,.96,roof*.45],[.94,.96,.04],.025);
+   beam([.96,.28,0],[.96,.5,roof*.85],.025);beam([.96,.39,0],[.96,.61,roof*.85],.025);
+   for(let i=0;i<7;i++){const t=i/7;beam([.96,.28+.22*t,roof*.85*t],[.96,.39+.22*t,roof*.85*t],.018);}
   }
  }
- const height=Math.min(.86,Math.max(.55,image?width*image.height/image.width/u*.58:.7));
- const raised=upgrading?1:Math.max(0,Math.min(1,(progress-.2)/.35));
- if(raised>0){
-  const posts=[[.12,.12],[.47,.12],[.87,.12],[.12,.5],[.87,.5],[.12,.89],[.5,.89],[.87,.89]];
-  // Posts appear individually once installed, rather than stretching out of the soil.
-  posts.slice(0,Math.ceil(raised*posts.length)).forEach(([x,y])=>beam([x,y,.04],[x,y,height],.055));
-  if(raised>.45){beam([.12,.12,height],[.87,.12,height]);beam([.12,.12,height],[.12,.89,height]);}
- }
- if(progress>=.55)paint(image,Math.min(1,(progress-.55)/.4));
- if(raised>.6){
-  // External scaffolding stays visible in front of assembled walls.
-  for(const z of [height*.45,height]){
-   beam([.12,.89,z],[.87,.89,z],.03);
-   beam([.87,.12,z],[.87,.89,z],.03);
+ // Timber and stacked materials sit inside the site, not on nearby roads.
+ for(let i=0;i<4;i++)beam([.13,.92-i*.035,.03],[.40,.92-i*.035,.03],.035);
+ if(!reduced)for(const worker of constructionCrew(b,seconds)){
+  if(!worker.working)continue;
+  for(let i=0;i<5;i++){const f=(seconds*.7+i*.2)%1,p=project(worker.x+.5,worker.y+.62);
+   ctx.fillStyle=`rgba(188,170,135,${(1-f)*.19})`;ctx.beginPath();ctx.ellipse(p.x+Math.sin(i*2.1+seconds)*u*.035,p.y-f*u*.18,u*(.018+f*.045),u*(.012+f*.025),0,0,Math.PI*2);ctx.fill();
   }
-  beam([.12,.89,.07],[.5,.89,height*.45],.02);
-  beam([.87,.12,.07],[.87,.5,height*.45],.02);
-  for(let i=0;i<4;i++)beam([.13,.85+i*.018,height*.45],[.87,.85+i*.018,height*.45],.018);
  }
- // Supplies remain within the plot, clear of neighboring streets.
- for(let i=0;i<3;i++)beam([.14,.94-i*.033,.025],[.42,.94-i*.033,.025],.032);
- const bar=point(.5,.5,height+.25),bw=u*.65;
- ctx.fillStyle='#242a22e0';ctx.fillRect(bar.x-bw/2,bar.y,bw,u*.055);
- ctx.fillStyle='#b2bd7a';ctx.fillRect(bar.x-bw/2+1,bar.y+1,(bw-2)*progress,Math.max(1,u*.055-2));
- ctx.restore();
- return {left:front.x-width/2,top:Math.min(front.y-width*(image?image.height/image.width:1),bar.y),width,height:front.y-Math.min(front.y-width*(image?image.height/image.width:1),bar.y),x:b.x,y:b.y};
+ const bar=ground(w/2,h/2,field?.2:height/u+.15),bw=u*.8;
+ ctx.fillStyle='#242a22e0';ctx.fillRect(bar.x-bw/2,bar.y,bw,u*.06);ctx.fillStyle='#b2bd7a';ctx.fillRect(bar.x-bw/2+1,bar.y+1,(bw-2)*progress,Math.max(1,u*.06-2));
+ ctx.restore();return{left:front.x-width/2,top:Math.min(front.y-height,bar.y),width,height:front.y-Math.min(front.y-height,bar.y),x:b.x,y:b.y};
 }
