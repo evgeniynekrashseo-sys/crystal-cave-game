@@ -1,7 +1,7 @@
 import {drawEquipment} from './settlement-geometry.js?v=47';
 import {footprintSize,plannedSize} from './settlement-footprints.js?v=44';
 const additions={
- factory:['granary','smelter','factory','energy'],smelter:['mine','granary','smelter','energy'],energy:['energy','granary','well','energy'],
+ factory:['granary','lumber','granary','lumber'],smelter:['mine','granary','smelter','energy'],energy:['energy','granary','well','energy'],
  lumber:['lumber','granary','lumber','granary'],quarry:['quarry','granary','mine','quarry'],mine:['mine','granary','quarry','mine'],
  ranch:['ranch','granary','ranch','well'],granary:['granary','market','granary','granary'],
  school:['school','park','school','granary'],university:['school','observatory','university','park'],
@@ -25,7 +25,7 @@ export function compoundParts(b,seconds=Infinity){
   const constructing=b.ready>seconds&&(!prior||born>prior||renovating);
   const proxy={...b,x:b.x+x,y:b.y+y,type,level:stage,footprint:[1,1],ready:constructing?b.ready:0,constructionFrom:constructing&&main&&prior?{level:1,footprint:[1,1]}:undefined};
   parts.push({x:proxy.x,y:proxy.y,main,building,type,born,constructing,b:proxy,
-   prop:b.type==='lumber'?'logs':['ranch','park','greenhouse'].includes(b.type)?'garden':['factory','smelter','energy'].includes(b.type)?'machine':'cargo'});
+   prop:b.type==='lumber'?'logs':['ranch','park','greenhouse'].includes(b.type)?'garden':['smelter','energy'].includes(b.type)?'machine':'cargo'});
  }
  return parts;
 }
