@@ -11,7 +11,10 @@ export const FACTORY_STAGES=[
 export const factoryStage=level=>level>=5?3:level>=3?2:level===2?1:0;
 export function factoryMetrics(b){
  const index=factoryStage(b.level),spec=FACTORY_STAGES[index],[w,h]=footprintSize(b);
- const size=Math.min(spec.size,w-.08,h-.08),scale=size*1.9/(2*Math.max(spec.front[0]-spec.crop[0],spec.crop[0]+spec.crop[2]-spec.front[0]));
+ // Prevent late-stage industrial artwork from dominating neighboring
+ // medieval-scale structures. Footprint/collision data stay unchanged.
+ const visualLimit=index>=2?2.05:1.55;
+ const size=Math.min(spec.size,visualLimit,w-.08,h-.08),scale=size*1.9/(2*Math.max(spec.front[0]-spec.crop[0],spec.crop[0]+spec.crop[2]-spec.front[0]));
  return {index,spec,size,scale,anchor:{x:b.x+(w-size)/2+size,y:b.y+size+.01}};
 }
 export function factoryWorldPoint(b,source){
