@@ -1,4 +1,4 @@
-import {factoryMetrics,factoryWidth,prepareFactorySprites,drawFactoryActivity,hasFactoryLogistics,drawFactoryLogistics} from './settlement-factory.js?v=48';
+import {factoryMetrics,factoryWidth,prepareFactorySprites,drawFactoryActivity,hasFactoryLogistics,drawFactoryLogistics} from './settlement-factory.js?v=49';
 import {compoundParts,drawCompoundProp,drawCompoundYard} from './settlement-compounds.js?v=48';
 import {footprintCells,footprintSize,plannedSize,buildingAt,bodyPoint,covers} from './settlement-footprints.js?v=44';
 import {drawCropPlot} from './settlement-crop-renderer.js?v=45';
