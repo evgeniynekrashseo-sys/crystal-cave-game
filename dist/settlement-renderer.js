@@ -275,9 +275,10 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
  // mixed-atlas sprites previously overlapped roads and neighboring roofs.
  const buildingScale={house:1.34,lumber:1.44,farm:1.82,well:.94,quarry:1.38,ranch:1.60,clinic:1.46,granary:1.43,mine:1.42,smelter:1.46,factory:1.48,energy:1.42,school:1.5,university:1.53,market:1.48,observatory:1.45,greenhouse:1.48,lighthouse:1.5,park:1.25,harbor:1.5,fishery:1.42};
  for(const b of c.buildings){
+  // Industrial artwork intentionally disabled: render a scale-consistent medieval workshop compound.
   if(false && b.type==='factory'&&factoryArt.length){const m=factoryMetrics(b);objects.push({x:b.x,y:b.y,kind:'factory',width:unitFor(W)*factoryWidth(b),b,factory:true,depth:m.anchor.x+m.anchor.y});if(hasFactoryLogistics(b)&&!(b.ready>c.seconds)){const [w,h]=footprintSize(b);objects.push({x:b.x,y:b.y,factoryLogistics:b,depth:b.x+w/2+b.y+h-.12});}continue;}
   const parts=compoundParts(b,c.seconds);
-  if(parts)for(const part of parts)objects.push({x:part.x,y:part.y,kind:kind[part.type],width:unitFor(W)*(buildingScale[part.type]??1.45),b:part.b,parent:b,part,prop:part.building?null:part.prop});
+  if(parts)for(const part of parts)objects.push({x:part.x,y:part.y,kind:kind[part.type],width:unitFor(W)*(b.type==='factory'?Math.min(1.12,buildingScale[part.type]??1.12):(buildingScale[part.type]??1.45)),b:part.b,parent:b,part,prop:part.building?null:part.prop});
   else objects.push({x:b.x,y:b.y,kind:kind[b.type],width:unitFor(W)*(buildingScale[b.type]??1.45),b});
  }
  for(let x=1;x<c.extent;x++)for(let y=9;y<c.extent;y++){
