@@ -4,6 +4,18 @@ export function riverBanks(y){
  const bend=.10*Math.sin(y*.83)+.045*Math.sin(y*2.7);
  return {left:14.19+bend+.025*Math.sin(y*5.1),right:14.80+wide*.94+bend+.035*Math.sin(y*3.3+.7)};
 }
+// Conservative world-space bounds for the river, banks, reeds, bridge and
+// animated ripples. The corridor is x≈13–17, y≈0–37; generous padding keeps
+// every sprite visible near screen edges, at any camera zoom.
+// This is a cheap early-out only: it never changes simulation or map data.
+export function riverMayBeVisible(project,u,view){
+ const corners=[[10,-5],[20,-5],[20,41],[10,41]].map(([x,y])=>project(x,y));
+ const left=Math.min(...corners.map(p=>p.x))-3*u;
+ const right=Math.max(...corners.map(p=>p.x))+3*u;
+ const top=Math.min(...corners.map(p=>p.y))-3*u;
+ const bottom=Math.max(...corners.map(p=>p.y))+3*u;
+ return right>=0&&left<=view.width&&bottom>=0&&top<=view.height;
+}
 const art=typeof Image==='undefined'?null:new Image();if(art)art.src=new URL('./river-materials-v26.png',import.meta.url).href;
 let sprites;
 function prepare(){
