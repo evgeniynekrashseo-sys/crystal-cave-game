@@ -1,7 +1,7 @@
 export function cropNatureSprite(image,column){
  if(!image.complete||!image.naturalWidth)return null;
  const x=Math.round(column*image.naturalWidth/4),r=Math.round((column+1)*image.naturalWidth/4);
- const y=0,b=Math.round(image.naturalHeight*.31),w=r-x,h=b-y;
+ const y=0,b=Math.round(image.naturalHeight*.295),w=r-x,h=b-y;
  const c=document.createElement('canvas');c.width=w;c.height=h;
  const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(image,x,y,w,h,0,0,w,h);
  const a=g.getImageData(0,0,w,h).data;let l=w,t=h,rr=-1,bb=-1,clear=0;
@@ -12,4 +12,4 @@ export function cropNatureSprite(image,column){
  const out=document.createElement('canvas');out.width=rr-l+1;out.height=bb-t+1;
  out.getContext('2d').drawImage(c,l,t,out.width,out.height,0,0,out.width,out.height);return out;
 }
-export const extractTrees=image=>[0,1,2].map(i=>cropNatureSprite(image,i));
+export const extractTrees=image=>[0,1,3].map(i=>cropNatureSprite(image,i));
