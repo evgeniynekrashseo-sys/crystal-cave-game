@@ -1,0 +1,9 @@
+{
+  "edition": "laboratory-only",
+  "url": "./lab/",
+  "version": 50,
+  "tests": 148,
+  "browser": "mobile + offline reload + settings + modules + isolated saves",
+  "native": "Android Capacitor sync verified; unsigned native CI builds configured; signing and device testing remain",
+  "commit": "1e860ebe908f7e507f9fcd904c3cfc2ee6c6a9bc"
+}
