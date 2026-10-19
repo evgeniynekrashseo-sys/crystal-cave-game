@@ -1,0 +1,8 @@
+{
+  "edition": "laboratory-only",
+  "version": "1.2.1",
+  "city": false,
+  "assets": 19,
+  "storagePrefix": "chemlab_lab_",
+  "signed": false
+}

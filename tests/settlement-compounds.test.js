@@ -1,4 +1,3 @@
-import {factoryDoor} from '../dist/settlement-factory.js';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {compoundParts,compoundEntrance} from '../dist/settlement-compounds.js';
@@ -13,7 +12,7 @@ test('factory grows by adding fixed single-cell modules, never enlarging its ori
   for(const p of previous){const same=parts.find(q=>q.x===p.x&&q.y===p.y);assert(same);assert.equal(same.type,p.type);}
   assert.deepEqual(compoundEntrance(b),{x:2.67,y:3.96});previous=parts;
  }
- assert(previous.some(p=>p.prop==='machine'&&!p.building));assert(previous.filter(p=>p.building).length>1);
+ assert(previous.some(p=>p.prop==='cargo'&&!p.building));assert(previous.filter(p=>p.building).length>1);
 });
 test('upgrade only builds added modules and the deliberate main-hall renovation',()=>{
  const b={type:'factory',level:2,x:0,y:0,footprint:[2,2],started:0,ready:100,constructionFrom:{level:1,footprint:[2,1]}};
@@ -26,7 +25,20 @@ test('legacy compact complexes and ordinary houses remain compatible',()=>{
 });
 test('worker entrance keeps the same main door while new buildings use the outer service path',()=>{
  const b={type:'factory',x:2,y:3,level:5,footprint:[4,3]},points=entrancePath(b,{x:4.5,y:6.5});
- assert.deepEqual(points[0],factoryDoor(b));
+ assert.deepEqual(points[0],compoundEntrance(b));
  assert(points.some(p=>p.y===5.96));assert.deepEqual(points.at(-1),{x:4.5,y:6.5});
+});
+test('factory workers reach the visible first-cell entrance from every side at all levels',()=>{
+ for(let level=1;level<=5;level++)for(const size of [plannedSize('factory',level),[1,1]]){
+  const b={type:'factory',x:2,y:3,level,footprint:size};
+  for(const target of [{x:1.5,y:3.5},{x:2.5,y:2.5},{x:2+size[0]+.5,y:3.5},{x:2.5,y:3+size[1]+.5}]){
+   const points=entrancePath(b,target);
+   assert.deepEqual(points[0],{x:2.67,y:3.96});
+   assert.deepEqual(points[1],{x:2.67,y:3.99});
+   assert.deepEqual(points[2],{x:2.04,y:3.99});
+   assert.deepEqual(points.at(-1),target);
+   assert(points.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));
+  }
+ }
 });
 

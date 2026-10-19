@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['dist/**', 'android/**', 'ios/**', 'capacitor.config.json', 'package.json', 'package-lock.json', '.github/workflows/native-build.yml']
+    paths: ['scripts/build-lab.mjs', 'scripts/sync-lab.mjs', 'dist/**', 'android/**', 'ios/**', 'capacitor.config.json', 'package.json', 'package-lock.json', '.github/workflows/native-build.yml']
 permissions:
   contents: read
 jobs:
@@ -18,7 +18,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npx cap sync android
+      - run: npm run native:lab -- android
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -31,7 +31,7 @@ jobs:
         working-directory: android
       - uses: actions/upload-artifact@v4
         with:
-          name: chemlab-android-unsigned
+          name: chemlab-lab-android-unsigned
           path: |
             android/app/build/outputs/apk/debug/*.apk
             android/app/build/outputs/bundle/release/*.aab
@@ -45,9 +45,9 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
-      - run: npx cap sync ios
+      - run: npm run native:lab -- ios
       - run: xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
       - uses: actions/upload-artifact@v4
         with:
-          name: chemlab-ios-simulator
+          name: chemlab-lab-ios-simulator
           path: ios-build/Build/Products/Debug-iphonesimulator/App.app

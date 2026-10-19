@@ -1,0 +1,12 @@
+const {chromium}=require(process.env.PLAYWRIGHT_PATH||'/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {spawn}=require('node:child_process'),assert=require('node:assert/strict'),path=require('node:path');
+(async()=>{const server=spawn(process.execPath,['dev-server.mjs','--port','4199'],{cwd:path.resolve(__dirname,'..'),stdio:'ignore'});let browser;
+try{await new Promise(r=>setTimeout(r,500));browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/tmp/chromium',args:['--no-sandbox','--disable-gpu']});const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),errors=[],requests=[];
+page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));page.on('response',r=>{if(r.status()>=400)errors.push(r.status()+' '+r.url())});
+await context.addInitScript(()=>{localStorage.setItem('chemlab_v50','{"level":99}');localStorage.setItem('chemlab_settlement_v2','CITY_SENTINEL');});
+await page.goto('http://localhost:4199/lab/');await page.locator('#tutorial-go').click();await page.waitForFunction(()=>document.querySelectorAll('[data-tube]').length>0);await page.locator('#settings').click();assert.equal(await page.locator('#city-toggle').count(),0);await page.locator('#close').click();
+await page.locator('#lab-button').click();await page.getByRole('heading',{name:'Обладнання лабораторії'}).waitFor();await page.locator('#close').click();
+assert.equal(await page.evaluate(()=>localStorage.getItem('chemlab_settlement_v2')),'CITY_SENTINEL');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chemlab_v50')).level),99);assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('chemlab_lab_v50')).level),1);
+await page.evaluate(()=>navigator.serviceWorker.ready);await page.reload();await page.waitForFunction(()=>navigator.serviceWorker.controller);await context.setOffline(true);await page.reload();await page.waitForFunction(()=>document.querySelectorAll('[data-tube]').length>0);await page.locator('#settings').click();await page.locator('#close').click();
+assert(!requests.some(u=>/\/(city[^/]*|settlement[^/]*)\.(js|webp|png)/.test(u)));assert.deepEqual(errors,[]);await page.screenshot({path:path.resolve(__dirname,'../docs/lab-mobile.png')});console.log('PASS mobile laboratory, modules, isolated saves, no city downloads, offline reload, no browser errors');
+}finally{if(browser)await browser.close();server.kill();}})().catch(e=>{console.error(e);process.exitCode=1;});

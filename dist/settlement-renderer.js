@@ -3,8 +3,8 @@ import {compoundParts,drawCompoundProp,drawCompoundYard} from './settlement-comp
 import {footprintCells,footprintSize,plannedSize,buildingAt,bodyPoint,covers} from './settlement-footprints.js?v=44';
 import {drawCropPlot} from './settlement-crop-renderer.js?v=45';
 import {cropVisual} from './settlement-crops.js?v=43';
-import {COHERENT_KEYS,coherentKey} from './settlement-art-direction.js?v=49';
-import {actorPose} from './settlement-motion.js?v=48';
+import {COHERENT_KEYS,coherentKey} from './settlement-art-direction.js?v=50';
+import {actorPose} from './settlement-motion.js?v=50';
 import {drawConstruction,constructionCrew} from './settlement-construction.js?v=48';
 import {drawNaturalRiver} from './settlement-river.js?v=34';
 import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=42';
@@ -12,7 +12,7 @@ import {ARTIFACTS,artifactError} from './city-story.js?v=47';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
 import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=47';
 import {createMeadow,fillMeadow} from './settlement-ground.js?v=36';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=48';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=50';
 import {VOYAGES,placementError,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=47';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;

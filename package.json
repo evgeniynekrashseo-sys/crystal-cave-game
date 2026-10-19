@@ -9,7 +9,9 @@
     "qa:full": "npm test && npm run qa:swarm",
     "native:sync": "cap sync",
     "native:android": "cap open android",
-    "native:ios": "cap open ios"
+    "native:ios": "cap open ios",
+    "build:lab": "node scripts/build-lab.mjs",
+    "native:lab": "node scripts/sync-lab.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

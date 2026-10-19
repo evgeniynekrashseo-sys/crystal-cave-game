@@ -1,13 +1,12 @@
-import {factoryDoor} from './settlement-factory.js?v=48';
-import {compoundEntrance} from './settlement-compounds.js?v=48';
+import {compoundEntrance} from './settlement-compounds.js?v=49';
 import {footprintSize,bodyPoint} from './settlement-footprints.js?v=44';
 // World-space door positions shared by access paths and worker transitions.
 // Front-left facades face +y; front-right facades face +x.
 const doors={house:[.66,.96],school:[.61,.96],granary:[.63,.96],lumber:[.56,.96],factory:[.67,.96],clinic:[.35,.88],university:[.38,.88],observatory:[.40,.88],lab:[.64,.96],ranch:[.63,.96],farm:[.5,.9],park:[.5,.9]};
-export function buildingDoor(b){if(b.type==='factory')return factoryDoor(b);const entrance=compoundEntrance(b);if(entrance)return entrance;const [x,y]=doors[b.type]||[.38,.88];return bodyPoint(b,x,y);}
+export function buildingDoor(b){const entrance=compoundEntrance(b);if(entrance)return entrance;const [x,y]=doors[b.type]||[.38,.88];return bodyPoint(b,x,y);}
 export function entrancePath(b,target){
  const [w,h]=footprintSize(b);const door=buildingDoor(b),left=b.x+.04,right=b.x+w-.04,top=b.y+.04,bottom=b.y+h-.04;
- if(b.type!=='factory'&&compoundEntrance(b)){
+ if(compoundEntrance(b)){
   const edge=b.y+.99,points=[door,{x:door.x,y:edge},{x:left,y:edge}];
   if(target.y>=b.y+h)points.push({x:left,y:bottom},{x:target.x,y:bottom});
   else if(target.x<b.x)points.push({x:left,y:target.y});
