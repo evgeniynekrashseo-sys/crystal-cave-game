@@ -6,7 +6,7 @@ import {cropVisual} from './settlement-crops.js?v=43';
 import {COHERENT_KEYS,coherentKey} from './settlement-art-direction.js?v=50';
 import {actorPose} from './settlement-motion.js?v=50';
 import {drawConstruction,constructionCrew} from './settlement-construction.js?v=48';
-import {drawNaturalRiver} from './settlement-river.js?v=34';
+import {drawNaturalRiver,riverMayBeVisible} from './settlement-river.js?v=51';
 import {architecturalStage,buildingFamily,regionAt,landscapeSeed,elevation,forestCover,sceneDepth} from './world-design.js?v=42';
 import {ARTIFACTS,artifactError} from './city-story.js?v=47';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
@@ -131,10 +131,6 @@ function paintImage(ctx,image,x,y,width,{alpha=1,angle=0,flip=false}={}){
  ctx.drawImage(image,-width/2,-height,width,height);ctx.restore();return height;
 }
 
-function drawRiver(ctx,W,H,pan,zoom,time,reduced){
- const view={width:W,height:H},camera={zoom,pan};
- drawNaturalRiver(ctx,(x,y)=>projectPoint(view,camera,x,y),unitFor(W)*zoom,time,reduced,details.water);
-}
 export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,time,reduced,previousAgents,alpha=1}){
  prepare();
  const W=canvas.clientWidth,H=canvas.clientHeight,u=unitFor(W)*zoom;
@@ -143,8 +139,12 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
  ctx.clearRect(0,0,W,H);ctx.fillStyle='#69734a';ctx.fillRect(0,0,W,H);
  if(grass)fillMeadow(ctx,grass,view,camera,originFor(view),{natural:preparedMeadow});
  drawSea(ctx,project,u,time,reduced,view);
- ctx.save();ctx.beginPath();[project(-40,0),project(60,0),project(60,60),project(-40,60)].forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.clip();
- drawRiver(ctx,W,H,pan,zoom,time,reduced);ctx.restore();
+ // The river's broad world-space bounds are checked before allocating a clip
+ // or drawing its many animated layers. This does not change river simulation.
+ if(riverMayBeVisible(project,u,view)){
+  ctx.save();ctx.beginPath();[project(-40,0),project(60,0),project(60,60),project(-40,60)].forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.clip();
+  drawNaturalRiver(ctx,project,u,time,reduced,details.water);ctx.restore();
+ }
 
  // Layered terrain color variation is tied to world cells, not screen pixels.
  // Keep it underneath buildings and roads and clear of the sea/river.
