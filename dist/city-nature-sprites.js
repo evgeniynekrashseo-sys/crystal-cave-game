@@ -12,4 +12,4 @@ export function cropNatureSprite(image,column){
  const out=document.createElement('canvas');out.width=rr-l+1;out.height=bb-t+1;
  out.getContext('2d').drawImage(c,l,t,out.width,out.height,0,0,out.width,out.height);return out;
 }
-export const extractTrees=image=>[0,1,3].map(i=>cropNatureSprite(image,i));
+export const extractTrees=image=>[0,1,2].map(i=>cropNatureSprite(image,i));
