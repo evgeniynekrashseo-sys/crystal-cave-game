@@ -3,6 +3,9 @@ import {entrancePath} from './settlement-layout.js?v=50';
 // Shore relief is deterministic and stays outside the buildable y >= 0 cells.
 const shoreY=x=>-.10-.12*(1+Math.sin(x*.73))-.055*(1+Math.sin(x*2.31));
 export function drawSea(ctx,project,u,time,reduced,view){
+ const pts=[[-40,-40],[60,-40],[60,1],[-40,1]].map(([x,y])=>project(x,y));
+ const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
+ if(Math.max(...xs)+u<0||Math.min(...xs)-u>view.width||Math.max(...ys)+u<0||Math.min(...ys)-u>view.height)return;
  const coast=Array.from({length:301},(_,i)=>{const x=-40+i/3;return{x,y:shoreY(x)}});
  const trace=(offset=0)=>{ctx.beginPath();coast.forEach((s,i)=>{const p=project(s.x,s.y-offset);ctx[i?'lineTo':'moveTo'](p.x,p.y)});};
  const shallow=project(5,-.5),deep=project(5,-12),water=ctx.createLinearGradient(shallow.x,shallow.y,deep.x,deep.y);
