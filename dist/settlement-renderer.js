@@ -12,7 +12,7 @@ import {ARTIFACTS,artifactError} from './city-story.js?v=47';
 // Layered isometric scene. Buildings, residents and resources remain simulation objects.
 import {unitFor,originFor,projectPoint,tileAt} from './settlement-camera.js?v=47';
 import {createMeadow,fillMeadow} from './settlement-ground.js?v=36';
-import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=50';
+import {drawSea,drawRoadNetwork,animalPose,boatPose,drawSelection,drawAtmosphere} from './settlement-life.js?v=52';
 import {VOYAGES,placementError,terrain,isRiverTile,RIVER_BRIDGE,timberAvailable} from './settlement-model.js?v=47';
 const atlas=new Image();atlas.src=new URL('./settlement-sprites-alpha.png',import.meta.url).href;
 const detailAtlas=new Image();detailAtlas.src=new URL('./settlement-details-alpha.png',import.meta.url).href;
