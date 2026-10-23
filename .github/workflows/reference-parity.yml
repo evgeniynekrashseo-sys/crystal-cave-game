@@ -47,6 +47,7 @@ jobs:
           node --input-type=module <<'NODE'
           import { chromium } from 'playwright';
           const browser = await chromium.launch({headless:true});
+          const failures=[];
           for(const [name,width,height] of [['portrait',390,844],['landscape',844,390]]){
             const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:2,isMobile:true,hasTouch:true});
             const errors=[];
@@ -54,10 +55,13 @@ jobs:
             await page.goto('http://localhost:8765/city-art-sandbox.html',{waitUntil:'networkidle'});
             await page.waitForTimeout(1500);
             await page.screenshot({path:'artifacts/city/'+name+'.png'});
-            if(errors.length)throw new Error(name+': '+errors.join('; '));
+            const treeState=await page.locator('html').getAttribute('data-tree-sprites');
+            if(treeState!=='ready')failures.push(name+': detailed tree sprites not ready ('+treeState+')');
+            if(errors.length)failures.push(name+': '+errors.join('; '));
             await page.close();
           }
           await browser.close();
+          if(failures.length)throw new Error(failures.join('\n'));
           NODE
       - uses: actions/upload-artifact@v4
         if: always()
