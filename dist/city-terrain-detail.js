@@ -37,6 +37,18 @@ export function makeGroundPattern(){
   const x=hash(i,31)*512,y=hash(i,37)*512,v=hash(i,41);
   g.fillStyle=v>.5?'#8e8a77':'#575b4d';wrappedEllipse(g,x,y,.6+v*1.7,.4+v,hash(i,43)*3);
  }
+ // Match opposite edge colors to eliminate visible repeated-tile seams.
+ const pixels=g.getImageData(0,0,SIZE,SIZE),data=pixels.data,band=24;
+ const blend=(a,b,strength)=>{for(let k=0;k<3;k++){const avg=(data[a+k]+data[b+k])*.5;data[a+k]=Math.round(data[a+k]*(1-strength)+avg*strength);data[b+k]=Math.round(data[b+k]*(1-strength)+avg*strength);}};
+ for(let y=0;y<SIZE;y++)for(let i=0;i<band;i++){
+  const strength=(1-i/band)**2;
+  blend((y*SIZE+i)*4,(y*SIZE+SIZE-1-i)*4,strength);
+ }
+ for(let x=0;x<SIZE;x++)for(let i=0;i<band;i++){
+  const strength=(1-i/band)**2;
+  blend((i*SIZE+x)*4,((SIZE-1-i)*SIZE+x)*4,strength);
+ }
+ g.putImageData(pixels,0,0);
  return c;
 }
 export function paintGround(ctx,pattern,w,h,panX,panY,zoom){
