@@ -230,7 +230,9 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
 
  for(const p of c.loggingPlots||[])diamond(p.x,p.y,'#d5ae4620','#d5ae46');
  const objects=[],hits=[];
- const occupied=(x,y)=>buildingAt(c,x,y)||(x===4&&y===2)||c.roads.some(r=>r.x===x&&r.y===y);
+ // Reuse the footprint/road occupancy map built for terrain earlier in this frame.
+ // Avoid scanning every building and road for each vegetation/animal tile.
+ const occupied=(x,y)=>blocked.has(x+','+y)||(x===4&&y===2);
  for(let x=0;x<c.extent;x++)for(let y=0;y<c.extent;y++){
   if(occupied(x,y)||isRiverTile(x,y))continue;
   const hash=(x*37+y*53)%97;
