@@ -20,11 +20,12 @@ export function featherClippedSpriteEdges(pixels,width,height){
  return {left,right};
 }
 
+export const TREE_ATLAS_BOUNDS=Object.freeze([[0,.245],[.245,.515],[.517,.735],[.735,1]]);
 export function cropNatureSprite(image,column){
  if(!image.complete||!image.naturalWidth)return null;
  // v34 atlas trees have unequal widths: the oak crosses the nominal 1/4-column cut.
 // Boundaries are measured from the source art, not an equal-width grid.
- const bounds=[[0,.245],[.245,.515],[.517,.735],[.735,1]][column];
+ const bounds=TREE_ATLAS_BOUNDS[column];
  if(!bounds)return null;
  const x=Math.floor(bounds[0]*image.naturalWidth),r=Math.ceil(bounds[1]*image.naturalWidth);
  const y=0,b=Math.round(image.naturalHeight*.295),w=r-x,h=b-y;
