@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {featherClippedSpriteEdges} from '../dist/city-nature-sprites.js';
+import {featherClippedSpriteEdges,TREE_ATLAS_BOUNDS} from '../dist/city-nature-sprites.js';
 const make=(w,h)=>new Uint8ClampedArray(w*h*4);
 
 test('tree atlas clipping: sustained hard right edge is softened without losing the trunk',()=>{
@@ -24,4 +24,11 @@ test('tree atlas clipping: a few isolated needles at the edge are preserved',()=
  for(let y=10;y<16;y++)p[(y*w+w-1)*4+3]=255;
  assert.deepEqual(featherClippedSpriteEdges(p,w,h),{left:false,right:false});
  for(let y=10;y<16;y++)assert.equal(p[(y*w+w-1)*4+3],255);
+});
+
+test('v34 oak crop is wider than one atlas quarter and does not enter the birch cell',()=>{
+ const [oakLeft,oakRight]=TREE_ATLAS_BOUNDS[1];
+ assert.ok(oakRight-oakLeft>.25);
+ assert.ok(oakRight<=TREE_ATLAS_BOUNDS[2][0]);
+ assert.ok(TREE_ATLAS_BOUNDS[0][1]<=oakLeft);
 });
