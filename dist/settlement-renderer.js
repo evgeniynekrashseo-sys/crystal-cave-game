@@ -32,7 +32,8 @@ const coastal={},infrastructure={};let preparedCoastal=false,preparedInfrastruct
 const sprites={},details={},life={},chronicle={};let preparedChronicle=false;let preparedLife=false;
 let grass,preparedMeadow=false,preparedSprites=false,preparedDetails=false;
 const shadowMasks=new WeakMap();
-const factoryAtlas=new Image();factoryAtlas.src=new URL('./factory-evolution-v48.webp',import.meta.url).href;
+// The unapproved factory atlas is intentionally not loaded: the city uses the
+// coherent workshop artwork below instead of the oversized factory sprites.
 let factoryArt=[];
 const worldBuildings=new Image();worldBuildings.src=new URL('./world-buildings-v34.webp',import.meta.url).href;
 const worldNature=new Image();worldNature.src=new URL('./world-nature-v34.webp',import.meta.url).href;
@@ -96,7 +97,6 @@ function sliceAtlas(image,names,target,rows=null){
 }
 
 function prepare(){
- if(!factoryArt.length)factoryArt=prepareFactorySprites(factoryAtlas,document);
  if(!preparedFields&&fieldAtlas.complete&&fieldAtlas.naturalWidth){
   const raw={};sliceAtlas(fieldAtlas,['field1','field2','field3','field4'],raw,[[0,1]]);
   for(const [key,img]of Object.entries(raw)){const cell=document.createElement('canvas');cell.width=img.width;cell.height=Math.round(img.width*.64);cell.getContext('2d').drawImage(img,0,0,cell.width,cell.height);fieldArt[key]=cell;}
