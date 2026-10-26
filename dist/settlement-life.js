@@ -32,7 +32,14 @@ export function drawRoadNetwork(ctx,c,project,u){
  // Existing saves may contain buildings without a road directly in front.
  // Draw short pedestrian access paths toward the nearest adjacent road
  // without mutating simulation state or placing roads through structures.
- const occupied=new Set(c.buildings.flatMap(b=>footprintCells(b).map(p=>`${p.x},${p.y}`)));
+ // Cull only road drawing, never connectivity: offscreen neighbors still
+ // determine visible junctions and curves. Four world units is conservative
+ // for a road cell plus local elevation, at every supported zoom.
+ const viewW=ctx.canvas.clientWidth||ctx.canvas.width,viewH=ctx.canvas.clientHeight||ctx.canvas.height;
+ const visibleRoads=c.roads.filter(r=>{
+  const p=project(r.x+.5,r.y+.5),pad=4*u;
+  return p.x>=-pad&&p.x<=viewW+pad&&p.y>=-pad&&p.y<=viewH+pad;
+ });
  for(const b of c.buildings){
   const neighbors=perimeter(b)
    .filter(n=>roads.has(`${n.x},${n.y}`));
@@ -49,7 +56,7 @@ export function drawRoadNetwork(ctx,c,project,u){
  const paved=false;
  for(const [radius,color]of [[.33,'#94876835'],[.29,'#97866a88'],[.25,paved?'#a09d8d':'#b1a080'],[.20,paved?'#aaa799':'#bcaa89']]){
   ctx.fillStyle=color;
-  for(const r of c.roads){
+  for(const r of visibleRoads){
    const level=r.level||1;
    ctx.fillStyle=radius===.25?(level===1?'#a38c68':level===2?'#817c70':'#8d8d87'):radius===.20?(level===1?'#b39b76':level===2?'#979083':'#aaa99f'):color;
    const links=[[1,0],[-1,0],[0,1],[0,-1]].filter(([x,y])=>roads.has(`${r.x+x},${r.y+y}`));
@@ -79,7 +86,7 @@ export function drawRoadNetwork(ctx,c,project,u){
  }
  // Wheel tracks follow connected streets, never crossing buildings or lawns.
  // Their separation is in world coordinates, so it stays correct at every zoom.
- if(!paved)for(const r of c.roads.filter(r=>(r.level||1)===1))for(const [dx,dy]of [[1,0],[0,1]]){
+ if(!paved)for(const r of visibleRoads.filter(r=>(r.level||1)===1))for(const [dx,dy]of [[1,0],[0,1]]){
   const links=[[1,0],[-1,0],[0,1],[0,-1]].filter(([x,y])=>roads.has(`${r.x+x},${r.y+y}`));
   if(links.length===2&&links[0][0]*links[1][0]+links[0][1]*links[1][1]===0)continue;
   if(!roads.has(`${r.x+dx},${r.y+dy}`))continue;
@@ -90,7 +97,7 @@ export function drawRoadNetwork(ctx,c,project,u){
    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
   }
  }
- for(const r of c.roads){
+ for(const r of visibleRoads){
   if((r.level||1)>1){
    // Individual stone joints, inset in the centre so they never leak onto grass.
    for(let row=0;row<5;row++)for(let col=0;col<5;col++){
