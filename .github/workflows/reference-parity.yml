@@ -57,6 +57,21 @@ jobs:
             await page.screenshot({path:'artifacts/city/'+name+'.png'});
             const treeState=await page.locator('html').getAttribute('data-tree-sprites');
             if(treeState!=='ready')failures.push(name+': detailed tree sprites not ready ('+treeState+')');
+            if(name==='portrait'){
+              const layout=await page.evaluate(()=>{
+                const buttons=[...document.querySelectorAll('.panel button')].map(button=>{
+                  const r=button.getBoundingClientRect();
+                  return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};
+                });
+                const header=document.querySelector('header span:first-child').getBoundingClientRect();
+                const status=document.querySelector('#status').getBoundingClientRect();
+                return {width:innerWidth,height:innerHeight,buttons,headerBottom:header.bottom,statusTop:status.top};
+              });
+              if(layout.buttons.length!==7||layout.buttons.some(b=>b.left<0||b.right>layout.width+1||b.top<0||b.bottom>layout.height+1)){
+                failures.push('portrait: toolbar buttons clipped by viewport');
+              }
+              if(layout.statusTop<layout.headerBottom-1)failures.push('portrait: status overlaps header');
+            }
             if(errors.length)failures.push(name+': '+errors.join('; '));
             await page.close();
           }
