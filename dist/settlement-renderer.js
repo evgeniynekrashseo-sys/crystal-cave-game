@@ -431,7 +431,8 @@ export function drawSettlement(ctx,canvas,c,{zoom,pan,selected,tool,movingId,tim
   if(p.x<-u*3||p.x>W+u*3||p.y<-u*3||p.y>H+u*3)continue;
   if(!obj.prop&&obj.b?.type!=='farm')castShadow(ctx,image,p,obj.width*zoom);
  }
- for(let i=objects.length-1;i>=0;i--){const o=objects[i];if(o.detail&&buildingAt(c,Math.floor(o.x),Math.floor(o.y)))objects.splice(i,1);}
+ // Decorations must not grow through roads, occupied plots or the river.
+ for(let i=objects.length-1;i>=0;i--){const o=objects[i];if(o.detail&&(blocked.has(Math.floor(o.x)+','+Math.floor(o.y))||isRiverTile(Math.floor(o.x),Math.floor(o.y))))objects.splice(i,1);}
  objects.sort((a,b)=>(a.depth??(a.b?bodyPoint(a.b).x+bodyPoint(a.b).y:sceneDepth(a)))-(b.depth??(b.b?bodyPoint(b.b).x+bodyPoint(b.b).y:sceneDepth(b)))).forEach(drawObject);
  const moving=c.buildings.find(b=>b.id===movingId),focus=selected&&buildingAt(c,selected.x,selected.y);
  const previewType=moving?.type||tool,previewLevel=moving?.level||1;
