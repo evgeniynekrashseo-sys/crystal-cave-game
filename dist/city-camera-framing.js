@@ -4,7 +4,7 @@
 export function initialCameraFrame(width, height) {
   const zoom = height < 500 ? 0.52 : width < 480 ? 0.60 : 0.75;
   const unit = Math.min(55, Math.max(35, width * 0.09)) * zoom;
-  const landscapeLift = height < 500 ? Math.min(90, height * 0.19) : 0;
+  const landscapeLift = height < 500 ? Math.min(95, height * 0.22) : 0;
   return {
     zoom,
     panX: 0,
