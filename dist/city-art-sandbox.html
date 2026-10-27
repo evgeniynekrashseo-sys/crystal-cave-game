@@ -3,6 +3,7 @@ import {makeGroundPattern,paintGround} from './city-terrain-detail.js';
 import {extractTrees} from './city-nature-sprites.js';
 import {drawConstructionSite} from './city-construction-site.js';
 import {canPlaceDecorativeTree} from './city-scene-placement.js';
+import {initialCameraFrame} from './city-camera-framing.js';
 const groundPattern=makeGroundPattern();
 const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),status=document.querySelector('#status');
 let W=0,H=0,dpr=1,zoom=1,panX=0,panY=0,tool='view',selected=null;
@@ -20,11 +21,8 @@ const base=[{type:'house',x:5,y:5,level:3},{type:'house',x:9,y:7,level:2},{type:
 let objects=[],roads=[];function reset(){objects=structuredClone(base);roads=[];for(let i=3;i<17;i++){roads.push({x:i,y:8});roads.push({x:8,y:i})}for(let i=0;i<80;i++){let x=(i*13+3)%19,y=(i*7+Math.floor(i/4)*3)%19;if((x-8)**2+(y-8)**2<20||!canPlaceDecorativeTree(x,y,objects,roads))continue;objects.push({type:'tree',x,y,level:i%4})}selected=null}reset();
 let cameraTouched=false;
 function frameScene(){
- zoom=H<500?.52:W<480?.60:.75;
- panX=0;
- const u=Math.min(55,Math.max(35,W*.09))*zoom;
- // Keep the first building inside the safe area between the header and toolbar.
- panY=H*.48-(H*.24+10*u*.53);
+ const frame=initialCameraFrame(W,H);
+ zoom=frame.zoom;panX=frame.panX;panY=frame.panY;
 }
 function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(!cameraTouched)frameScene()}
 addEventListener('resize',size);size();
