@@ -260,6 +260,6 @@ settlement=initCity({enabled:()=>prefs.cityEnabled,calm:()=>prefs.calm,core:()=>
 $('city-button').onclick=settlement.open;
 $('lab-button').onclick=settlement.open;
 function showTutorial(){let seen=false;try{seen=localStorage.getItem('chemlab_tutorial_v1')==='1'}catch{}if(seen)return;modal(`<div class="eyebrow">ЛАСКАВО ПРОСИМО ДО CHEMLAB</div><div class="tutorial-orb">⚗</div><h2>Твоя ціль — місто відкриттів</h2><p>Сортуй елементи у пробірках, збирай по 4 однакові шари та запускай синтез. Завершені групи зникають і дають монети.</p><div class="tutorial-steps"><div><b>1</b><span>Торкнись пробірки, щоб взяти верхній шар.</span></div><div><b>2</b><span>Перелий його на такий самий елемент або в порожню колбу.</span></div><div><b>3</b><span>Відкривай елементи на карті, проводь реакції та розвивай Місто.</span></div></div><p class="fine">Реакції позначені як наукові формули; деякі ефекти — ігрова симуляція для безпечного навчання.</p><button class="primary" id="tutorial-go">Почати перший експеримент →</button>`);$('tutorial-go').onclick=()=>{try{localStorage.setItem('chemlab_tutorial_v1','1')}catch{}$('modal').close();say('Підказка: спочатку знайди колбу з вільним місцем або таким самим верхнім елементом')};}
-start();showTutorial();if('serviceWorker'in navigator&&!window.Capacitor?.isNativePlatform?.())navigator.serviceWorker.register('./sw.js?v=50').catch(()=>{});
+start();showTutorial();if('serviceWorker'in navigator&&!window.Capacitor?.isNativePlatform?.())navigator.serviceWorker.register('./sw.js?v=56').catch(()=>{});
 
 
