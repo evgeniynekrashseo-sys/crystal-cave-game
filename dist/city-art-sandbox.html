@@ -5,6 +5,7 @@ import {drawConstructionSite} from './city-construction-site.js';
 import {canPlaceDecorativeTree,canPlaceSandboxItem} from './city-scene-placement.js';
 import {initialCameraFrame} from './city-camera-framing.js';
 import {drawSettlementFootpaths} from './city-footpaths.js';
+import {drawHomesteadGardens} from './city-homestead-details.js';
 const groundPattern=makeGroundPattern();
 const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),status=document.querySelector('#status');
 let W=0,H=0,dpr=1,zoom=1,panX=0,panY=0,tool='view',selected=null;
@@ -83,6 +84,8 @@ for(const [a,b,x,y] of segments){const width=Math.max(5,16*zoom);
 ctx.restore();
 // Tie every occupied plot visually to the existing road network without changing pathfinding.
 drawSettlementFootpaths(ctx,point,objects,roads,zoom);
+// Fenced kitchen gardens occupy free plots and render below the architecture.
+drawHomesteadGardens(ctx,point,objects,roads,zoom);
 for(let o of [...objects].sort((a,b)=>a.x+a.y-b.x-b.y)){if(o.type==='tree'){tree(o)}else if(o.type==='house'){let level=Math.min(4,Math.max(1,o.level));if(!sprite(assets.buildings,level-1,0,4,4,o.x,o.y,130,1.3)){let p=point(o.x+.5,o.y+.5);ctx.fillStyle='#a1845d';ctx.fillRect(p.x-20*zoom,p.y-45*zoom,40*zoom,45*zoom);ctx.fillStyle='#795132';ctx.beginPath();ctx.moveTo(p.x-28*zoom,p.y-45*zoom);ctx.lineTo(p.x,p.y-75*zoom);ctx.lineTo(p.x+28*zoom,p.y-45*zoom);ctx.fill()}}else{drawConstructionSite(ctx,point,o.x,o.y,zoom)}if(selected===o){let p=point(o.x+.5,o.y+.6);ctx.strokeStyle='#ffe7a3';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,45*zoom,18*zoom,0,0,7);ctx.stroke()}}
 requestAnimationFrame(draw)}draw();
 document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===b));status.textContent=tool==='view'?'Торкнись будинку, щоб вибрати':'Торкнись землі, щоб додати об’єкт'});
