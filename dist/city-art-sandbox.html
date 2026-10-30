@@ -9,7 +9,7 @@ import {drawHomesteadGardens} from './city-homestead-details.js';
 const groundPattern=makeGroundPattern();
 const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),status=document.querySelector('#status');
 let W=0,H=0,dpr=1,zoom=1,panX=0,panY=0,tool='view',selected=null;
-const assets={};for(const [name,file] of Object.entries({buildings:'city-architecture-v42.webp',nature:'world-nature-v34.webp',coherent:'world-buildings-v34.webp',roads:'settlement-details-alpha.png',ground:'terrain-meadow-v36.webp'})){let im=new Image();im.src=file;assets[name]=im;}
+const assets={};for(const [name,file] of Object.entries({buildings:'city-architecture-v42.webp',nature:'world-nature-v34.webp'})){let im=new Image();im.src=file;assets[name]=im;}
 // Crop transparent trees once after the atlas loads; no geometric placeholders in the final scene.
 let treeSprites=[];
 function prepareTreeSprites(){
