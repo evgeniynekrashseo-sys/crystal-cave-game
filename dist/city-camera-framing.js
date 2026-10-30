@@ -1,14 +1,17 @@
 // Camera framing for the visual-parity sandbox only; does not alter game saves.
 // Lift the scene in short landscape viewports so the southern construction site
 // stays above the bottom toolbar rather than being hidden underneath it.
+// On narrow portrait screens, lift the settlement to reduce the empty grass
+// above the houses while retaining a clear bottom toolbar safe area.
 export function initialCameraFrame(width, height) {
   const zoom = height < 500 ? 0.52 : width < 480 ? 0.60 : 0.75;
   const unit = Math.min(55, Math.max(35, width * 0.09)) * zoom;
   const landscapeLift = height < 500 ? Math.min(95, height * 0.22) : 0;
+  const portraitLift = height >= 500 && width < 480 ? Math.min(120, height * 0.12) : 0;
   return {
     zoom,
     panX: 0,
-    panY: height * 0.48 - (height * 0.24 + 10 * unit * 0.53) - landscapeLift,
+    panY: height * 0.48 - (height * 0.24 + 10 * unit * 0.53) - landscapeLift - portraitLift,
   };
 }
 
