@@ -1,0 +1,86 @@
+name: ChemLab reference parity screenshots
+on:
+  push:
+    branches: [feature/reference-parity-loop]
+  pull_request:
+    paths:
+      - 'dist/city-art-sandbox.html'
+      - 'dist/settlement-*.js'
+      - 'dist/city-nature-sprites.js'
+      - 'dist/city-terrain-detail.js'
+      - 'docs/city/**'
+      - '.github/workflows/reference-parity.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '15 6 * * *'
+permissions:
+  contents: read
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test
+  visual-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install screenshot runner
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start local web server
+        run: |
+          python3 -m http.server 8765 --directory dist > /tmp/chemlab-http.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://localhost:8765/city-art-sandbox.html >/dev/null && break; sleep 1; done
+      - name: Capture phone-sized screenshots
+        run: |
+          mkdir -p artifacts/city
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          const browser = await chromium.launch({headless:true});
+          const failures=[];
+          for(const [name,width,height] of [['portrait',390,844],['landscape',844,390]]){
+            const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+            const errors=[];
+            page.on('pageerror',error=>errors.push(error.message));
+            await page.goto('http://localhost:8765/city-art-sandbox.html',{waitUntil:'networkidle'});
+            await page.waitForTimeout(1500);
+            await page.screenshot({path:'artifacts/city/'+name+'.png'});
+            const treeState=await page.locator('html').getAttribute('data-tree-sprites');
+            if(treeState!=='ready')failures.push(name+': detailed tree sprites not ready ('+treeState+')');
+            if(name==='portrait'){
+              const layout=await page.evaluate(()=>{
+                const buttons=[...document.querySelectorAll('.panel button')].map(button=>{
+                  const r=button.getBoundingClientRect();
+                  return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};
+                });
+                const header=document.querySelector('header span:first-child').getBoundingClientRect();
+                const status=document.querySelector('#status').getBoundingClientRect();
+                return {width:innerWidth,height:innerHeight,buttons,headerBottom:header.bottom,statusTop:status.top};
+              });
+              if(layout.buttons.length!==7||layout.buttons.some(b=>b.left<0||b.right>layout.width+1||b.top<0||b.bottom>layout.height+1)){
+                failures.push('portrait: toolbar buttons clipped by viewport');
+              }
+              if(layout.statusTop<layout.headerBottom-1)failures.push('portrait: status overlaps header');
+            }
+            if(errors.length)failures.push(name+': '+errors.join('; '));
+            await page.close();
+          }
+          await browser.close();
+          if(failures.length)throw new Error(failures.join('\n'));
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chemlab-mobile-visual-evidence
+          path: artifacts/city/*.png
+          retention-days: 30

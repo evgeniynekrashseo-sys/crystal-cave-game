@@ -1,16 +1,67 @@
-<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>ChemLab City · Art Sandbox</title><style>*{box-sizing:border-box}body{margin:0;background:#152019;color:#f5e8c7;font:14px system-ui;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none}header{position:absolute;top:env(safe-area-inset-top);left:10px;right:10px;display:flex;justify-content:space-between;pointer-events:none;gap:6px}header span,.panel{background:#121b17d9;border:1px solid #bca87966;border-radius:12px;padding:10px;backdrop-filter:blur(8px)}.panel{position:absolute;bottom:calc(10px + env(safe-area-inset-bottom));left:10px;right:10px;display:flex;gap:7px;overflow:auto}button{background:#2c3b2d;color:#f5e8c7;border:1px solid #bca87966;border-radius:9px;padding:11px;white-space:nowrap;font:inherit}button.active{background:#78633b}small{opacity:.7}#status{position:absolute;top:70px;left:12px;color:#fff8;text-shadow:0 1px 3px #000}</style></head><body><canvas id="world"></canvas><header><span><b>ChemLab City</b><br><small>Пісочниця · v3 · мобільний прототип</small></span><span>🌲 Ліс · 🪨 Камінь · 🏠 Будівництво</span></header><div id="status">Один палець — рух · два — масштаб</div><div class="panel"><button data-tool="view" class="active">✋ Огляд</button><button data-tool="house">🏠 Будинок</button><button data-tool="tree">🌲 Дерево</button><button data-tool="road">🛤️ Дорога</button><button data-tool="site">🪵 Будівництво</button><button id="upgrade">⬆️ Розвинути будинок</button><button id="reset">↺ Скинути</button></div><script>
+<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>ChemLab City · Art Sandbox</title><style>*{box-sizing:border-box}body{margin:0;background:#152019;color:#f5e8c7;font:14px system-ui;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;touch-action:none}header{position:absolute;top:env(safe-area-inset-top);left:10px;right:10px;display:flex;justify-content:space-between;pointer-events:none;gap:6px}header span,.panel{background:#121b17d9;border:1px solid #bca87966;border-radius:12px;padding:10px;backdrop-filter:blur(8px)}.panel{position:absolute;bottom:calc(10px + env(safe-area-inset-bottom));left:10px;right:10px;display:flex;gap:7px;overflow:auto}button{background:#2c3b2d;color:#f5e8c7;border:1px solid #bca87966;border-radius:9px;padding:11px;white-space:nowrap;font:inherit}button.active{background:#78633b}small{opacity:.7}#status{position:absolute;top:70px;left:12px;color:#fff8;text-shadow:0 1px 3px #000}@media(max-height:480px) and (orientation:landscape){header span:last-child{display:none}.panel{left:6px;right:6px;bottom:calc(5px + env(safe-area-inset-bottom));padding:5px;gap:4px}button{padding:7px 9px;font-size:12px}#status{top:60px;font-size:11px}}@media(max-width:480px) and (orientation:portrait){header span:last-child{display:none}header span:first-child{max-width:70%;padding:8px 10px}#status{top:82px;font-size:12px}.panel{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;padding:5px;overflow:visible}.panel button{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 1px;font-size:0;line-height:1.1;white-space:normal}.panel button::before{content:attr(data-mobile-icon);font-size:19px}.panel button::after{content:attr(data-mobile-label);font-size:9px;white-space:nowrap}}</style></head><body><canvas id="world"></canvas><header><span><b>ChemLab City</b><br><small>Пісочниця · visual parity · v5</small></span><span>🌲 Ліс · 🪨 Камінь · 🏠 Будівництво</span></header><div id="status">Один палець — рух · два — масштаб</div><div class="panel"><button data-tool="view" class="active" data-mobile-icon="✋" data-mobile-label="Огляд">✋ Огляд</button><button data-tool="house" data-mobile-icon="🏠" data-mobile-label="Будинок">🏠 Будинок</button><button data-tool="tree" data-mobile-icon="🌲" data-mobile-label="Дерево">🌲 Дерево</button><button data-tool="road" data-mobile-icon="🛤️" data-mobile-label="Дорога">🛤️ Дорога</button><button data-tool="site" data-mobile-icon="🪵" data-mobile-label="Будувати">🪵 Будівництво</button><button id="upgrade" data-mobile-icon="⬆️" data-mobile-label="Рівень">⬆️ Розвинути будинок</button><button id="reset" data-mobile-icon="↺" data-mobile-label="Скинути">↺ Скинути</button></div><script type="module">
+import {makeGroundPattern,paintGround} from './city-terrain-detail.js';
+import {extractTrees} from './city-nature-sprites.js';
+import {drawConstructionSite} from './city-construction-site.js';
+import {canPlaceDecorativeTree,canPlaceSandboxItem} from './city-scene-placement.js';
+import {initialCameraFrame} from './city-camera-framing.js';
+import {drawSettlementFootpaths} from './city-footpaths.js';
+import {drawHomesteadGardens} from './city-homestead-details.js';
+const groundPattern=makeGroundPattern();
 const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),status=document.querySelector('#status');
 let W=0,H=0,dpr=1,zoom=1,panX=0,panY=0,tool='view',selected=null;
-const assets={};for(const [name,file] of Object.entries({buildings:'city-architecture-v42.webp',nature:'world-nature-v34.webp',coherent:'world-buildings-v34.webp',roads:'settlement-details-alpha.png',ground:'terrain-meadow-v36.webp'})){let im=new Image();im.src=file;assets[name]=im;}
+// The sandbox is a static scene: repaint only when something visible changes.
+let framePending=false;
+function invalidate(){if(framePending)return;framePending=true;requestAnimationFrame(()=>{framePending=false;draw()})}
+const assets={};for(const [name,file] of Object.entries({buildings:'city-architecture-v42.webp',nature:'world-nature-v34.webp'})){let im=new Image();im.addEventListener('load',invalidate);im.src=file;assets[name]=im;}
+// Crop transparent trees once after the atlas loads; no geometric placeholders in the final scene.
+let treeSprites=[];
+function prepareTreeSprites(){
+ const candidates=extractTrees(assets.nature).slice(0,2);
+ treeSprites=candidates.filter(Boolean);
+ document.documentElement.dataset.treeSprites=treeSprites.length?'ready':'fallback';
+}
+assets.nature.addEventListener('load',prepareTreeSprites);
+if(assets.nature.complete&&assets.nature.naturalWidth)prepareTreeSprites();
 const base=[{type:'house',x:5,y:5,level:3},{type:'house',x:9,y:7,level:2},{type:'site',x:11,y:4,level:1},{type:'house',x:4,y:10,level:1},{type:'site',x:13,y:10,level:1}];
-let objects=[],roads=[];function reset(){objects=structuredClone(base);for(let i=0;i<80;i++){let x=(i*13+3)%19,y=(i*7+Math.floor(i/4)*3)%19;if((x-8)**2+(y-8)**2<20)continue;objects.push({type:'tree',x,y,level:i%4})}roads=[];for(let i=3;i<17;i++){roads.push({x:i,y:8});roads.push({x:8,y:i})}selected=null}reset();
-function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',size);size();
+let objects=[],roads=[];function reset(){objects=structuredClone(base);roads=[];for(let i=3;i<17;i++){roads.push({x:i,y:8});roads.push({x:8,y:i})}for(let i=0;i<80;i++){let x=(i*13+3)%19,y=(i*7+Math.floor(i/4)*3)%19;if((x-8)**2+(y-8)**2<20||!canPlaceDecorativeTree(x,y,objects,roads))continue;objects.push({type:'tree',x,y,level:i%4})}selected=null}reset();
+let cameraTouched=false;
+function frameScene(){
+ const frame=initialCameraFrame(W,H);
+ zoom=frame.zoom;panX=frame.panX;panY=frame.panY;
+}
+function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(!cameraTouched)frameScene();invalidate()}
+addEventListener('resize',size);size();
 function point(x,y){let u=Math.min(55,Math.max(35,W*.09))*zoom;return {x:W/2+(x-y)*u+panX,y:H*.24+(x+y)*u*.53+panY}}function inverse(px,py){let u=Math.min(55,Math.max(35,W*.09))*zoom,a=(px-W/2-panX)/u,b=(py-H*.24-panY)/(u*.53);return {x:(a+b)/2,y:(b-a)/2}}
 function rand(x,y,n=0){let v=Math.sin(x*127.1+y*311.7+n*71.7)*43758.5453;return v-Math.floor(v)}
 function diamond(x,y,color){let a=point(x,y),b=point(x+1,y),c=point(x+1,y+1),d=point(x,y+1);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.fillStyle=color;ctx.fill()}
 function sprite(img,col,row,rows,cols,x,y,w,scale=1){if(!img?.complete||!img.naturalWidth)return false;let sw=img.naturalWidth/cols,sh=img.naturalHeight/rows,p=point(x+.5,y+.65),dw=w*zoom*scale,dh=dw*sh/sw;ctx.drawImage(img,col*sw,row*sh,sw,sh,p.x-dw/2,p.y-dh,dw,dh);return true}
-function tree(o){let p=point(o.x+.5,o.y+.6),u=zoom*28,h=(2.3+o.level*.28)*u;ctx.fillStyle='#403b26';ctx.fillRect(p.x-2*zoom,p.y-h*.38,4*zoom,h*.38);for(let i=0;i<5;i++){let t=i/5;ctx.beginPath();ctx.moveTo(p.x,p.y-h+t*h*.68);ctx.lineTo(p.x-(h*.25)*(1-t*.5),p.y-h*.1+t*h*.7);ctx.lineTo(p.x+(h*.25)*(1-t*.5),p.y-h*.1+t*h*.7);ctx.closePath();ctx.fillStyle=['#283e2d','#38543a','#435d3c'][i%3];ctx.fill()} }
-function draw(){ctx.fillStyle='#61734a';ctx.fillRect(0,0,W,H);let tile=assets.ground;if(tile.complete&&tile.naturalWidth){ctx.globalAlpha=.38;let w=tile.naturalWidth*.36*zoom;for(let y=-1;y<Math.ceil(H/w)+2;y++)for(let x=-1;x<Math.ceil(W/w)+2;x++)ctx.drawImage(tile,x*w+panX%w,y*w+panY%w,w,w);ctx.globalAlpha=1}
+function tree(o){
+ const p=point(o.x+.5,o.y+.6);
+ const sprite=treeSprites.length?treeSprites[Math.abs(o.x*3+o.y+o.level)%treeSprites.length]:null;
+ const width=(58+o.level*6)*zoom;
+ ctx.save();
+ ctx.fillStyle='rgba(24,32,20,.24)';ctx.beginPath();
+ ctx.ellipse(p.x+4*zoom,p.y+2*zoom,width*.37,width*.12,-.15,0,Math.PI*2);ctx.fill();
+ if(sprite){
+  const height=width*Math.max(1.6,Math.min(2.8,sprite.height/sprite.width));
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.drawImage(sprite,p.x-width/2,p.y-height,width,height);
+ }else{
+  // Non-triangular fallback if the atlas cannot load.
+  const h=width*2.2;
+  ctx.strokeStyle='#4a3828';ctx.lineWidth=Math.max(2,zoom*4);
+  ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-h*.55);ctx.stroke();
+  for(let j=0;j<7;j++){
+   const t=j/7,y=p.y-h*.2-h*.65*t,r=width*(.4-.2*t);
+   for(let k=-2;k<=2;k++){
+    ctx.fillStyle=['#294b31','#355d39','#4b6a42'][(j+k+12)%3];
+    ctx.beginPath();ctx.ellipse(p.x+k*r*.36,y+(rand(o.x+j,o.y+k)-.5)*r*.3,r*.45,r*.72,0,0,Math.PI*2);ctx.fill();
+   }
+  }
+ }
+ ctx.restore();
+}
+function draw(){paintGround(ctx,groundPattern,W,H,panX,panY,zoom)
 for(let x=0;x<20;x++)for(let y=0;y<20;y++){let r=rand(x,y);if(r>.82)diamond(x,y,'#87764a20');else if(r<.1)diamond(x,y,'#283f2820')}
 // Connected, softly blended dirt tracks follow the actual isometric grid.
 const roadSet=new Set(roads.map(r=>r.x+','+r.y));
@@ -34,12 +85,16 @@ for(const [a,b,x,y] of segments){const width=Math.max(5,16*zoom);
  for(let i=0;i<Math.min(18,Math.floor(len/4));i++){const t=rand(x,y,i+10),off=(rand(y,x,i+40)-.5)*width*.8;ctx.fillStyle=i%2?'rgba(83,74,54,.27)':'rgba(208,187,143,.26)';ctx.beginPath();ctx.ellipse(a.x+(b.x-a.x)*t+nx*off,a.y+(b.y-a.y)*t+ny*off,Math.max(.5,zoom*(.5+rand(i,x))),Math.max(.35,zoom*.6),0,0,Math.PI*2);ctx.fill()}
 }
 ctx.restore();
-for(let o of [...objects].sort((a,b)=>a.x+a.y-b.x-b.y)){if(o.type==='tree'){tree(o)}else if(o.type==='house'){let level=Math.min(4,Math.max(1,o.level));if(!sprite(assets.buildings,level-1,0,4,4,o.x,o.y,130,1.3)){let p=point(o.x+.5,o.y+.5);ctx.fillStyle='#a1845d';ctx.fillRect(p.x-20*zoom,p.y-45*zoom,40*zoom,45*zoom);ctx.fillStyle='#795132';ctx.beginPath();ctx.moveTo(p.x-28*zoom,p.y-45*zoom);ctx.lineTo(p.x,p.y-75*zoom);ctx.lineTo(p.x+28*zoom,p.y-45*zoom);ctx.fill()}}else{let p=point(o.x+.5,o.y+.5);diamond(o.x,o.y,'#aaa28b');ctx.strokeStyle='#6c6050';ctx.lineWidth=5*zoom;ctx.strokeRect(p.x-17*zoom,p.y-15*zoom,34*zoom,18*zoom);for(let i=-1;i<=1;i++){ctx.strokeStyle='#8b5d34';ctx.lineWidth=3*zoom;ctx.beginPath();ctx.moveTo(p.x+i*12*zoom,p.y);ctx.lineTo(p.x+i*12*zoom,p.y-35*zoom);ctx.stroke()}}if(selected===o){let p=point(o.x+.5,o.y+.6);ctx.strokeStyle='#ffe7a3';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,45*zoom,18*zoom,0,0,7);ctx.stroke()}}
-requestAnimationFrame(draw)}draw();
-document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===b));status.textContent=tool==='view'?'Торкнись будинку, щоб вибрати':'Торкнись землі, щоб додати об’єкт'});
-document.querySelector('#upgrade').onclick=()=>{if(selected?.type==='house')selected.level=selected.level%4+1;else status.textContent='Спочатку вибери будинок у режимі огляду'};document.querySelector('#reset').onclick=()=>{reset();panX=panY=0;zoom=1};
+// Tie every occupied plot visually to the existing road network without changing pathfinding.
+drawSettlementFootpaths(ctx,point,objects,roads,zoom);
+// Fenced kitchen gardens occupy free plots and render below the architecture.
+drawHomesteadGardens(ctx,point,objects,roads,zoom);
+for(let o of [...objects].sort((a,b)=>a.x+a.y-b.x-b.y)){if(o.type==='tree'){tree(o)}else if(o.type==='house'){let level=Math.min(4,Math.max(1,o.level));if(!sprite(assets.buildings,level-1,0,4,4,o.x,o.y,130,1.3)){let p=point(o.x+.5,o.y+.5);ctx.fillStyle='#a1845d';ctx.fillRect(p.x-20*zoom,p.y-45*zoom,40*zoom,45*zoom);ctx.fillStyle='#795132';ctx.beginPath();ctx.moveTo(p.x-28*zoom,p.y-45*zoom);ctx.lineTo(p.x,p.y-75*zoom);ctx.lineTo(p.x+28*zoom,p.y-45*zoom);ctx.fill()}}else{drawConstructionSite(ctx,point,o.x,o.y,zoom)}if(selected===o){let p=point(o.x+.5,o.y+.6);ctx.strokeStyle='#ffe7a3';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,45*zoom,18*zoom,0,0,7);ctx.stroke()}}
+}invalidate();
+document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===b));status.textContent=tool==='view'?'Торкнись будинку, щоб вибрати':'Торкнись землі, щоб додати об’єкт';invalidate()});
+document.querySelector('#upgrade').onclick=()=>{if(selected?.type==='house')selected.level=selected.level%4+1;else status.textContent='Спочатку вибери будинок у режимі огляду';invalidate()};document.querySelector('#reset').onclick=()=>{reset();cameraTouched=false;frameScene();invalidate()};
 let touches=new Map(),start=null;
-canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);touches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(touches.size===1)start={x:e.clientX,y:e.clientY,px:panX,py:panY,moved:false}});
-canvas.addEventListener('pointermove',e=>{if(!touches.has(e.pointerId))return;let prev=touches.get(e.pointerId);touches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(touches.size===1&&start){panX=start.px+e.clientX-start.x;panY=start.py+e.clientY-start.y;if(Math.hypot(e.clientX-start.x,e.clientY-start.y)>8)start.moved=true}else if(touches.size===2){let pts=[...touches.values()],a=pts[0],b=pts[1],old=Math.hypot(a.x-(a===pts[0]&&prev!==a?prev.x:b.x),a.y-(a===pts[0]&&prev!==a?prev.y:b.y));let d=Math.hypot(a.x-b.x,a.y-b.y);if(old>5)zoom=Math.max(.5,Math.min(2.3,zoom*d/old));start=null}});
-canvas.addEventListener('pointerup',e=>{if(start&&!start.moved&&touches.size===1){let p=inverse(e.clientX,e.clientY),x=Math.round(p.x-.5),y=Math.round(p.y-.5);if(tool==='view'){selected=[...objects].reverse().find(o=>Math.abs(o.x-x)<1.5&&Math.abs(o.y-y)<1.5)||null;status.textContent=selected?'Будівля вибрана · можна підвищити рівень':'Обери будівлю'}else if(x>=0&&y>=0&&x<20&&y<20){if(tool==='road')roads.push({x,y});else objects.push({type:tool,x,y,level:1})}}touches.delete(e.pointerId);start=null});canvas.addEventListener('pointercancel',e=>{touches.delete(e.pointerId);start=null});canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.5,Math.min(2.3,zoom*(e.deltaY>0?.9:1.1)))},{passive:false});
+canvas.addEventListener('pointerdown',e=>{cameraTouched=true;canvas.setPointerCapture(e.pointerId);touches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(touches.size===1)start={x:e.clientX,y:e.clientY,px:panX,py:panY,moved:false}});
+canvas.addEventListener('pointermove',e=>{if(!touches.has(e.pointerId))return;let before=[...touches.values()],previousDistance=before.length===2?Math.hypot(before[0].x-before[1].x,before[0].y-before[1].y):0;touches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(touches.size===1&&start){panX=start.px+e.clientX-start.x;panY=start.py+e.clientY-start.y;if(Math.hypot(e.clientX-start.x,e.clientY-start.y)>8)start.moved=true}else if(touches.size===2){let pts=[...touches.values()],a=pts[0],b=pts[1],d=Math.hypot(a.x-b.x,a.y-b.y);if(previousDistance>5)zoom=Math.max(.4,Math.min(2.3,zoom*d/previousDistance));start=null}invalidate()});
+canvas.addEventListener('pointerup',e=>{if(start&&!start.moved&&touches.size===1){let p=inverse(e.clientX,e.clientY),x=Math.round(p.x-.5),y=Math.round(p.y-.5);if(tool==='view'){selected=[...objects].reverse().find(o=>Math.abs(o.x-x)<1.5&&Math.abs(o.y-y)<1.5)||null;status.textContent=selected?'Будівля вибрана · можна підвищити рівень':'Обери будівлю'}else if(x>=0&&y>=0&&x<20&&y<20){if(!canPlaceSandboxItem(tool,x,y,objects,roads))status.textContent='Ділянка зайнята — обери вільне місце';else if(tool==='road')roads.push({x,y});else objects.push({type:tool,x,y,level:1})}}touches.delete(e.pointerId);start=null;invalidate()});canvas.addEventListener('pointercancel',e=>{touches.delete(e.pointerId);start=null});canvas.addEventListener('wheel',e=>{e.preventDefault();cameraTouched=true;zoom=Math.max(.4,Math.min(2.3,zoom*(e.deltaY>0?.9:1.1)));invalidate()},{passive:false});
 </script></body></html>
