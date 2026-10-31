@@ -9,7 +9,10 @@ import {drawHomesteadGardens} from './city-homestead-details.js';
 const groundPattern=makeGroundPattern();
 const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),status=document.querySelector('#status');
 let W=0,H=0,dpr=1,zoom=1,panX=0,panY=0,tool='view',selected=null;
-const assets={};for(const [name,file] of Object.entries({buildings:'city-architecture-v42.webp',nature:'world-nature-v34.webp'})){let im=new Image();im.src=file;assets[name]=im;}
+// The sandbox is a static scene: repaint only when something visible changes.
+let framePending=false;
+function invalidate(){if(framePending)return;framePending=true;requestAnimationFrame(()=>{framePending=false;draw()})}
+const assets={};for(const [name,file] of Object.entries({buildings:'city-architecture-v42.webp',nature:'world-nature-v34.webp'})){let im=new Image();im.addEventListener('load',invalidate);im.src=file;assets[name]=im;}
 // Crop transparent trees once after the atlas loads; no geometric placeholders in the final scene.
 let treeSprites=[];
 function prepareTreeSprites(){
@@ -26,7 +29,7 @@ function frameScene(){
  const frame=initialCameraFrame(W,H);
  zoom=frame.zoom;panX=frame.panX;panY=frame.panY;
 }
-function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(!cameraTouched)frameScene()}
+function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(!cameraTouched)frameScene();invalidate()}
 addEventListener('resize',size);size();
 function point(x,y){let u=Math.min(55,Math.max(35,W*.09))*zoom;return {x:W/2+(x-y)*u+panX,y:H*.24+(x+y)*u*.53+panY}}function inverse(px,py){let u=Math.min(55,Math.max(35,W*.09))*zoom,a=(px-W/2-panX)/u,b=(py-H*.24-panY)/(u*.53);return {x:(a+b)/2,y:(b-a)/2}}
 function rand(x,y,n=0){let v=Math.sin(x*127.1+y*311.7+n*71.7)*43758.5453;return v-Math.floor(v)}
@@ -87,11 +90,11 @@ drawSettlementFootpaths(ctx,point,objects,roads,zoom);
 // Fenced kitchen gardens occupy free plots and render below the architecture.
 drawHomesteadGardens(ctx,point,objects,roads,zoom);
 for(let o of [...objects].sort((a,b)=>a.x+a.y-b.x-b.y)){if(o.type==='tree'){tree(o)}else if(o.type==='house'){let level=Math.min(4,Math.max(1,o.level));if(!sprite(assets.buildings,level-1,0,4,4,o.x,o.y,130,1.3)){let p=point(o.x+.5,o.y+.5);ctx.fillStyle='#a1845d';ctx.fillRect(p.x-20*zoom,p.y-45*zoom,40*zoom,45*zoom);ctx.fillStyle='#795132';ctx.beginPath();ctx.moveTo(p.x-28*zoom,p.y-45*zoom);ctx.lineTo(p.x,p.y-75*zoom);ctx.lineTo(p.x+28*zoom,p.y-45*zoom);ctx.fill()}}else{drawConstructionSite(ctx,point,o.x,o.y,zoom)}if(selected===o){let p=point(o.x+.5,o.y+.6);ctx.strokeStyle='#ffe7a3';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,45*zoom,18*zoom,0,0,7);ctx.stroke()}}
-requestAnimationFrame(draw)}draw();
-document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===b));status.textContent=tool==='view'?'Торкнись будинку, щоб вибрати':'Торкнись землі, щоб додати об’єкт'});
-document.querySelector('#upgrade').onclick=()=>{if(selected?.type==='house')selected.level=selected.level%4+1;else status.textContent='Спочатку вибери будинок у режимі огляду'};document.querySelector('#reset').onclick=()=>{reset();cameraTouched=false;frameScene()};
+}invalidate();
+document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===b));status.textContent=tool==='view'?'Торкнись будинку, щоб вибрати':'Торкнись землі, щоб додати об’єкт';invalidate()});
+document.querySelector('#upgrade').onclick=()=>{if(selected?.type==='house')selected.level=selected.level%4+1;else status.textContent='Спочатку вибери будинок у режимі огляду';invalidate()};document.querySelector('#reset').onclick=()=>{reset();cameraTouched=false;frameScene();invalidate()};
 let touches=new Map(),start=null;
 canvas.addEventListener('pointerdown',e=>{cameraTouched=true;canvas.setPointerCapture(e.pointerId);touches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(touches.size===1)start={x:e.clientX,y:e.clientY,px:panX,py:panY,moved:false}});
-canvas.addEventListener('pointermove',e=>{if(!touches.has(e.pointerId))return;let before=[...touches.values()],previousDistance=before.length===2?Math.hypot(before[0].x-before[1].x,before[0].y-before[1].y):0;touches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(touches.size===1&&start){panX=start.px+e.clientX-start.x;panY=start.py+e.clientY-start.y;if(Math.hypot(e.clientX-start.x,e.clientY-start.y)>8)start.moved=true}else if(touches.size===2){let pts=[...touches.values()],a=pts[0],b=pts[1],d=Math.hypot(a.x-b.x,a.y-b.y);if(previousDistance>5)zoom=Math.max(.4,Math.min(2.3,zoom*d/previousDistance));start=null}});
-canvas.addEventListener('pointerup',e=>{if(start&&!start.moved&&touches.size===1){let p=inverse(e.clientX,e.clientY),x=Math.round(p.x-.5),y=Math.round(p.y-.5);if(tool==='view'){selected=[...objects].reverse().find(o=>Math.abs(o.x-x)<1.5&&Math.abs(o.y-y)<1.5)||null;status.textContent=selected?'Будівля вибрана · можна підвищити рівень':'Обери будівлю'}else if(x>=0&&y>=0&&x<20&&y<20){if(!canPlaceSandboxItem(tool,x,y,objects,roads))status.textContent='Ділянка зайнята — обери вільне місце';else if(tool==='road')roads.push({x,y});else objects.push({type:tool,x,y,level:1})}}touches.delete(e.pointerId);start=null});canvas.addEventListener('pointercancel',e=>{touches.delete(e.pointerId);start=null});canvas.addEventListener('wheel',e=>{e.preventDefault();cameraTouched=true;zoom=Math.max(.4,Math.min(2.3,zoom*(e.deltaY>0?.9:1.1)))},{passive:false});
+canvas.addEventListener('pointermove',e=>{if(!touches.has(e.pointerId))return;let before=[...touches.values()],previousDistance=before.length===2?Math.hypot(before[0].x-before[1].x,before[0].y-before[1].y):0;touches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(touches.size===1&&start){panX=start.px+e.clientX-start.x;panY=start.py+e.clientY-start.y;if(Math.hypot(e.clientX-start.x,e.clientY-start.y)>8)start.moved=true}else if(touches.size===2){let pts=[...touches.values()],a=pts[0],b=pts[1],d=Math.hypot(a.x-b.x,a.y-b.y);if(previousDistance>5)zoom=Math.max(.4,Math.min(2.3,zoom*d/previousDistance));start=null}invalidate()});
+canvas.addEventListener('pointerup',e=>{if(start&&!start.moved&&touches.size===1){let p=inverse(e.clientX,e.clientY),x=Math.round(p.x-.5),y=Math.round(p.y-.5);if(tool==='view'){selected=[...objects].reverse().find(o=>Math.abs(o.x-x)<1.5&&Math.abs(o.y-y)<1.5)||null;status.textContent=selected?'Будівля вибрана · можна підвищити рівень':'Обери будівлю'}else if(x>=0&&y>=0&&x<20&&y<20){if(!canPlaceSandboxItem(tool,x,y,objects,roads))status.textContent='Ділянка зайнята — обери вільне місце';else if(tool==='road')roads.push({x,y});else objects.push({type:tool,x,y,level:1})}}touches.delete(e.pointerId);start=null;invalidate()});canvas.addEventListener('pointercancel',e=>{touches.delete(e.pointerId);start=null});canvas.addEventListener('wheel',e=>{e.preventDefault();cameraTouched=true;zoom=Math.max(.4,Math.min(2.3,zoom*(e.deltaY>0?.9:1.1)));invalidate()},{passive:false});
 </script></body></html>
