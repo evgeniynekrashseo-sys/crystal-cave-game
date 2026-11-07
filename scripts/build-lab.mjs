@@ -29,6 +29,8 @@ let mission=await readFile(resolve(source,'mission.js'),'utf8');
 mission=mission.replace(/benefit:'[^']*'/g,"benefit:'Зібрана формула: +45 монет за синтез'").replace('Вода для поселення','Будова молекули води');files.set('mission.js',mission);
 let html=await readFile(resolve(source,'index.html'),'utf8');
 html=html.replace(/^.*rel="preload".*\n/gm,'').replace(/^.*href="settlement.css[^\n]*\n/gm,'').replace(/<button id="city-button">.*?<\/button>/,'').replace('⌂</span>Місто','⚙</span>Модулі').replace('crystal-cave-game/"','crystal-cave-game/lab/"');
+html=replace(html,'  <script type="module" src="app.js?v=56"></script>','  <script src="lab-localization.js"></script>\n  <script type="module" src="app.js?v=56"></script>');
+files.set('lab-localization.js',await readFile(resolve(root,'scripts/lab-localization.js'),'utf8'));
 files.set('index.html',html);
 files.set('manifest.webmanifest',await readFile(resolve(source,'manifest.webmanifest'),'utf8'));
 const queue=['index.html','manifest.webmanifest','privacy.html','icon.svg','icons/app-192.png','icons/app-512.png'];const visited=new Set();
