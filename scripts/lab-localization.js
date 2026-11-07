@@ -62,7 +62,7 @@
     let value=dictionary.get(trimmed);
     if(value===undefined && language!=='uk'){
       // Constrained dynamic prefixes; preserve chemistry symbols and numeric values.
-      const changed=trimmed.replace(/^Дослідження (?=[A-Za-z])/,'Research ')
+      const changed=trimmed.replace(/^Дослідження (?=[A-Za-z])/,(m)=>({en:'Research ',es:'Investigación ','pt-BR':'Pesquisa ',hi:'अनुसंधान ',id:'Penelitian ',tr:'Araştırma ',ja:'研究 ',ko:'연구 ',de:'Forschung ',fr:'Recherche ',ar:'بحث ',th:'วิจัย ',vi:'Nghiên cứu ','zh-Hans':'研究 ',ru:'Исследование '}[language]||m))
         .replace(/(\d+) монет/g,(_,n)=>n+' '+({en:'coins',es:'monedas','pt-BR':'moedas',hi:'सिक्के',id:'koin',tr:'jeton',ja:'コイン',ko:'코인',de:'Münzen',fr:'pièces',ar:'عملة',th:'เหรียญ',vi:'xu','zh-Hans':'金币',ru:'монет'}[language]||'coins'));
       if(changed!==trimmed)value=changed;
     }
