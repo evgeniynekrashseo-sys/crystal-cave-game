@@ -1,0 +1,91 @@
+name: ChemLab Laboratory - Google Play internal testing
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type UPLOAD-INTERNAL to upload a signed city-free AAB to Google Play Internal testing"
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: chemlab-play-internal
+  cancel-in-progress: false
+jobs:
+  internal-release:
+    if: ${{ inputs.confirm == 'UPLOAD-INTERNAL' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: play-internal
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Check required release secrets
+        env:
+          KEYSTORE_B64: ${{ secrets.CHEMLAB_UPLOAD_KEYSTORE_B64 }}
+          STORE_PASS: ${{ secrets.CHEMLAB_UPLOAD_STORE_PASSWORD }}
+          ALIAS: ${{ secrets.CHEMLAB_UPLOAD_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.CHEMLAB_UPLOAD_KEY_PASSWORD }}
+          SERVICE_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          test -n "$KEYSTORE_B64" || { echo "Missing CHEMLAB_UPLOAD_KEYSTORE_B64"; exit 1; }
+          test -n "$STORE_PASS" || { echo "Missing CHEMLAB_UPLOAD_STORE_PASSWORD"; exit 1; }
+          test -n "$ALIAS" || { echo "Missing CHEMLAB_UPLOAD_KEY_ALIAS"; exit 1; }
+          test -n "$KEY_PASS" || { echo "Missing CHEMLAB_UPLOAD_KEY_PASSWORD"; exit 1; }
+          test -n "$SERVICE_JSON" || { echo "Missing GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"; exit 1; }
+      - run: npm ci
+      - run: npm test
+      - name: Build and sync standalone laboratory edition
+        run: npm run native:lab -- android
+      - name: Verify no city and localized UI are bundled
+        run: |
+          test -s dist/lab/lab-localization.js
+          node --input-type=module -e "import{readFile}from'node:fs/promises';const h=await readFile('dist/lab/index.html','utf8');const a=await readFile('dist/lab/app.js','utf8');if(/id=\"city-button\"|settlement\.css/.test(h)||/import \{initCity\}/.test(a))throw Error('City present in lab-only build')"
+      - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Build Android App Bundle (unsigned)
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew bundleRelease --no-daemon
+      - name: Sign bundle with the owner's upload key (never commit the key)
+        env:
+          KEYSTORE_B64: ${{ secrets.CHEMLAB_UPLOAD_KEYSTORE_B64 }}
+          CHEMLAB_UPLOAD_STORE_PASSWORD: ${{ secrets.CHEMLAB_UPLOAD_STORE_PASSWORD }}
+          CHEMLAB_UPLOAD_KEY_ALIAS: ${{ secrets.CHEMLAB_UPLOAD_KEY_ALIAS }}
+          CHEMLAB_UPLOAD_KEY_PASSWORD: ${{ secrets.CHEMLAB_UPLOAD_KEY_PASSWORD }}
+        run: |
+          umask 077
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/chemlab-upload.jks"
+          jarsigner -keystore "$RUNNER_TEMP/chemlab-upload.jks" \
+            -storepass:env CHEMLAB_UPLOAD_STORE_PASSWORD \
+            -keypass:env CHEMLAB_UPLOAD_KEY_PASSWORD \
+            -signedjar "$RUNNER_TEMP/chemlab-lab-release-signed.aab" \
+            android/app/build/outputs/bundle/release/app-release.aab \
+            "$CHEMLAB_UPLOAD_KEY_ALIAS"
+          jarsigner -verify "$RUNNER_TEMP/chemlab-lab-release-signed.aab" >/dev/null
+          echo "Signed and verified city-free AAB"
+      - name: Upload signed AAB for release audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: chemlab-lab-google-play-signed
+          path: ${{ runner.temp }}/chemlab-lab-release-signed.aab
+          retention-days: 14
+      - name: Send signed AAB to Google Play Internal test track
+        uses: r0adkll/upload-google-play@v1.1.5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.digitaldavinci.chemlab
+          releaseFiles: ${{ runner.temp }}/chemlab-lab-release-signed.aab
+          tracks: internal
+          status: completed
+      - name: Remove local upload key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/chemlab-upload.jks"
