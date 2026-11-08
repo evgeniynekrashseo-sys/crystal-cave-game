@@ -21,7 +21,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: npm ci
       - run: npm test
+      - name: Build isolated ChemLab laboratory edition
+        run: npm run build:lab
+      - name: Verify laboratory build has no city
+        run: |
+          test -s dist/lab/index.html
+          test -s dist/lab/lab-localization.js
+          node --input-type=module -e "import{readFile}from'node:fs/promises';const h=await readFile('dist/lab/index.html','utf8');const a=await readFile('dist/lab/app.js','utf8');if(/id=\"city-button\"|settlement\.css/.test(h)||/import \{initCity\}/.test(a))throw Error('City dependency in lab build')"
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
