@@ -32,6 +32,7 @@ html=html.replace(/^.*rel="preload".*\n/gm,'').replace(/^.*href="settlement.css[
 html=replace(html,'  <script type="module" src="app.js?v=56"></script>','  <script src="lab-localization.js"></script>\n  <script type="module" src="app.js?v=56"></script>');
 files.set('lab-localization.js',await readFile(resolve(root,'scripts/lab-localization.js'),'utf8'));
 files.set('index.html',html);
+files.set('privacy.html',await readFile(resolve(root,'scripts/lab-privacy.html'),'utf8'));
 files.set('manifest.webmanifest',await readFile(resolve(source,'manifest.webmanifest'),'utf8'));
 const queue=['index.html','manifest.webmanifest','privacy.html','icon.svg','icons/app-192.png','icons/app-512.png'];const visited=new Set();
 while(queue.length){let p=queue.shift().split(/[?#]/)[0].replace(/^\.\//,'');if(!p||visited.has(p)||/^(https?:|data:|#)/.test(p))continue;if(p.includes('..')||/^(city|settlement|world-design)/.test(p))throw Error('City dependency in standalone build: '+p);visited.add(p);
