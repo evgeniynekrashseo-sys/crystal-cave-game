@@ -1,9 +1,12 @@
 name: ChemLab native build validation
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths: ['scripts/build-lab.mjs', 'scripts/lab-localization.js', 'scripts/sync-lab.mjs', 'dist/**', 'android/**', 'ios/**', 'capacitor.config.json', 'package.json', 'package-lock.json', '.github/workflows/native-build.yml']
   push:
     branches: [main]
-    paths: ['scripts/build-lab.mjs', 'scripts/sync-lab.mjs', 'dist/**', 'android/**', 'ios/**', 'capacitor.config.json', 'package.json', 'package-lock.json', '.github/workflows/native-build.yml']
+    paths: ['scripts/build-lab.mjs', 'scripts/lab-localization.js', 'scripts/sync-lab.mjs', 'dist/**', 'android/**', 'ios/**', 'capacitor.config.json', 'package.json', 'package-lock.json', '.github/workflows/native-build.yml']
 permissions:
   contents: read
 jobs:
@@ -19,6 +22,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run native:lab -- android
+      - run: node --input-type=module -e "import {readFile,stat} from 'node:fs/promises'; const html=await readFile('dist/lab/index.html','utf8'); const app=await readFile('dist/lab/app.js','utf8'); await stat('dist/lab/lab-localization.js'); if(/city-button|settlement\.css|src=\"city/.test(html)||/import \{initCity\}/.test(app))process.exit(1); console.log('City-free lab package and locale script verified')"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -46,6 +50,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run native:lab -- ios
+      - run: node --input-type=module -e "import {stat} from 'node:fs/promises'; await stat('dist/lab/lab-localization.js'); console.log('Locale asset bundled in iOS city-free build')"
       - run: xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
       - uses: actions/upload-artifact@v4
         with:
