@@ -103,19 +103,23 @@ jobs:
       - name: Export signed IPA
         run: |
           set -euo pipefail
-          cat > "$RUNNER_TEMP/ChemLabExportOptions.plist" <<'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0"><dict>
-          <key>method</key><string>app-store-connect</string>
-          <key>destination</key><string>export</string>
-          <key>signingStyle</key><string>manual</string>
-          <key>teamID</key><string>QX87B6Q3N7</string>
-          <key>provisioningProfiles</key><dict>
-          <key>com.digitaldavinci.chemlab</key><string>REPLACE_PROFILE_NAME</string>
-          </dict></dict></plist>
-          EOF
-          /usr/bin/sed -i '' "s/REPLACE_PROFILE_NAME/$CHEMLAB_PROFILE_NAME/g" "$RUNNER_TEMP/ChemLabExportOptions.plist"
+          python3 - <<'PY'
+          import os
+          import plistlib
+          from pathlib import Path
+          options = {
+              'method': 'app-store-connect',
+              'destination': 'export',
+              'signingStyle': 'manual',
+              'teamID': 'QX87B6Q3N7',
+              'provisioningProfiles': {
+                  'com.digitaldavinci.chemlab': os.environ['CHEMLAB_PROFILE_NAME']
+              },
+          }
+          output = Path(os.environ['RUNNER_TEMP']) / 'ChemLabExportOptions.plist'
+          with output.open('wb') as file:
+              plistlib.dump(options, file)
+          PY
           plutil -lint "$RUNNER_TEMP/ChemLabExportOptions.plist"
           xcodebuild \
             -exportArchive \
