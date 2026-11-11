@@ -1,4 +1,7 @@
 # ChemLab
+
+**An original game project from [Black Orange Agency](https://blackorange.agency/) — built by a studio combining marketing, AI/business software, dashboards and GameDev.**
+
 Mobile-first Ukrainian tube-sorting puzzle. Canonical rules: [CHEMLAB_GAME_LOGIC.md](CHEMLAB_GAME_LOGIC.md).
 
 ## Play / run
@@ -32,3 +35,9 @@ See [MONETIZATION_ROADMAP.md](MONETIZATION_ROADMAP.md). Purchases and ads are no
 The production game is https://evgeniynekrashseo-sys.github.io/crystal-cave-game/ . The older Sites publication is not the deployment target.
 
 Adds 12 story quests, four named characters, three permanent city paths, six collectible world artifacts, four new buildings, 12 formula quests with symbolic reactor modes, daylight/weather/lighting, and stable resident identity. All original glass/liquid art is retained. Settings include city enable/disable, calm city animation and JSON backup/restore. Native Capacitor Android/iOS projects, icons and build-validation CI are included; see `docs/mobile/RELEASE.md` for the remaining signing/store requirements.
+
+## Studio and further projects
+
+- [Black Orange Agency](https://blackorange.agency/) — performance marketing, AI applications, CRM/BI dashboards and product development
+- [Fluffy Forest — Animal Sort](https://github.com/evgeniynekrashseo-sys/bird) — another original browser/mobile game project
+- This repository is a studio-owned portfolio project, **not** an Upwork client contract. Native builds and submission workflows do not imply public App Store or Google Play release; see `docs/mobile/RELEASE.md` for outstanding steps.
