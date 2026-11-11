@@ -4,7 +4,7 @@ const root=resolve(import.meta.dirname,'..'),source=resolve(root,'dist'),out=res
 await rm(out,{recursive:true,force:true});await mkdir(out,{recursive:true});
 const files=new Map();
 function replace(text,from,to){if(!text.includes(from))throw Error('Standalone build anchor missing: '+from.slice(0,90));return text.replace(from,to)}
-let app=await readFile(resolve(source,'app.js'),'utf8');
+let app=(await readFile(resolve(source,'app.js'),'utf8')).replace(/\r\n?/g,'\n');
 app=app.replace(/^import \{initCity\}.*\n/m,'');
 app=replace(app,'const prefs=readPreferences();','const prefs={...readPreferences(),cityEnabled:false};');
 app=replace(app,"document.querySelectorAll('#city-button,#lab-button').forEach(el=>el.hidden=!prefs.cityEnabled);",'');
