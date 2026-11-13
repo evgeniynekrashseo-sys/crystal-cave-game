@@ -52,3 +52,12 @@ The signing files live **only** in an access-controlled local signing directory 
 - The current macOS CI workflow `native-build.yml` proves only unsigned **iOS Simulator** compilation; it is not a TestFlight build.
 - TestFlight processing status and successful installation on a real iPhone must be checked separately.
 - A browser gameplay video demonstrates mechanics, but App Review may require footage from the actual native iPhone build.
+
+## Local preflight QA — 2026-11-14
+
+- Cloned the latest `main` to an isolated Helen Core build directory.
+- `npm ci --no-audit --no-fund`: **passed** (99 packages installed).
+- Full `npm test`: **148/148 passing** after normalizing CRLF line endings in the isolated Windows checkout. The tracked source was not altered by the newline workaround; CI macOS checkouts use LF.
+- `npm run native:lab -- ios`: **passed**, generated the city-free lab edition and synchronized the Capacitor iOS project.
+- Apple Distribution `.p12`, App Store provisioning profile and App Store Connect upload `.p8` were generated and downloaded to the private signing folder on Helen Core. No credential material is committed to this repository.
+- GitHub Actions signing secrets and TestFlight upload: **not yet performed**; requires GitHub CLI authorization by the repository owner before uploading these locally secured keys through `gh secret set`.
