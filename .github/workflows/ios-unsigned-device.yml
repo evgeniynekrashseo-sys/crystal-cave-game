@@ -1,0 +1,46 @@
+name: ChemLab iPhoneOS unsigned device build
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: chemlab-iphoneos-unsigned
+  cancel-in-progress: false
+
+jobs:
+  iphoneos:
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Prepare standalone laboratory and validate
+        run: |
+          set -euo pipefail
+          npm ci
+          npm test
+          npm run native:lab -- ios
+          node --input-type=module -e "import {readFile} from 'node:fs/promises'; const h=await readFile('dist/lab/index.html','utf8');const a=await readFile('dist/lab/app.js','utf8');if(/id=\"city-button\"|settlement\\.css/.test(h)||/import \\{initCity\\}/.test(a)) throw Error('City content present in city-free release')"
+      - name: Compile for physical iOS devices without signing
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath "$RUNNER_TEMP/chemlab-device" CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM=QX87B6Q3N7 MARKETING_VERSION=1.2.1 CURRENT_PROJECT_VERSION="$((500 + GITHUB_RUN_NUMBER))" build
+          test -d "$RUNNER_TEMP/chemlab-device/Build/Products/Release-iphoneos/App.app"
+      - name: Package unsigned device build without credentials
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/chemlab-unsigned/Payload"
+          cp -R "$RUNNER_TEMP/chemlab-device/Build/Products/Release-iphoneos/App.app" "$RUNNER_TEMP/chemlab-unsigned/Payload/App.app"
+          /usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$RUNNER_TEMP/chemlab-unsigned/Payload/App.app/Info.plist"
+          cd "$RUNNER_TEMP/chemlab-unsigned"
+          /usr/bin/ditto -c -k --sequesterRsrc --keepParent Payload "$RUNNER_TEMP/ChemLab-unsigned-device.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chemlab-unsigned-iphoneos-${{ github.run_number }}
+          path: ${{ runner.temp }}/ChemLab-unsigned-device.zip
+          if-no-files-found: error
+          retention-days: 3
