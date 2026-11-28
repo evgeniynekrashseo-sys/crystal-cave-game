@@ -1,5 +1,5 @@
 export const PREF_KEY='chemlab_lab_preferences_v1';
-export function normalizePreferences(raw){return {cityEnabled:raw?.cityEnabled!==false,calm:raw?.calm===true};}
+export function normalizePreferences(raw){return {cityEnabled:raw?.cityEnabled!==false,calm:raw?.calm===true,liquidMotion:['full','reduced','system'].includes(raw?.liquidMotion)?raw.liquidMotion:'full'};}
 export function readPreferences(storage=localStorage){try{return normalizePreferences(JSON.parse(storage.getItem(PREF_KEY)))}catch{return normalizePreferences()}}
 export const SAVE_KEYS=['chemlab_lab_v50','chemlab_lab_settlement_v2','chemlab_lab_expansion_v1','chemlab_lab_world_v1',PREF_KEY,'chemlab_lab_sound','chemlab_lab_cosmetic','chemlab_lab_tutorial_v1'];
 export function makeBackup(storage){const values={};for(let i=0;i<storage.length;i++){const k=storage.key(i);if(k?.startsWith('chemlab_lab_'))values[k]=storage.getItem(k)}return {game:'ChemLab',version:1,created:new Date().toISOString(),values};}

@@ -82,13 +82,19 @@ function segmentPath(c,item,layer){
 }
 
 export class LiquidRenderer{
-  constructor(){
+  constructor(motion='full'){
     this.items=[];
     this.last=0;
     this.selected=-1;
-    this.reduced=matchMedia('(prefers-reduced-motion: reduce)');
+    this.motion=motion;
+    this.systemMotion=matchMedia('(prefers-reduced-motion: reduce)');
+    this.reduced={get matches(){return motion==='reduced'||(motion==='system'&&thisRenderer.systemMotion.matches)}};
+    const thisRenderer=this;
+    this.setMotion=value=>{motion=value;this.motion=value;this.last=0;this.start();};
     this.tick=this.tick.bind(this);
     this.raf=0;
+    this.systemMotion.addEventListener?.('change',()=>{this.last=0;this.start();});
+    window.addEventListener('pageshow',()=>{this.last=0;this.start();});
     document.addEventListener('visibilitychange',()=>{
       if(document.hidden){cancelAnimationFrame(this.raf);this.raf=0;}
       else{this.last=0;this.start();}
@@ -114,7 +120,7 @@ export class LiquidRenderer{
         wave:old[i]?.wave||surface(),
         bubbles:old[i]?.bubbles||[],
         spawn:old[i]?.spawn||0,
-        phase:i*1.7,
+        phase:old[i]?.phase??i*1.7,
         weights:null,
         reduced:this.reduced.matches
       };
