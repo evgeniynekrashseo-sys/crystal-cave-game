@@ -2,6 +2,9 @@ name: ChemLab iOS - TestFlight release
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/ios-testflight.yml']
 
 permissions:
   contents: read
@@ -91,7 +94,7 @@ jobs:
       - name: Archive signed iOS app
         run: |
           set -euo pipefail
-          BUILD_NUMBER=$((100 + GITHUB_RUN_NUMBER))
+          BUILD_NUMBER=$((503 + GITHUB_RUN_NUMBER))
           echo "ChemLab iOS build 1.2.1 (${BUILD_NUMBER})"
           xcodebuild \
             -project ios/App/App.xcodeproj \
