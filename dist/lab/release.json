@@ -2,7 +2,7 @@
   "edition": "laboratory-only",
   "version": "1.2.1",
   "city": false,
-  "assets": 19,
+  "assets": 20,
   "storagePrefix": "chemlab_lab_",
   "signed": false
 }

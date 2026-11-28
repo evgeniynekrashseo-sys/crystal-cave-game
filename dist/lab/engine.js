@@ -1,3 +1,4 @@
+import {completedMissionsForSave} from './mission.js?v=57';
 const BASE_POOL=['Na','Cl','Fe','O','C','H','Au','Li','He','Be','B','N','F','Ne','Mg','Al','Si','P','S'];
 export const POOL=[...BASE_POOL,...'H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn Sb Te I Xe Cs Ba La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu Hf Ta W Re Os Ir Pt Au Hg Tl Pb Bi Po At Rn Fr Ra Ac Th Pa U Np Pu Am Cm Bk Cf Es Fm Md No Lr Rf Db Sg Bh Hs Mt Ds Rg Cn Nh Fl Mc Lv Ts Og'.split(' ').filter(s=>!BASE_POOL.includes(s))];
 
@@ -212,7 +213,7 @@ export const budget=(p,level)=>Math.max(9,p.solution.length+(p.profile?.moveSlac
 export const defaults=()=>({
   level:1,gold:0,nug:0,xp:0,score:0,
   discovered:POOL.slice(0,3),
-  streak:0,bestStreak:0,recentPuzzles:[]
+  streak:0,bestStreak:0,recentPuzzles:[],completedMissions:[]
 });
 
 export function normalize(raw){
@@ -223,6 +224,7 @@ export function normalize(raw){
   }
   d.discovered=[...new Set([...d.discovered,...(Array.isArray(raw.discovered)?raw.discovered.filter(s=>POOL.includes(s)):[])])];
   d.recentPuzzles=Array.isArray(raw.recentPuzzles)?raw.recentPuzzles.filter(s=>typeof s==='string').slice(-3):[];
+  d.completedMissions=completedMissionsForSave({...raw,level:d.level});
   return d;
 }
 

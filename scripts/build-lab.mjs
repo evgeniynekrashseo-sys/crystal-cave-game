@@ -29,7 +29,7 @@ let mission=await readFile(resolve(source,'mission.js'),'utf8');
 mission=mission.replace(/benefit:'[^']*'/g,"benefit:'Зібрана формула: +45 монет за синтез'").replace('Вода для поселення','Будова молекули води');files.set('mission.js',mission);
 let html=await readFile(resolve(source,'index.html'),'utf8');
 html=html.replace(/^.*rel="preload".*\n/gm,'').replace(/^.*href="settlement.css[^\n]*\n/gm,'').replace(/<button id="city-button">.*?<\/button>/,'').replace('⌂</span>Місто','⚙</span>Модулі').replace('crystal-cave-game/"','crystal-cave-game/lab/"');
-html=replace(html,'  <script type="module" src="app.js?v=56"></script>','  <script src="lab-localization.js"></script>\n  <script type="module" src="app.js?v=56"></script>');
+html=replace(html,'  <script type="module" src="app.js?v=57"></script>','  <script src="lab-localization.js"></script>\n  <script type="module" src="app.js?v=57"></script>');
 files.set('lab-localization.js',await readFile(resolve(root,'scripts/lab-localization.js'),'utf8'));
 files.set('index.html',html);
 files.set('privacy.html',await readFile(resolve(root,'scripts/lab-privacy.html'),'utf8'));
@@ -46,6 +46,6 @@ while(queue.length){let p=queue.shift().split(/[?#]/)[0].replace(/^\.\//,'');if(
  }else await copyFile(resolve(source,p),resolve(out,p));
 }
 const assets=['./',...[...visited].sort()];
-await writeFile(resolve(out,'sw.js'),`const CACHE='chemlab-lab-1';const ASSETS=${JSON.stringify(assets)};self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('chemlab-lab-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.method==='GET'&&new URL(e.request.url).origin===location.origin)e.respondWith(fetch(e.request).catch(()=>caches.match(e.request,{ignoreSearch:true}).then(r=>r||Response.error())))});`);
+await writeFile(resolve(out,'sw.js'),`const CACHE='chemlab-lab-2-missions';const ASSETS=${JSON.stringify(assets)};self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('chemlab-lab-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.method==='GET'&&new URL(e.request.url).origin===location.origin)e.respondWith(fetch(e.request).catch(()=>caches.match(e.request,{ignoreSearch:true}).then(r=>r||Response.error())))});`);
 await writeFile(resolve(out,'release.json'),JSON.stringify({edition:'laboratory-only',version:'1.2.1',city:false,assets:assets.length,storagePrefix:'chemlab_lab_',signed:false},null,2));
 console.log('Built laboratory-only edition:',assets.length,'files in dist/lab');

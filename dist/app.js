@@ -1,10 +1,10 @@
 import {readPreferences,PREF_KEY,makeBackup,restoreBackup} from './preferences.js?v=27';
-import {missionsFor,createMission,formulaMove,settleMission,REACTION_MODES,conditionReady,missionTier} from './mission.js?v=27';
+import {missionsFor,createMission,formulaMove,settleMission,REACTION_MODES,conditionReady,missionTier} from './mission.js?v=57';
 import {LiquidRenderer,bubblingSound} from './liquid.js?v=27';
 import {initCity} from './city.js?v=56';
 import {initExpansion} from './expansion.js?v=27';
 import {tint,NAMES} from './progression.js?v=27';
-import {experimentChallenge,experimentResult,clone,collectCompleted,completionReward,levelOutcome,createCertifiedLevel,budget,normalize,mechanicBlock,moveWithMechanics} from './engine.js?v=27';
+import {experimentChallenge,experimentResult,clone,collectCompleted,completionReward,levelOutcome,createCertifiedLevel,budget,normalize,mechanicBlock,moveWithMechanics} from './engine.js?v=57';
 const $=id=>document.getElementById(id);let save;try{save=normalize(JSON.parse(localStorage.getItem('chemlab_v50')))}catch{save=normalize(null)}
 const prefs=readPreferences();let reactionMode='none';
 const liquid=new LiquidRenderer();
@@ -16,7 +16,7 @@ function tone(f=500){if(!sound)return;try{ctx??=new (window.AudioContext||window
 function gurgle(){if(!sound)return;try{ctx??=new (window.AudioContext||window.webkitAudioContext)();ctx.resume().catch(()=>{});bubblingSound(ctx)}catch{}}
 function newSeed(){return crypto.getRandomValues(new Uint32Array(1))[0]}
 function waveState(completed=mechanicState.completed||0){return{frozenTurns:puzzle.mechanics.frozen?.turns||0,catalystClaimed:false,completed,crossFrozenTurns:0,crossFrozenTube:-1};}
-function start(exact=false){if(locked)return;$('level-sheet').open=false;missionQueue=missionsFor(save.level,save.discovered);missionIndex=-1;missionClaimed=false;missionRewards=[];seed=exact?seed:newSeed();const symbols=world.symbols();if(!exact||!levelRun||levelRun.level!==save.level)levelRun=createCertifiedLevel(symbols,save.level,seed,exact?[]:save.recentPuzzles);waveIndex=0;puzzle=levelRun.waves[waveIndex];tubes=clone(puzzle.tubes);moves=levelRun.waves.reduce((sum,wave)=>sum+budget(wave,save.level),0);sortingUsed=0;history=[];selected=-1;assisted=false;reserve=false;ended=false;completedLevel=false;mechanicState={frozenTurns:puzzle.mechanics.frozen?.turns||0,catalystClaimed:false,completed:0,crossFrozenTurns:0,crossFrozenTube:-1};save.recentPuzzles=[...save.recentPuzzles.filter(k=>k!==levelRun.key),levelRun.key].slice(-3);persist();world.onStart();$('modal').close();render();say(storageWarn?'Збереження недоступне у цьому браузері':'Торкнись колби, потім обери, куди перелити');}
+function start(exact=false){if(locked)return;$('level-sheet').open=false;missionQueue=missionsFor(save.level,save.discovered,save.completedMissions);missionIndex=-1;missionClaimed=false;missionRewards=[];seed=exact?seed:newSeed();const symbols=world.symbols();if(!exact||!levelRun||levelRun.level!==save.level)levelRun=createCertifiedLevel(symbols,save.level,seed,exact?[]:save.recentPuzzles);waveIndex=0;puzzle=levelRun.waves[waveIndex];tubes=clone(puzzle.tubes);moves=levelRun.waves.reduce((sum,wave)=>sum+budget(wave,save.level),0);sortingUsed=0;history=[];selected=-1;assisted=false;reserve=false;ended=false;completedLevel=false;mechanicState={frozenTurns:puzzle.mechanics.frozen?.turns||0,catalystClaimed:false,completed:0,crossFrozenTurns:0,crossFrozenTube:-1};save.recentPuzzles=[...save.recentPuzzles.filter(k=>k!==levelRun.key),levelRun.key].slice(-3);persist();world.onStart();$('modal').close();render();say(storageWarn?'Збереження недоступне у цьому браузері':'Торкнись колби, потім обери, куди перелити');}
 function mechanicTags(){
  if(activeMission())return [`Місія ${missionIndex+1} / ${missionQueue.length}`,`Колба 01 · ${activeMission().formula}`];
  const tags=[`Складність ${'◆'.repeat(puzzle.profile.rank)}`];
@@ -126,7 +126,8 @@ function render(){
   brief.innerHTML=`<div><b>${challenge.name}</b><span>+${challenge.bonus} монет</span></div><p>${detail}</p><progress max="${levelRun.totalGroups}" value="${complete}" aria-label="Зібрано груп"></progress>`;
   brief.hidden=!!activeMission()||ended;
  }
- const quest=activeMission(),card=$('formula-quest');card.hidden=!quest&&!missionQueue.length;
+ const quest=activeMission(),card=$('formula-quest');card.hidden=completedLevel||(!quest&&!missionQueue.length);
+ if(completedLevel){$('objective').textContent='Експеримент завершено';card.innerHTML='';return;}
  if(quest){$('objective').textContent='Збери склад речовини у колбі 01, потім очисть решту колб';card.innerHTML=`<b>${quest.name} · ${quest.formula}</b><span>${missionClaimed?'Склад зібрано. Заверши очищення колб.':quest.atoms.map(a=>a).join(' + ')+' → колба 01'}</span><small>${quest.benefit}</small>${quest.condition?`<div class="reaction-console"><b>${missionTier(save.level)} · ${REACTION_MODES[quest.condition].name}</b><span>Налаштуй реактор перед додаванням атомів. Режими — умовні правила гри.</span><div>${Object.entries(REACTION_MODES).filter(([id])=>id!=='none').map(([id,m])=>`<button data-reaction-mode="${id}" aria-pressed="${reactionMode===id}" class="${reactionMode===id?'chosen':''}">${m.icon} ${m.name}</button>`).join('')}</div></div>`:''}<details><summary>Хімічна довідка</summary><p>${quest.science}</p></details>`;}
  else {$('objective').textContent='Збери по 4 однакові елементи у колбах';card.innerHTML=missionQueue.length?`<b>${prefs.cityEnabled?'Замовлення міста':'Дослідницький цикл'}</b><span>Після сортування: ${missionQueue.map(q=>q.formula).join(' · ')}</span><small>Синтезуй речовини, щоб покращити поселення</small>`:'';}
  card.querySelectorAll('[data-reaction-mode]').forEach(button=>button.onclick=()=>{if(locked)return;reactionMode=button.dataset.reactionMode;render();say(conditionReady(quest,reactionMode)?'Реактор готовий. Збирай формулу.':'Звір режим із завданням.');});
@@ -229,6 +230,11 @@ function win(){
  if(ended)return;
  ended=true;
  completedLevel=true;
+ // Commit formula progress with the completed experiment, never with a partial
+ // reaction that can still be undone or fail during impurity cleanup.
+ save.completedMissions=[...new Set([...save.completedMissions,...missionRewards.map(q=>q.id)])];
+ missionQueue=[];missionIndex=-1;missionClaimed=false;reactionMode='none';
+ $('level-sheet').open=false;
  const l=save.level,result=experimentResult(l,{assisted,used:sortingUsed,par:levelRun.waves.reduce((n,w)=>n+w.solution.length,0)}),reward=70+l*8+Math.min(80,moves*3)+result.bonus,known=new Set(save.discovered);
  save.gold+=reward;save.xp+=25+l*2;save.score+=100+l*10+moves*5;save.streak++;save.bestStreak=Math.max(save.streak,save.bestStreak);if(!assisted)save.nug++;save.level++;
  // Meta progression is secondary: even a storage/UI failure must never block level completion.

@@ -15,7 +15,16 @@ export const SUBSTANCES=[
  {id:'ozone',level:60,name:'Щит над долиною',formula:'O₃',atoms:['O','O','O'],condition:'light',benefit:'Зібрана формула: +45 монет за синтез',science:'O₃ — озон, інша форма існування Оксигену. У природі важливі фотохімічні процеси. Тут не відтворюються реальні умови реакції.'}
 
 ];
-export function missionsFor(level,discovered){const pool=SUBSTANCES.filter(q=>q.level<=level&&q.atoms.every(s=>discovered.includes(s)));if(!pool.length)return [];const n=Math.min(pool.length,level>=40?3:level>=20?2:1),offset=Math.floor(level/5)%pool.length;return Array.from({length:n},(_,i)=>pool[(offset+i)%pool.length]);}
+export function completedMissionsForSave(raw){
+ // Level 5 always required salt with the three starting elements. Other old
+ // completions cannot be inferred from today's discovered elements or level.
+ const completed=Array.isArray(raw?.completedMissions)?raw.completedMissions:raw?.level>5?['salt']:[];
+ return [...new Set(completed.filter(id=>SUBSTANCES.some(q=>q.id===id)))];
+}
+export function missionsFor(level,discovered,completed=[]){
+ const pool=SUBSTANCES.filter(q=>!completed.includes(q.id)&&q.level<=level&&q.atoms.every(s=>discovered.includes(s)));
+ return pool.slice(0,level>=40?3:level>=20?2:1);
+}
 export function formulaMatches(tube,quest){return tube.length===quest.atoms.length&&quest.atoms.every(s=>tube.filter(x=>x===s).length===quest.atoms.filter(x=>x===s).length);}
 export function formulaMove(t,a,b,quest){if(a===b||a===0||!t[a]?.length||!t[b]||t[b].length>=4)return null;const s=t[a].at(-1);if(b===0){if(t[0].filter(x=>x===s).length>=quest.atoms.filter(x=>x===s).length)return null;const next=t.map(x=>[...x]);next[0].push(next[a].pop());return next;}if(t[b].length&&t[b].at(-1)!==s)return null;const next=t.map(x=>[...x]);let n=0;for(let i=t[a].length-1;i>=0&&t[a][i]===s;i--)n++;n=Math.min(n,4-t[b].length);next[b].push(...next[a].splice(-n));return next;}
 export function createMission(quest,level,discovered){const blockers=discovered.filter(s=>!quest.atoms.includes(s));const count=Math.min(blockers.length,level>=30?2:1),tubes=Array.from({length:7},()=>[]);for(let i=0;i<count;i++){tubes[1+i*2]=[blockers[i],blockers[i]];tubes[2+i*2]=[blockers[i],blockers[i]];}const shift=level%4;quest.atoms.forEach((s,i)=>tubes[1+(i+shift)%4].push(s));return {tubes,moves:quest.atoms.length+count+Math.max(2,7-Math.floor(level/10))};}
