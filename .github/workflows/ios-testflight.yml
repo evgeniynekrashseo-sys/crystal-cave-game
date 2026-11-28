@@ -20,7 +20,7 @@ jobs:
     env:
       APP_BUNDLE_ID: com.digitaldavinci.chemlab
       APPLE_TEAM_ID: QX87B6Q3N7
-      PROVISIONING_PROFILE_NAME: ChemLab_AppStore_2026
+      PROVISIONING_PROFILE_NAME: ChemLab_AppStore_NaClFix_2026_11_28
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
